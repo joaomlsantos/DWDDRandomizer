@@ -8,7 +8,17 @@ Current functionalities include certain quality-of-life changes and randomizatio
 
 Providing these tools/scripts in the form of an app is a priority, and will be done in the near future.
 
----
+The following **quality-of-life changes** have been implemented so far:
+- Increased text speed
+- Player movement speed modifier
+- Encounter rate modifier
+- Increase stat caps
+
+The following **randomization options** have been implemented so far:
+- Randomize starters
+- Randomize wild digimon area encounters
+
+
 
 ## QoL Changes
 
@@ -67,14 +77,11 @@ Thus, there are four possible level-up mode settings:
 - **FIXED_MAX:** The **highest value** from the possible level-up values is always picked for each stat upon each level-up operation. This results in **stronger** digimon encounters.
 
 
----
-
 
 ## Contact
 
 For questions or suggestions, please reach out via Issues or [joao.l.santos@tecnico.ulisboa.pt](mailto:joao.l.santos@tecnico.ulisboa.pt).
 
----
 
 ## Copyright Notice
 
