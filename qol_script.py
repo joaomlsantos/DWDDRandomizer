@@ -30,7 +30,8 @@ CHANGE_ENCOUNTER_RATE = True
 ENCOUNTER_RATE_MULTIPLIER = 0.5
 CHANGE_STAT_CAPS = True
 ROOKIE_RESET_EVENT = RookieResetConfig.UNCHANGED
-RANDOMIZE_STARTERS = RandomizeStartersConfig.RAND_FULL
+RANDOMIZE_STARTERS = RandomizeStartersConfig.RAND_SAME_STAGE
+NERF_FIRST_BOSS = True                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
 
 RANDOMIZE_AREA_ENCOUNTERS = True
 AREA_ENCOUNTERS_STATS = model.LvlUpMode.FIXED_AVG      # this defines how the randomized enemy digimon's stats are generated when changing the levels
@@ -43,11 +44,11 @@ FIXED_BATTLES_KEEP_HP = True                            # do not change base HP 
 
 
 
-#PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
-#PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_patched.nds"
+PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
+PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_patched.nds"
 
-PATH_SOURCE = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US).nds"
-PATH_TARGET = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US)_patched.nds"
+#PATH_SOURCE = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US).nds"
+#PATH_TARGET = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US)_patched.nds"
 
 
 
@@ -269,8 +270,21 @@ class Randomizer:
         
         if(not RANDOMIZE_FIXED_BATTLES):
             return
+        
+
+        # to accomplish this we randomize every enemy encounter after 0x01f4
 
         
+    def nerfFirstBoss(self,
+                      rom_data: bytearray):
+        if(not NERF_FIRST_BOSS):
+            return
+        # id for first city boss is 0x205
+
+        first_boss_data = self.enemyDigimonInfo[0x205]
+        nerfed_hp = first_boss_data.hp // 2
+
+        utils.writeRomBytes(rom_data, nerfed_hp, first_boss_data.offset+4, 2)    # write new hp
 
 
 
@@ -288,5 +302,6 @@ if __name__ == '__main__':
     randomizer = Randomizer(rom.version, rom.rom_data)
     randomizer.randomizeStarters(rom.rom_data)
     randomizer.randomizeAreaEncounters(rom.rom_data)
+    randomizer.nerfFirstBoss(rom.rom_data)
 
     rom.writeRom(PATH_TARGET)
