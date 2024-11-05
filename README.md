@@ -4,6 +4,8 @@
 
 This repository contains a set of tools and scripts to modify the Digimon World Dawn/Dusk ROMs.
 
+The information presented in these pages refers to the USA roms (serial codes NTR-A6RE-USA and NTR-A3VE-USA for Dusk and Dawn respectively).
+
 Current functionalities include certain quality-of-life changes and randomization options.
 
 Providing these tools/scripts in the form of an app is a priority, and will be done in the near future.
