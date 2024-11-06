@@ -11,8 +11,8 @@ Current functionalities include certain quality-of-life changes and randomizatio
 Providing these tools/scripts in the form of an app is a priority, and will be done in the near future.
 
 The following **quality-of-life changes** have been implemented so far:
-- Increased text speed
-- Player movement speed modifier
+- [Increased text speed](https://github.com/joaomlsantos/DWDDRandomizer/wiki/Change-Text-Speed)
+- [Player movement speed modifier](https://github.com/joaomlsantos/DWDDRandomizer/wiki/Change-Player-Movement-Speed)
 - Encounter rate modifier
 - Increase stat caps
 
@@ -24,12 +24,12 @@ The following **randomization options** have been implemented so far:
 
 ## QoL Changes
 
-### Increased text speed
+### [Increased text speed](https://github.com/joaomlsantos/DWDDRandomizer/wiki/Change-Text-Speed)
 In the base games the text is displayed character-by-character, and the player needs to hold A to speed up the dialogue boxes. 
 
 This patch removes the need of holding A for the text to speed up.
 
-### Player movement speed modifier
+### [Player movement speed modifier](https://github.com/joaomlsantos/DWDDRandomizer/wiki/Change-Player-Movement-Speed)
 Modifies the player's movement speed in the overworld. 
 
 The default multiplier in the script is set to increase the movement speed by 1.5x of the speed in the base game.
