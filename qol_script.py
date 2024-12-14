@@ -4,6 +4,8 @@ import logging
 import random
 from enum import Enum
 from src import constants, utils, model
+import numpy as np
+import copy
 
 
 class RookieResetConfig(Enum):
@@ -29,24 +31,26 @@ ENCOUNTER_RATE_MULTIPLIER = 0.5
 CHANGE_STAT_CAPS = True
 ROOKIE_RESET_EVENT = RookieResetConfig.UNCHANGED
 RANDOMIZE_STARTERS = RandomizeStartersConfig.RAND_SAME_STAGE
-NERF_FIRST_BOSS = True                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
+NERF_FIRST_BOSS = False                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
 
-RANDOMIZE_AREA_ENCOUNTERS = True
+RANDOMIZE_AREA_ENCOUNTERS = False
 AREA_ENCOUNTERS_STATS = model.LvlUpMode.FIXED_AVG      # this defines how the randomized enemy digimon's stats are generated when changing the levels
 
-RANDOMIZE_FIXED_BATTLES = True
+RANDOMIZE_FIXED_BATTLES = False
 FIXED_BATTLES_DIGIMON_SAME_STAGE = True                 # digimon will be swapped with another digimon of the same stage
 FIXED_BATTLES_KEEP_EXCLUSIVE_BOSSES = False             # do not change boss-exclusive digimon like ???, SkullBaluchimon, Grimmon, etc
 FIXED_BATTLES_BALANCE_BY_BST = False                    # if true, generated encounter will have roughly the same stat total as the original encounter (which can lead to a different digimon lvl); if false, the generated encounter will be set at the same level regardless of how stronger/weaker the new digimon is
 FIXED_BATTLES_KEEP_HP = True                            # do not change base HP of the encounter: most fixed battles have enemies with slightly more hp than usual, this will keep the digimon's HP stat the same as before
 
 
+RANDOMIZE_DIGIVOLUTIONS = True
 
-PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
-PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_patched.nds"
 
-#PATH_SOURCE = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US).nds"
-#PATH_TARGET = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US)_patched.nds"
+#PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
+#PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_deltapatched.nds"
+
+PATH_SOURCE = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US).nds"
+PATH_TARGET = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US)_deltapatched_randomized.nds"
 
 
 
@@ -205,7 +209,7 @@ class Randomizer:
         offset_start = constants.AREA_ENCOUNTER_OFFSETS[self.version][0]
         offset_end = constants.AREA_ENCOUNTER_OFFSETS[self.version][1]
 
-        digimon_pool = constants.DIGIMON_IDS.copy()
+        digimon_pool = copy.deepcopy(constants.DIGIMON_IDS)
 
         randomized_digimon_history = {}
 
@@ -285,6 +289,102 @@ class Randomizer:
         utils.writeRomBytes(rom_data, nerfed_hp, first_boss_data.offset+4, 2)    # write new hp
 
 
+    def randomizeDigivolutions(self,
+                               rom_data: bytearray):
+        if(not RANDOMIZE_DIGIVOLUTIONS):
+            return
+        
+        
+        digimon_to_randomize = copy.deepcopy(constants.DIGIMON_IDS)     # this will be used to iterate through all digimon
+        digimon_pool_selection = copy.deepcopy(constants.DIGIMON_IDS)   # this will be used to define if a given digimon is available or not
+        generated_conditions = {}
+        pre_evos = {}
+
+        for s in range(len(constants.STAGE_NAMES)):
+            stage = constants.STAGE_NAMES[s]
+            logger_dict = {v: k for k, v in digimon_to_randomize[stage].items()}
+            stage_ids = list(digimon_to_randomize[stage].values())
+            evo_amount_distribution = constants.DIGIVOLUTION_AMOUNT_DISTRIBUTION[stage]
+
+            random.shuffle(stage_ids)
+            for digimon_id in stage_ids:
+
+                log_digimon_name = logger_dict[digimon_id]
+                hex_addr = constants.DIGIVOLUTION_ADDRESSES[self.version][digimon_id]
+                evos_amount = np.random.choice(list(range(len(evo_amount_distribution))), p=evo_amount_distribution)
+                log_evo_names = []
+                evo_ids = []
+                for e in range(evos_amount):
+                    try:
+                        # pick evo digimon id
+                        evo_digi_name = random.choice(list(digimon_pool_selection[constants.STAGE_NAMES[s+1]].keys()))
+                        evo_digi_id = digimon_pool_selection[constants.STAGE_NAMES[s+1]].pop(evo_digi_name)              # this ensures there are no repeated digimon
+                        log_evo_names.append(evo_digi_name)
+
+                        # generate conditions for evo digimon
+                        conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
+                        generated_conditions[evo_digi_id] = conditions_evo
+
+                        # add pre-evo register to propagate conditions on next cycles
+                        pre_evos[evo_digi_id] = digimon_id
+
+                        # add evo_id to current digimon's evo ids
+                        evo_ids.append(evo_digi_id)
+
+                    except IndexError:
+                        logger.error("No more digimon in the pool, skip current evos")
+                        continue
+
+
+                # if conditions do not exist for current digimon, generate them
+                if(digimon_id not in generated_conditions.keys()):
+                    conditions_cur = utils.generateConditions(s)
+                    generated_conditions[digimon_id] = conditions_cur
+
+
+                # write to rom
+
+                # pre-evo section
+
+                if(digimon_id in pre_evos.keys()):
+                    utils.writeRomBytes(rom_data, pre_evos[digimon_id], hex_addr, 4)
+                    conditions_cur = generated_conditions[digimon_id]
+                    for i in range(3):  # write conditions
+                        if(len(conditions_cur) > i):
+                            utils.writeRomBytes(rom_data, conditions_cur[i][0], hex_addr+0x10 + (0x8*i), 4)
+                            utils.writeRomBytes(rom_data, conditions_cur[i][1], hex_addr+0x14 + (0x8*i), 4)
+                        else:
+                            utils.writeRomBytes(rom_data, 0x0, hex_addr+0x10 + (0x8*i), 4)
+                            utils.writeRomBytes(rom_data, 0x0, hex_addr+0x14 + (0x8*i), 4)
+                else:
+                    utils.writeRomBytes(rom_data, 0xffffffff, hex_addr, 4)
+                    for i in range(3):  # write conditions
+                        utils.writeRomBytes(rom_data, 0x0, hex_addr+0x10 + (0x8*i), 4)
+                        utils.writeRomBytes(rom_data, 0x0, hex_addr+0x14 + (0x8*i), 4)
+
+
+                # write evos
+
+                for i in range(3):
+                    if(len(evo_ids) > i):
+                        cur_evo_id = evo_ids[i]
+                        utils.writeRomBytes(rom_data, cur_evo_id, hex_addr+(0x4*(i+1)), 4)
+                        conditions_cur = generated_conditions[cur_evo_id]
+                        for j in range(3):  # write conditions
+                            if(len(conditions_cur) > j):
+                                utils.writeRomBytes(rom_data, conditions_cur[j][0], hex_addr+0x10 + (0x8*j) + (0x18*(i+1)), 4)
+                                utils.writeRomBytes(rom_data, conditions_cur[j][1], hex_addr+0x14 + (0x8*j) + (0x18*(i+1)), 4)
+                            else:
+                                utils.writeRomBytes(rom_data, 0x0, hex_addr+0x10 + (0x8*j) + (0x18*(i+1)), 4)
+                                utils.writeRomBytes(rom_data, 0x0, hex_addr+0x14 + (0x8*j) + (0x18*(i+1)), 4)
+                    else:
+                        utils.writeRomBytes(rom_data, 0xffffffff, hex_addr+(0x4*(i+1)), 4)
+                        for i in range(3):  # write conditions
+                            utils.writeRomBytes(rom_data, 0x0, hex_addr+0x10 + (0x8*j) + (0x18*(i+1)), 4)
+                            utils.writeRomBytes(rom_data, 0x0, hex_addr+0x14 + (0x8*j) + (0x18*(i+1)), 4)
+
+                logger.info(log_digimon_name + " -> " + str(log_evo_names))
+
 
     
 
@@ -301,5 +401,6 @@ if __name__ == '__main__':
     randomizer.randomizeStarters(rom.rom_data)
     randomizer.randomizeAreaEncounters(rom.rom_data)
     randomizer.nerfFirstBoss(rom.rom_data)
+    randomizer.randomizeDigivolutions(rom.rom_data)
 
     rom.writeRom(PATH_TARGET)

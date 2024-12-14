@@ -20,6 +20,10 @@ The following **randomization options** have been implemented so far:
 - Randomize starters
 - Randomize wild digimon area encounters
 
+[Xdelta Patch for Digimon World Dawn](https://drive.google.com/file/d/1QgW7oI5HufpQkc9zF518RBIwcoepPeq_/view?usp=drive_link)
+
+[Xdelta Patch for Digimon World Dusk](https://drive.google.com/file/d/15aSxeCnXrHLFtZaAOQFNssfaNL21ZgWG/view?usp=drive_link)
+
 
 
 ## QoL Changes

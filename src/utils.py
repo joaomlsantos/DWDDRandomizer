@@ -1,7 +1,8 @@
-import constants
-import model
+from . import constants
+from . import model
 import copy
 import random
+import numpy as np
 
 def getDigimonStage(digimon_id: int):
     if(digimon_id >= 0x41 and digimon_id <= 0x57):
@@ -204,6 +205,25 @@ def generateLvlupStats(lvlupTable: list[list[int, int]],
     target_digimon.speed = prev_stats[5]
 
     return target_digimon
+
+
+def generateConditions(s: int):
+    
+    stage = constants.STAGE_NAMES[s]
+    digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x12]    # this should be a constant/setting i think
+    condition_amount_distribution = constants.DIGIVOLUTION_CONDITION_AMOUNT_DISTRIBUTION[stage]
+    condition_amount = np.random.choice(list(range(1,len(condition_amount_distribution)+1)), p=condition_amount_distribution)
+    conditions = []
+    for c in range(1, condition_amount+1):
+        if(c == 1):     # force level
+            cur_condition = 0x1
+        else:           # choose one of the other conditions randomly
+            cur_condition = random.choice(digivolution_conditions_pool)
+
+        min_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][s][0]
+        max_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][s][1]
+        conditions.append([cur_condition, random.randint(min_val, max_val)])
+    return conditions
 
 
 
