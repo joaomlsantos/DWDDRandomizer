@@ -49,8 +49,8 @@ RANDOMIZE_DIGIVOLUTIONS = True
 #PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
 #PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_deltapatched.nds"
 
-PATH_SOURCE = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US).nds"
-PATH_TARGET = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US)_deltapatched_randomized.nds"
+PATH_SOURCE = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA).nds"
+PATH_TARGET = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA)_deltapatched_randomized.nds"
 
 
 
@@ -348,7 +348,7 @@ class Randomizer:
 
                 if(digimon_id in pre_evos.keys()):
                     utils.writeRomBytes(rom_data, pre_evos[digimon_id], hex_addr, 4)
-                    conditions_cur = generated_conditions[digimon_id]
+                    conditions_cur = generated_conditions[pre_evos[digimon_id]]
                     for i in range(3):  # write conditions
                         if(len(conditions_cur) > i):
                             utils.writeRomBytes(rom_data, conditions_cur[i][0], hex_addr+0x10 + (0x8*i), 4)
