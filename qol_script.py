@@ -7,7 +7,7 @@ from src import constants, utils, model
 import numpy as np
 import copy
 
-
+# strife was here
 class RookieResetConfig(Enum):
     UNCHANGED = 0                       # same as base game; resets digimon to rookies after the chaos event 
     RESET_ALL_INCLUDING_LUNAMON = 1     # same as base game but also resets Lunamon to lvl 1
