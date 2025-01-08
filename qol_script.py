@@ -141,7 +141,7 @@ class DigimonROM:
         for offset in offset_dict.keys():
             address_value = offset_dict[offset]
             utils.writeRomBytes(self.rom_data, address_value, offset, 4)
-        logger.info("Extended player name size (max player name size is now 12)")
+        logger.info("Extended player name size (max player name size is now 7)")
 
 
 class Randomizer:
