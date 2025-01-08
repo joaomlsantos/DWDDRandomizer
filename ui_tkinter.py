@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
+
 def open_file_function():
     # Code to open a file
     pass
@@ -12,6 +13,8 @@ def save_file_function():
 def show_about_info():
     # Code to show "About" information
     pass
+        
+
 
 # Initialize main window
 root = tk.Tk()

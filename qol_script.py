@@ -7,7 +7,7 @@ from src import constants, utils, model
 import numpy as np
 import copy
 
-
+# strife was here
 class RookieResetConfig(Enum):
     UNCHANGED = 0                       # same as base game; resets digimon to rookies after the chaos event 
     RESET_ALL_INCLUDING_LUNAMON = 1     # same as base game but also resets Lunamon to lvl 1
@@ -359,7 +359,7 @@ class Randomizer:
 
                 if(digimon_id in pre_evos.keys()):
                     utils.writeRomBytes(rom_data, pre_evos[digimon_id], hex_addr, 4)
-                    conditions_cur = generated_conditions[digimon_id]
+                    conditions_cur = generated_conditions[pre_evos[digimon_id]]
                     for i in range(3):  # write conditions
                         if(len(conditions_cur) > i):
                             utils.writeRomBytes(rom_data, conditions_cur[i][0], hex_addr+0x10 + (0x8*i), 4)
