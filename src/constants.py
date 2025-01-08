@@ -486,7 +486,11 @@ DIGIVOLUTION_CONDITIONS = {
     0xD: "SPEED STAT",
     0xE: "SPIRIT STAT",
     0xF: "APTITUDE STAT",
+    #0x10: "STRESS % STAT",             # unused
+    #0x11: "STRESS % STAT [2]",         # unused
     0x12: "FRIENDSHIP % STAT",
+    #0x13: "FRIENDSHIP % STAT [2]",     # unused
+    #0x14: "ITEM IN INVENTORY",         # unused, this doesn't seem to be implemented correctly
     0x15: "DIGIMON ID IN PARTY",
     0x16: "BEFRIENDED DIGIMON ID"
 }
@@ -968,5 +972,66 @@ DIGIVOLUTION_ADDRESSES = {
         0x1f3: 0x327b968,
         0x1f4: 0x327b9d8,
         0x1f5: 0x327ba48
+    }
+}
+
+# The following is mapped as [address]: [value to replace in given address]
+# For this instance we assume 0x2135A00 as the new target address for Dusk, 0x2135840 as the new target address for Dawn, and 0xC as the new name length
+PLAYERNAME_EXTENSION_ADDRESSES = {
+    "DUSK":
+    {
+        0x38204: 0x2135a00, 
+        0x382EC: 0x2135a00, 
+        0x3842C: 0x2135a00, 
+        0x3FFB4: 0x2135a00, 
+        0x4793C: 0x2135a00, 
+        0x4BCA0: 0x2135a00, 
+        0x7AAC4: 0x2135a00, 
+        0xDB3C4: 0x2135a00, 
+        0xDCAB4: 0x2135a00, 
+        0xDD3AC: 0x2135a00, 
+        0xE50C8: 0x2135a00, 
+        0xE78E4: 0x2135a00, 
+        0xEADA4: 0x2135a00, 
+        0x17C228: 0x2135a00, 
+        0x234060: 0x2135a00, 
+        0x244F60: 0x2135a00, 
+        0x27F3EC: 0x2135a00,
+        0x40738: 0xe2822040,
+        0x40754: 0xe2822040,
+        0x27EE7C: 0xe3a0200c,
+        0x40764: 0xe351000c,
+        0x32918: 0xe2840040,
+        0xe09ac: 0xe3a02000,
+        0xe09bc: 0xe3a02000,
+        0xe09d4: 0xe3a02000
+    },
+    "DAWN":
+    {
+        0x381F0: 0x02135840, 
+        0x382D8: 0x02135840, 
+        0x38418: 0x02135840, 
+        0x3FFA0: 0x02135840, 
+        0x47928: 0x02135840, 
+        0x4BC88: 0x02135840, 
+        0x7AA54: 0x02135840, 
+        0xDB2CC: 0x02135840, 
+        0xDC9BC: 0x02135840, 
+        0xDD2B4: 0x02135840, 
+        0xE4FD0: 0x02135840, 
+        0xE77EC: 0x02135840, 
+        0xEACA8: 0x02135840,
+        0x17C028: 0x02135840, 
+        0x233E60: 0x02135840, 
+        0x244D60: 0x02135840, 
+        0x27F1E8: 0x02135840,
+        0x40724: 0xe2822040, 
+        0x40740: 0xe2822040,
+        0x27EC78: 0xe3a0200c,
+        0x40750: 0xe351000c,
+        0x32910: 0xe2840040,
+        0xe08b4: 0xe3a0200,
+        0xe08c4: 0xe3a0200,
+        0xe08dc: 0xe3a0200
     }
 }

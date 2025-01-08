@@ -29,6 +29,8 @@ MOVEMENT_SPEED_MULTIPLIER = 1.5
 CHANGE_ENCOUNTER_RATE = True
 ENCOUNTER_RATE_MULTIPLIER = 0.5
 CHANGE_STAT_CAPS = True
+EXTEND_PLAYERNAME_SIZE = True
+
 ROOKIE_RESET_EVENT = RookieResetConfig.UNCHANGED
 RANDOMIZE_STARTERS = RandomizeStartersConfig.RAND_SAME_STAGE
 NERF_FIRST_BOSS = False                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
@@ -46,11 +48,11 @@ FIXED_BATTLES_KEEP_HP = True                            # do not change base HP 
 RANDOMIZE_DIGIVOLUTIONS = True
 
 
-#PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
-#PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_deltapatched.nds"
+PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
+PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_deltapatched.nds"
 
-PATH_SOURCE = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US).nds"
-PATH_TARGET = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US)_deltapatched_randomized.nds"
+#PATH_SOURCE = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US).nds"
+#PATH_TARGET = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US)_deltapatched_randomized.nds"
 
 
 
@@ -75,6 +77,8 @@ class DigimonROM:
             self.changeEncounterRate()
         if(CHANGE_STAT_CAPS):
             self.changeStatCaps()
+        if(EXTEND_PLAYERNAME_SIZE):
+            self.extendPlayerNameSize()
         
 
 
@@ -131,6 +135,13 @@ class DigimonROM:
         self.rom_data[offset+4:offset+6] = (0xffff).to_bytes(2, byteorder="little")
         logger.info("Changed stat caps (max value for each stat is now 65535)")
 
+
+    def extendPlayerNameSize(self):
+        offset_dict = constants.PLAYERNAME_EXTENSION_ADDRESSES[self.version]
+        for offset in offset_dict.keys():
+            address_value = offset_dict[offset]
+            utils.writeRomBytes(self.rom_data, address_value, offset, 4)
+        logger.info("Extended player name size (max player name size is now 12)")
 
 
 class Randomizer:
