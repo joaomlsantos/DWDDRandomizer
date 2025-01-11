@@ -33,7 +33,7 @@ EXTEND_PLAYERNAME_SIZE = True
 
 ROOKIE_RESET_EVENT = RookieResetConfig.UNCHANGED
 RANDOMIZE_STARTERS = RandomizeStartersConfig.RAND_SAME_STAGE
-NERF_FIRST_BOSS = False                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
+NERF_FIRST_BOSS = True                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
 
 RANDOMIZE_AREA_ENCOUNTERS = False
 AREA_ENCOUNTERS_STATS = model.LvlUpMode.FIXED_AVG      # this defines how the randomized enemy digimon's stats are generated when changing the levels
@@ -48,11 +48,11 @@ FIXED_BATTLES_KEEP_HP = True                            # do not change base HP 
 RANDOMIZE_DIGIVOLUTIONS = True
 
 
-PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
-PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_deltapatched.nds"
+#PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
+#PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_deltapatched.nds"
 
-#PATH_SOURCE = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US).nds"
-#PATH_TARGET = "C:/Workspace/digimon_stuffs/1420 - Digimon World - Dusk (US)_deltapatched_randomized.nds"
+PATH_SOURCE = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA).nds"
+PATH_TARGET = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA)_deltapatched_randomized_1.nds"
 
 
 
@@ -305,7 +305,6 @@ class Randomizer:
         if(not RANDOMIZE_DIGIVOLUTIONS):
             return
         
-        
         digimon_to_randomize = copy.deepcopy(constants.DIGIMON_IDS)     # this will be used to iterate through all digimon
         digimon_pool_selection = copy.deepcopy(constants.DIGIMON_IDS)   # this will be used to define if a given digimon is available or not
         generated_conditions = {}
@@ -390,7 +389,7 @@ class Randomizer:
                                 utils.writeRomBytes(rom_data, 0x0, hex_addr+0x14 + (0x8*j) + (0x18*(i+1)), 4)
                     else:
                         utils.writeRomBytes(rom_data, 0xffffffff, hex_addr+(0x4*(i+1)), 4)
-                        for i in range(3):  # write conditions
+                        for j in range(3):  # write conditions
                             utils.writeRomBytes(rom_data, 0x0, hex_addr+0x10 + (0x8*j) + (0x18*(i+1)), 4)
                             utils.writeRomBytes(rom_data, 0x0, hex_addr+0x14 + (0x8*j) + (0x18*(i+1)), 4)
 
