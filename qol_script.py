@@ -52,11 +52,11 @@ DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP = True       # example: a digivol
 DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS = 0.2          # how less likely each exp condition is to be picked (in this case, the probability for each of those exp conditions is multiplied by the bias value; multiplying by 0.2 makes the condition 5 times less likely)
 
 
-#PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
-#PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_deltapatched.nds"
+PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (U)(XenoPhobia).nds"
+PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (U)_deltapatched.nds"
 
-PATH_SOURCE = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA).nds"
-PATH_TARGET = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA)_deltapatched_randomized_1.nds"
+#PATH_SOURCE = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA).nds"
+#PATH_TARGET = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA)_deltapatched_randomized_1.nds"
 
 
 
@@ -340,8 +340,12 @@ class Randomizer:
                         log_evo_names.append(evo_digi_name)
 
                         # generate conditions for evo digimon
-                        conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
+                        if(DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP):
+                            conditions_evo = utils.generateBiasedConditions(s+1, DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS, self.baseDigimonInfo[evo_digi_id].species)
+                        else:
+                            conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
                         generated_conditions[evo_digi_id] = conditions_evo
+
 
                         # add pre-evo register to propagate conditions on next cycles
                         pre_evos[evo_digi_id] = digimon_id
@@ -356,7 +360,10 @@ class Randomizer:
 
                 # if conditions do not exist for current digimon, generate them
                 if(digimon_id not in generated_conditions.keys()):
-                    conditions_cur = utils.generateConditions(s)
+                    if(DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP):
+                        conditions_cur = utils.generateBiasedConditions(s, DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS, self.baseDigimonInfo[digimon_id].species)
+                    else:
+                        conditions_cur = utils.generateConditions(s)
                     generated_conditions[digimon_id] = conditions_cur
 
 

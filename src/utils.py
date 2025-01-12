@@ -222,9 +222,64 @@ def generateConditions(s: int):
             cur_condition = 0x1
         else:           # choose one of the other conditions randomly
             cur_condition = random.choice(digivolution_conditions_pool)
+            digivolution_conditions_pool.remove(cur_condition)
 
         min_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][s][0]
         max_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][s][1]
+        conditions.append([cur_condition, random.randint(min_val, max_val)])
+    return conditions
+
+
+
+def generateBiasedConditions(stage_id: int, bias: float, species: int):
+    '''
+    0x2: "DRAGON EXP",                      HOLY = 0
+    0x3: "BEAST EXP",                       DARK = 1
+    0x4: "AQUAN EXP",                       DRAGON = 2
+    0x5: "BIRD EXP",                        BEAST = 3
+    0x6: "INSECTPLANT EXP",                 BIRD = 4
+    0x7: "MACHINE EXP",                     MACHINE = 5
+    0x8: "DARK EXP",                        AQUAN = 6
+    0x9: "HOLY EXP",                        INSECTPLANT = 7
+    '''
+
+    stage = constants.STAGE_NAMES[stage_id]
+    digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x12]    # this should be a constant/setting i think
+    species_condition_mapping = {0: 0x9, 1: 0x8, 2: 0x2, 3: 0x3, 4: 0x5, 5: 0x7, 6: 0x4, 7: 0x6}
+    species_exp = species_condition_mapping[species]
+    other_species_total = 7
+    non_species_exp_conditions_count = len(digivolution_conditions_pool) - other_species_total      # assuming 7 can be a fixed number since 8 species minus the target one
+
+    #prob_distribution_conditions = np.array([(1-bias) / non_species_exp_conditions_count if (x == species_exp or x > 0x9) else (bias) / other_species_total for x in digivolution_conditions_pool])
+
+
+    condition_amount_distribution = constants.DIGIVOLUTION_CONDITION_AMOUNT_DISTRIBUTION[stage]
+    condition_amount = np.random.choice(list(range(1,len(condition_amount_distribution)+1)), p=condition_amount_distribution)
+    conditions = []
+    for c in range(1, condition_amount+1):
+
+        # has to be done inside the for to account for the removed condition if third condition is generated
+
+        prob_distribution_conditions = []
+        for x in digivolution_conditions_pool:
+            if(x == species_exp):       # prob for own species exp
+                prob_distribution_conditions.append((1-bias)/2)         
+            elif(x > 0x9):              # prob for non-species-exp conditions
+                prob_distribution_conditions.append(((1-bias)/2)/(len(digivolution_conditions_pool) - len(species_condition_mapping)))
+            else:                       # prob for other species exp conditions
+                prob_distribution_conditions.append(bias/other_species_total)
+
+        prob_distribution_conditions = np.array(prob_distribution_conditions)
+        prob_distribution_conditions /= prob_distribution_conditions.sum()
+
+        if(c == 1):     # force level
+            cur_condition = 0x1
+        else:           # choose one of the other conditions randomly
+            cur_condition = int(np.random.choice(digivolution_conditions_pool, p=prob_distribution_conditions))
+            digivolution_conditions_pool.remove(cur_condition)
+
+        min_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][stage_id][0]
+        max_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][stage_id][1]
         conditions.append([cur_condition, random.randint(min_val, max_val)])
     return conditions
 
