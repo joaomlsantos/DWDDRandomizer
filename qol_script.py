@@ -46,6 +46,10 @@ FIXED_BATTLES_KEEP_HP = True                            # do not change base HP 
 
 
 RANDOMIZE_DIGIVOLUTIONS = True
+DIGIVOLUTIONS_SIMILAR_SPECIES = True        # example: holy digimon will be more likely to evolve into other holy digimon
+DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS = 0.8    # the total odds for the same species digimon will be the bias value (in this case it's 0.8), total odds for digimon from other species will be the remaining value (1 - bias)
+DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP = True       # example: a digivolution from the holy species will be less likely to have aquan/dark/etc exp as a requirement than other conditions
+DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS = 0.2          # how less likely each exp condition is to be picked (in this case, the probability for each of those exp conditions is multiplied by the bias value; multiplying by 0.2 makes the condition 5 times less likely)
 
 
 #PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
@@ -328,6 +332,10 @@ class Randomizer:
                     try:
                         # pick evo digimon id
                         evo_digi_name = random.choice(list(digimon_pool_selection[constants.STAGE_NAMES[s+1]].keys()))
+                        if(DIGIVOLUTIONS_SIMILAR_SPECIES):
+                            evo_species_prob_dist = np.array(utils.generateSpeciesProbDistribution(digimon_pool_selection[constants.STAGE_NAMES[s+1]], self.baseDigimonInfo, DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS, self.baseDigimonInfo[digimon_id].species))
+                            evo_species_prob_dist /= evo_species_prob_dist.sum()
+                            evo_digi_name = np.random.choice(list(digimon_pool_selection[constants.STAGE_NAMES[s+1]].keys()), p=evo_species_prob_dist)
                         evo_digi_id = digimon_pool_selection[constants.STAGE_NAMES[s+1]].pop(evo_digi_name)              # this ensures there are no repeated digimon
                         log_evo_names.append(evo_digi_name)
 

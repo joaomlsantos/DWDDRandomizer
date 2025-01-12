@@ -1,8 +1,11 @@
+from typing import List
 from . import constants
 from . import model
 import copy
 import random
 import numpy as np
+from collections import Counter
+
 
 def getDigimonStage(digimon_id: int):
     if(digimon_id >= 0x41 and digimon_id <= 0x57):
@@ -224,6 +227,19 @@ def generateConditions(s: int):
         max_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][s][1]
         conditions.append([cur_condition, random.randint(min_val, max_val)])
     return conditions
+
+
+def generateSpeciesProbDistribution(stage_digimon_pool: dict, 
+                                    base_digimon_info: dict, 
+                                    species_bias: float, 
+                                    species_id: int) -> List[float]:
+    id_list = list(stage_digimon_pool.values())
+    species_list = [base_digimon_info[x].species for x in id_list]
+    species_counter = Counter(species_list)
+    species_total = len(species_list)
+    sp_prob_dist = [species_bias/species_counter[species_id] if x == species_id else (1 - species_bias)/(species_total - species_counter[species_id]) for x in species_list]
+    return sp_prob_dist
+
 
 
 
