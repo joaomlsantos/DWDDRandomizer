@@ -1468,3 +1468,12 @@ PLAYERNAME_EXTENSION_ADDRESSES = {
         0xe08dc: 0xe3a0200
     }
 }
+
+# This defines a base exp value for each digimon evolution stage which is then used to calc the patched exp values for each digimon
+EXP_FLAT_BY_STAGE = {
+    "IN-TRAINING": 40,
+    "ROOKIE": 80,
+    "CHAMPION": 150,
+    "ULTIMATE": 240,
+    "MEGA": 330
+}

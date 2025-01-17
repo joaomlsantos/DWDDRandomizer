@@ -89,6 +89,13 @@ Thus, there are four possible level-up mode settings:
 For questions or suggestions, please reach out via Issues or [joao.l.santos@tecnico.ulisboa.pt](mailto:joao.l.santos@tecnico.ulisboa.pt).
 
 
+## Acknowledgements
+
+Most of the research work for this game was accomplished using [HxD](https://mh-nexus.de/en/hxd/), [DeSmuME](https://desmume.org/) and [Ghidra](https://ghidra-sre.org/).
+
+Special thanks to [@Dreaker](https://github.com/Dreaker75), who composed a set of thorough [code notes](https://retroachievements.org/codenotes.php?g=16152) for these games and has been supporting this project's efforts through brainstorming and listening to me yap about ROM editing for hours 
+
+
 ## Copyright Notice
 
 

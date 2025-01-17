@@ -143,6 +143,9 @@ class DigimonROM:
             utils.writeRomBytes(self.rom_data, address_value, offset, 4)
         logger.info("Extended player name size (max player name size is now 12)")
 
+    
+        
+
 
 class Randomizer:
     version: str
@@ -212,7 +215,7 @@ class Randomizer:
 
     
     def randomizeAreaEncounters(self, 
-                                rom_data: bytearray):
+                                rom_data: bytearray) -> dict[int, model.EnemyDataDigimon]:
         
         if(not RANDOMIZE_AREA_ENCOUNTERS):
             return
@@ -221,6 +224,8 @@ class Randomizer:
         offset_end = constants.AREA_ENCOUNTER_OFFSETS[self.version][1]
 
         digimon_pool = copy.deepcopy(constants.DIGIMON_IDS)
+
+        updatedEnemyDigimonInfo = copy.deepcopy(self.enemyDigimonInfo)
 
         randomized_digimon_history = {}
 
@@ -271,11 +276,51 @@ class Randomizer:
                 utils.writeRomBytes(rom_data, base_digimon_leveled.speed, enemy_digimon_offset+0x10, 2)    # write new speed
 
 
+                # this updates a deepcopy of self.enemyDigimonInfo; needed to patch the exp afterwards
+                enemy_digimon_to_update = updatedEnemyDigimonInfo[randomized_digimon_id]
+                enemy_digimon_to_update.level = base_digimon_leveled.level
+                enemy_digimon_to_update.hp = base_digimon_leveled.hp
+                enemy_digimon_to_update.attack = base_digimon_leveled.attack
+                enemy_digimon_to_update.defense = base_digimon_leveled.defense
+                enemy_digimon_to_update.spirit = base_digimon_leveled.spirit
+                enemy_digimon_to_update.speed = base_digimon_leveled.speed
+
+
                 cur_offset += 24        # skip 24 bytes to get next encounter
                 cur_digimon_id = int.from_bytes(rom_data[cur_offset:cur_offset+2], byteorder="little")
 
             logger.info(new_area_digimon)
             area_offset += 0x200
+
+        return updatedEnemyDigimonInfo
+
+
+    # patches wild encounters only; tamer digimon are not changed
+    # receives custom curEnemyDigimonInfo since the randomizer's own enemyDigimonInfo is not changed during randomization
+    def expPatchFlat(self, rom_data: bytearray, curEnemyDigimonInfo: dict[int, model.EnemyDataDigimon]):
+        stage_exp_ref = constants.EXP_FLAT_BY_STAGE
+
+        # update for every digimon_id (will update only the wild encounters and not the tamers)
+        # exp calc: (base_exp * lvl) / 7
+        # will change to divide by 14 (7*2) if exp reward is too huge afterwards
+        for stage in constants.DIGIMON_IDS:
+            for digimon_id in constants.DIGIMON_IDS[stage]:
+                enemy_digimon = curEnemyDigimonInfo[digimon_id]
+                new_exp_yield = round((stage_exp_ref[stage] * enemy_digimon.level) / 7)
+                enemy_digimon.updateExpYield(new_exp_yield)
+
+                # we always write all of the exp attributes; updateExpYield should change only the ones corresponding to the digimon's species
+                utils.writeRomBytes(rom_data, enemy_digimon.holy_exp, enemy_digimon.offset+0x3c, 4) 
+                utils.writeRomBytes(rom_data, enemy_digimon.dark_exp, enemy_digimon.offset+0x40, 4) 
+                utils.writeRomBytes(rom_data, enemy_digimon.dragon_exp, enemy_digimon.offset+0x44, 4) 
+                utils.writeRomBytes(rom_data, enemy_digimon.beast_exp, enemy_digimon.offset+0x48, 4) 
+                utils.writeRomBytes(rom_data, enemy_digimon.bird_exp, enemy_digimon.offset+0x4c, 4) 
+                utils.writeRomBytes(rom_data, enemy_digimon.machine_exp, enemy_digimon.offset+0x50, 4) 
+                utils.writeRomBytes(rom_data, enemy_digimon.aquan_exp, enemy_digimon.offset+0x54, 4) 
+                utils.writeRomBytes(rom_data, enemy_digimon.insectplant_exp, enemy_digimon.offset+0x58, 4) 
+
+
+
 
 
     def randomizeFixedBattles(self,
@@ -409,9 +454,13 @@ if __name__ == '__main__':
     rom = DigimonROM(PATH_SOURCE)
     rom.executeQolChanges()
     randomizer = Randomizer(rom.version, rom.rom_data)
+    curEnemyDigimonInfo = randomizer.enemyDigimonInfo
+
     randomizer.randomizeStarters(rom.rom_data)
-    randomizer.randomizeAreaEncounters(rom.rom_data)
+    curEnemyDigimonInfo = randomizer.randomizeAreaEncounters(rom.rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
     randomizer.nerfFirstBoss(rom.rom_data)
     randomizer.randomizeDigivolutions(rom.rom_data)
+
+    randomizer.expPatchFlat(rom.rom_data, curEnemyDigimonInfo)
 
     rom.writeRom(PATH_TARGET)

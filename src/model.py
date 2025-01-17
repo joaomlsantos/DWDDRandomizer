@@ -232,3 +232,12 @@ class EnemyDataDigimon:
         except:
             print("Exception on EnemyDataDigimon call")
             return None
+
+    def getTotalExp(self):
+        return self.holy_exp + self.dark_exp + self.dragon_exp + self.beast_exp + self.bird_exp + self.machine_exp + self.aquan_exp + self.insectplant_exp
+    
+    # this assumes that only the corresponding species exp is supposed to be updated
+    def updateExpYield(self, exp_yield):
+        for exp_species in ["holy_exp", "dark_exp", "dragon_exp", "beast_exp", "bird_exp", "machine_exp", "aquan_exp", "insectplant_exp"]:
+            if getattr(self, exp_species) > 0:
+                setattr(self, exp_species, exp_yield)
