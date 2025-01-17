@@ -32,6 +32,8 @@ class DigimonROM:
             self.changeStatCaps()
         if(EXTEND_PLAYERNAME_SIZE):
             self.extendPlayerNameSize()
+        if(BUFF_SCAN_RATE):
+            self.buffScanRate()
         
 
 
@@ -96,6 +98,13 @@ class DigimonROM:
             address_value = offset_dict[offset]
             utils.writeRomBytes(self.rom_data, address_value, offset, 4)
         logger.info("Extended player name size (max player name size is now 7)")
+
+
+    def buffScanRate(self):
+        offset = constants.BASE_SCAN_RATE_OFFSET[self.version]
+        old_scan_rate = self.rom_data[offset]
+        self.rom_data[offset] = NEW_BASE_SCAN_RATE
+        logger.info("Changed base scan rate from %d to %d", old_scan_rate, NEW_BASE_SCAN_RATE)
 
     
         

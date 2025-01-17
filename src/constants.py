@@ -9,6 +9,12 @@ MOVEMENT_SPEED_OFFSET = {
     "DAWN": 0x66A54
 }
 
+# this corresponds to the asm code line that defines the base value for in-training digimon; for each subsequent stage, this value decreases by 5
+BASE_SCAN_RATE_OFFSET = {
+    "DUSK": 0x17FA74,
+    "DAWN": 0x17F874
+}
+
 # these are (offset_start, offset_end); offset_end corresponds to the last area, content that follows it should still be analyzed
 AREA_ENCOUNTER_OFFSETS = {
     "DUSK": (0x01F6D800, 0x01F76A00),
