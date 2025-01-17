@@ -221,6 +221,8 @@ class Randomizer:
     def randomizeAreaEncounters(self, 
                                 rom_data: bytearray) -> dict[int, model.EnemyDataDigimon]:
         
+        updatedEnemyDigimonInfo = copy.deepcopy(self.enemyDigimonInfo)
+
         if(not RANDOMIZE_AREA_ENCOUNTERS):
             return
         
@@ -228,8 +230,6 @@ class Randomizer:
         offset_end = constants.AREA_ENCOUNTER_OFFSETS[self.version][1]
 
         digimon_pool = copy.deepcopy(constants.DIGIMON_IDS)
-
-        updatedEnemyDigimonInfo = copy.deepcopy(self.enemyDigimonInfo)
 
         randomized_digimon_history = {}
 
