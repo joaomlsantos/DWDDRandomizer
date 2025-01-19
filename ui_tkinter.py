@@ -2,15 +2,19 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
-from qol_script import DigimonROM
+from qol_script import DigimonROM, Randomizer
 from configs import RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions
 from src.model import LvlUpMode
+
 
 class AppState:
     def __init__(self):
         self.current_rom = None  # Placeholder for the DigimonROM instance
+        self.randomizer = None
 
 app_state = AppState()
+
+
 
 
 def enable_buttons():
@@ -25,6 +29,7 @@ def enable_buttons():
     increaseStatCapsCheckbox.configure(state="normal")
     increaseExpYieldCheckbox.configure(state="normal")
     increaseFlatScanRateCheckbox.configure(state="normal")
+    expandPlayerNameCheckbox.configure(stat="normal")
 
 
     # Enable tabs
@@ -52,13 +57,17 @@ def enable_buttons():
 
 
 def save_changes_function():
+    
+    rom_dir = os.path.dirname(app_state.current_rom.fpath)
     save_path = filedialog.asksaveasfilename(
         title="Save ROM",
         defaultextension=".nds",
-        filetypes=[("ROM Files", "*.nds"), ("All Files", "*.*")]
+        filetypes=[("ROM Files", "*.nds"), ("All Files", "*.*")],
+        initialdir=rom_dir
     )
     if save_path:
         try:
+            execute_rom_changes()
             # Placeholder: Logic to save the ROM
             messagebox.showinfo("Save Successful", f"Changes saved to {save_path}")
         except Exception as e:
@@ -73,6 +82,7 @@ def open_rom_function():
     if file_path:
         try:
             app_state.current_rom = DigimonROM(file_path)
+            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data)
         except ValueError:
             messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
             return
@@ -208,10 +218,15 @@ increaseExpYieldCheckbox = tk.Checkbutton(qol_frame, text="Increase Exp Yield fo
 increaseExpYieldCheckbox.pack(anchor='w')
 increaseExpYieldTootip = CreateToolTip(increaseExpYieldCheckbox, "Changes the exp given by all wild digimon to match game progression.\nThe exp yield values are roughly calculated through pokémon's standard formula for experience yield: base_exp * encounter_lvl / 7, where base_exp is a fixed value depending on the digimon's digivolution stage, and encounter_lvl is the level of the encounter.")
 
-increase_flat_scan_rate = tk.BooleanVar(value=True)
-increaseFlatScanRateCheckbox = tk.Checkbutton(qol_frame, text="Increase Scan Rate", variable=increase_flat_scan_rate, state="disabled")
+increase_flat_scan_rate_var = tk.BooleanVar(value=True)
+increaseFlatScanRateCheckbox = tk.Checkbutton(qol_frame, text="Increase Scan Rate", variable=increase_flat_scan_rate_var, state="disabled")
 increaseFlatScanRateCheckbox.pack(anchor='w')
 increaseFlatScanRateTooltip = CreateToolTip(increaseFlatScanRateCheckbox, "Increases the base scan rate by 10%.")
+
+expand_player_name_var = tk.BooleanVar(value=True)
+expandPlayerNameCheckbox = tk.Checkbutton(qol_frame, text="Expand Player Name Length", variable=expand_player_name_var, state="disabled")
+expandPlayerNameCheckbox.pack(anchor="w")
+expandPlayerNameTooltip = CreateToolTip(expandPlayerNameCheckbox, "Expands the maximum length of the player's name from 5 to 7 characters.")
 
 increase_stat_caps_var = tk.BooleanVar(value=False)
 increaseStatCapsCheckbox = tk.Checkbutton(qol_frame, text="Increase Stat Caps", variable=increase_stat_caps_var, state="disabled")
