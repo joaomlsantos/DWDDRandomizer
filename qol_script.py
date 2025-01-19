@@ -323,6 +323,17 @@ class Randomizer:
         generated_conditions = {}
         pre_evos = {}
 
+        if(not RANDOMIZE_DIGIVOLUTION_CONDITIONS):
+            # do initial scan to add base digivolution conditions to generated_conditions
+            # this is used to randomize the digivolutions but keep any original conditions as they were
+            for s in range(len(constants.STAGE_NAMES)):
+                stage = constants.STAGE_NAMES[s]
+                for digimon_id in list(digimon_to_randomize[stage].values()):
+                    hex_addr = constants.DIGIVOLUTION_ADDRESSES[self.version][digimon_id]
+                    digivolution_info = utils.loadDigivolutionInformation(rom_data, hex_addr)
+                    for k in digivolution_info.keys():
+                        generated_conditions[k] = digivolution_info[k]
+
         for s in range(len(constants.STAGE_NAMES)):
             stage = constants.STAGE_NAMES[s]
             logger_dict = {v: k for k, v in digimon_to_randomize[stage].items()}
@@ -348,12 +359,14 @@ class Randomizer:
                         evo_digi_id = digimon_pool_selection[constants.STAGE_NAMES[s+1]].pop(evo_digi_name)              # this ensures there are no repeated digimon
                         log_evo_names.append(evo_digi_name)
 
-                        # generate conditions for evo digimon
-                        if(DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP):
-                            conditions_evo = utils.generateBiasedConditions(s+1, DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS, self.baseDigimonInfo[evo_digi_id].species)
-                        else:
-                            conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
-                        generated_conditions[evo_digi_id] = conditions_evo
+                        # if randomize conditions is enabled, base conditions are overriden; if digimon doesn't have conditions yet, then new conditions are generated for it
+                        if(RANDOMIZE_DIGIVOLUTION_CONDITIONS or evo_digi_id not in generated_conditions.keys()):
+                            # generate conditions for evo digimon
+                            if(DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP):
+                                conditions_evo = utils.generateBiasedConditions(s+1, DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS, self.baseDigimonInfo[evo_digi_id].species)
+                            else:
+                                conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
+                            generated_conditions[evo_digi_id] = conditions_evo
 
 
                         # add pre-evo register to propagate conditions on next cycles
@@ -368,7 +381,8 @@ class Randomizer:
 
 
                 # if conditions do not exist for current digimon, generate them
-                if(digimon_id not in generated_conditions.keys()):
+                # NOTE: right now this is inefficient, will randomize up to three times unecessarily in order to account for generatedConditions already being filled at the start if Digimon Conditions is left unchanged
+                if(RANDOMIZE_DIGIVOLUTION_CONDITIONS or digimon_id not in generated_conditions.keys()):
                     if(DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP):
                         conditions_cur = utils.generateBiasedConditions(s, DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS, self.baseDigimonInfo[digimon_id].species)
                     else:
@@ -420,8 +434,58 @@ class Randomizer:
                 logger.info(log_digimon_name + " -> " + str(log_evo_names))
 
 
-    
+    def randomizeDigivolutionConditionsOnly(self,
+                                            rom_data: bytearray):
+        # This randomizes digivolution conditions without changing the original digivolutions
+        # digivolution conditions -> unchanged
+        # digivolution conditions -> random
+        # follow species exp may be enabled
+        # only replace existing conditions; new conditions do not have to be created
+        # need to track generated conditions
 
+        generated_conditions = {}
+        for stage in constants.DIGIMON_IDS:
+            for digimon_id in constants.DIGIMON_IDS[stage]:
+                hex_addr = constants.DIGIVOLUTION_ADDRESSES[self.version][digimon_id]
+
+                # do a similar operation to loadDigivolutionInformation but writing immediately and propagating the info
+                digivolution_hex_info = rom_data[hex_addr:hex_addr+0x70]            # length of digivolution info for a given digimon is always 0x70
+                
+                # check up to 4 ids; if the id is different than 0xffffffff, then it's a valid digimon
+                for n in range(4):
+                    evo_digimon_id = int.from_bytes(digivolution_hex_info[n*4:(n*4)+4], byteorder="little")
+                    evo_stage_int = constants.STAGE_NAMES.index(stage) - 1 if n == 0 else constants.STAGE_NAMES.index(stage) + 1    # [0, 1, 2, 3, 4]
+                    if(evo_digimon_id == 0xffffffff):
+                        continue
+
+                    digivolution_baseinfo = self.baseDigimonInfo[evo_digimon_id]    # load this to account for biased conditions
+                    base_conditions = []
+                    for c in range(3):  # check up to 3 conditions: if condition id is different than 0x0, then it's a valid condition
+                        cur_pointer = 16 + (24*n) + (8*c)
+                        condition_id = int.from_bytes(digivolution_hex_info[cur_pointer:cur_pointer+4], byteorder="little")
+                        condition_value = int.from_bytes(digivolution_hex_info[cur_pointer+4:cur_pointer+8], byteorder="little")
+                        if(condition_id == 0x0):
+                            continue
+                        base_conditions.append([condition_id, condition_value])
+                    
+                    if(len(base_conditions) > 0):
+                        if(evo_digimon_id in generated_conditions.keys()):
+                            conditions_evo = generated_conditions[evo_digimon_id]
+                        elif(DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP):
+                            conditions_evo = utils.generateBiasedConditions(evo_stage_int, DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS, digivolution_baseinfo.species, max_conditions=len(base_conditions))
+                            generated_conditions[evo_digimon_id] = conditions_evo
+                        else:
+                            conditions_evo = utils.generateConditions(evo_stage_int, max_conditions=len(base_conditions))
+                            generated_conditions[evo_digimon_id] = conditions_evo
+
+                        # write conditions_evo in the corresponding memory
+                        cur_pointer = 16 + (24*n)   # no need for (8*c) here; we'll increase the pointer as we go
+                        for condition in conditions_evo:
+                            condition_id = condition[0]
+                            condition_value = condition[1]
+                            utils.writeRomBytes(rom_data, condition_id, hex_addr + cur_pointer, 4)
+                            utils.writeRomBytes(rom_data, condition_value, hex_addr + cur_pointer + 4, 4)
+                            cur_pointer += 8    # advance to next condition
 
 
 

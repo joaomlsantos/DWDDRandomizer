@@ -210,7 +210,34 @@ def generateLvlupStats(lvlupTable: list[list[int, int]],
     return target_digimon
 
 
-def generateConditions(s: int):
+def loadDigivolutionInformation(rom_data: bytearray,
+                                offset: int):
+    digivolution_hex_info = rom_data[offset:offset+0x70]            # length of digivolution info for a given digimon is always 0x70
+    
+    id_to_conditions = {}
+    # check up to 4 ids; if the id is different than 0xffffffff, then it's a valid digimon
+    for n in range(4):
+        cur_id = int.from_bytes(digivolution_hex_info[n*4:(n*4)+4], byteorder="little")
+        if(cur_id == 0xffffffff):
+            continue
+        conditions = []
+        for c in range(3):  # check up to 3 conditions: if condition id is different than 0x0, then it's a valid condition
+            cur_pointer = 16 + (24*n) + (8*c)
+            condition_id = int.from_bytes(digivolution_hex_info[cur_pointer:cur_pointer+4], byteorder="little")
+            condition_value = int.from_bytes(digivolution_hex_info[cur_pointer+4:cur_pointer+8], byteorder="little")
+            if(condition_id == 0x0):
+                continue
+            conditions.append([condition_id, condition_value])
+
+        if(len(conditions) > 0):
+            id_to_conditions[cur_id] = conditions
+    
+    return id_to_conditions
+
+
+
+
+def generateConditions(s: int, max_conditions: int = 3):
     
     stage = constants.STAGE_NAMES[s]
     digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x12]    # this should be a constant/setting i think
@@ -227,11 +254,13 @@ def generateConditions(s: int):
         min_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][s][0]
         max_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][s][1]
         conditions.append([cur_condition, random.randint(min_val, max_val)])
+        if(len(conditions) == max_conditions):
+            break
     return conditions
 
 
 
-def generateBiasedConditions(stage_id: int, bias: float, species: int):
+def generateBiasedConditions(stage_id: int, bias: float, species: int, max_conditions: int = 3):
     '''
     0x2: "DRAGON EXP",                      HOLY = 0
     0x3: "BEAST EXP",                       DARK = 1
@@ -281,6 +310,10 @@ def generateBiasedConditions(stage_id: int, bias: float, species: int):
         min_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][stage_id][0]
         max_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][stage_id][1]
         conditions.append([cur_condition, random.randint(min_val, max_val)])
+
+        if(len(conditions) == max_conditions):
+            break
+        
     return conditions
 
 
@@ -294,6 +327,8 @@ def generateSpeciesProbDistribution(stage_digimon_pool: dict,
     species_total = len(species_list)
     sp_prob_dist = [species_bias/species_counter[species_id] if x == species_id else (1 - species_bias)/(species_total - species_counter[species_id]) for x in species_list]
     return sp_prob_dist
+
+
 
 
 

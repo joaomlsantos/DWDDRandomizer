@@ -16,6 +16,20 @@ class RandomizeStartersConfig(Enum):
     RAND_FULL = 2                       # fully randomize
 
 
+class RandomizeWildEncounters(Enum):
+    UNCHANGED = 0                       # do not randomize
+    RANDOMIZE_1_TO_1_SAME_STAGE = 1     # randomize 1-to-1, same stage digimon
+
+
+class RandomizeDigivolutions(Enum):
+    UNCHANGED = 0                       # do not randomize
+    RANDOMIZE = 1                       # randomize (specific randomization options are outside of this enum)
+
+class RandomizeDigivolutionConditions(Enum):
+    UNCHANGED = 0                       # do not randomize
+    RANDOMIZE = 1                       # randomize (specific randomization options are outside of this enum)
+
+
 # QoL settings
 
 CHANGE_TEXT_SPEED = True
@@ -50,7 +64,8 @@ FIXED_BATTLES_KEEP_HP = True                            # do not change base HP 
 
 RANDOMIZE_DIGIVOLUTIONS = False
 DIGIVOLUTIONS_SIMILAR_SPECIES = True        # example: holy digimon will be more likely to evolve into other holy digimon
-DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS = 0.8    # the total odds for the same species digimon will be the bias value (in this case it's 0.8), total odds for digimon from other species will be the remaining value (1 - bias)
+DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS = 0.9    # the total odds for the same species digimon will be the bias value (in this case it's 0.9), total odds for digimon from other species will be the remaining value (1 - bias)
+RANDOMIZE_DIGIVOLUTION_CONDITIONS = False
 DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP = True       # example: a digivolution from the holy species will be less likely to have aquan/dark/etc exp as a requirement than other conditions
 DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS = 0.2          # how less likely each exp condition is to be picked (in this case, the probability for each of those exp conditions is multiplied by the bias value; multiplying by 0.2 makes the condition 5 times less likely)
 
