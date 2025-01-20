@@ -5,7 +5,7 @@ import random
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import *
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeStartersConfig, RandomizeWildEncounters, default_configmanager_settings
 
 
 
@@ -15,24 +15,26 @@ logging.basicConfig(level=logging.DEBUG)
 
 class DigimonROM:
     def __init__(self, 
-                 fpath: str):
+                 fpath: str,
+                 config_manager: ConfigManager):
         self.fpath = fpath
         self.rom_data = self.loadRom(fpath)
         self.version = self.checkHeader(self.rom_data[12:16].hex())
+        self.config_manager = config_manager
     
 
     def executeQolChanges(self):
-        if(CHANGE_TEXT_SPEED):
+        if(self.config_manager.get("CHANGE_TEXT_SPEED", False)):
             self.changeTextSpeed()
-        if(CHANGE_MOVEMENT_SPEED):
+        if(self.config_manager.get("CHANGE_MOVEMENT_SPEED", False)):
             self.changeMovementSpeed()
-        if(CHANGE_ENCOUNTER_RATE):
+        if(self.config_manager.get("CHANGE_ENCOUNTER_RATE", False)):
             self.changeEncounterRate()
-        if(CHANGE_STAT_CAPS):
+        if(self.config_manager.get("CHANGE_STAT_CAPS", False)):
             self.changeStatCaps()
-        if(EXTEND_PLAYERNAME_SIZE):
+        if(self.config_manager.get("EXTEND_PLAYERNAME_SIZE", False)):
             self.extendPlayerNameSize()
-        if(BUFF_SCAN_RATE):
+        if(self.config_manager.get("BUFF_SCAN_RATE", False)):
             self.buffScanRate()
         
 
@@ -64,10 +66,10 @@ class DigimonROM:
 
     def changeMovementSpeed(self):
         offset = constants.MOVEMENT_SPEED_OFFSET[self.version]
-        movement_speed = max(2, int(2 * MOVEMENT_SPEED_MULTIPLIER))
+        movement_speed = max(2, int(2 * self.config_manager.get("MOVEMENT_SPEED_MULTIPLIER")))
         hex_str = "{0:0{1}x}".format(movement_speed,2) + "10a0e3"
         self.rom_data[offset:offset+4] = binascii.unhexlify(hex_str)
-        logger.info("Changed movement speed (" + str(MOVEMENT_SPEED_MULTIPLIER) + "x)")
+        logger.info("Changed movement speed (" + str(self.config_manager.get("MOVEMENT_SPEED_MULTIPLIER")) + "x)")
 
 
     def changeEncounterRate(self):
@@ -76,13 +78,13 @@ class DigimonROM:
 
         cur_offset = offset_start
         while(cur_offset <= offset_end):    # <=  to include offset_end
-            lower_bound = int(int.from_bytes(self.rom_data[cur_offset+2:cur_offset+4], byteorder="little") * ENCOUNTER_RATE_MULTIPLIER)
-            upper_bound = int(int.from_bytes(self.rom_data[cur_offset+4:cur_offset+6], byteorder="little") * ENCOUNTER_RATE_MULTIPLIER)
+            lower_bound = int(int.from_bytes(self.rom_data[cur_offset+2:cur_offset+4], byteorder="little") * self.config_manager.get("ENCOUNTER_RATE_MULTIPLIER"))
+            upper_bound = int(int.from_bytes(self.rom_data[cur_offset+4:cur_offset+6], byteorder="little") * self.config_manager.get("ENCOUNTER_RATE_MULTIPLIER"))
             self.rom_data[cur_offset+2:cur_offset+4] = (lower_bound).to_bytes(2, byteorder="little")
             self.rom_data[cur_offset+4:cur_offset+6] = (upper_bound).to_bytes(2, byteorder="little")
             cur_offset += 0x200
 
-        logger.info("Changed encounter rate (" + str(ENCOUNTER_RATE_MULTIPLIER) + "x)")
+        logger.info("Changed encounter rate (" + str(self.config_manager.get("ENCOUNTER_RATE_MULTIPLIER")) + "x)")
 
 
     def changeStatCaps(self):
@@ -103,8 +105,8 @@ class DigimonROM:
     def buffScanRate(self):
         offset = constants.BASE_SCAN_RATE_OFFSET[self.version]
         old_scan_rate = self.rom_data[offset]
-        self.rom_data[offset] = NEW_BASE_SCAN_RATE
-        logger.info("Changed base scan rate from %d to %d", old_scan_rate, NEW_BASE_SCAN_RATE)
+        self.rom_data[offset] = self.config_manager.get("NEW_BASE_SCAN_RATE")
+        logger.info("Changed base scan rate from %d to %d", old_scan_rate, self.config_manager.get("NEW_BASE_SCAN_RATE"))
 
     
         
@@ -117,8 +119,11 @@ class Randomizer:
 
     def __init__(self, 
                  version: str, 
-                 rom_data: bytearray):
+                 rom_data: bytearray,
+                 config_manager: ConfigManager):
         self.version = version
+        self.config_manager = config_manager
+        self.rom_data = rom_data
         self.baseDigimonInfo = utils.loadBaseDigimonInfo(version, rom_data)
         self.enemyDigimonInfo = utils.loadEnemyDigimonInfo(version, rom_data)
         self.lvlupTypeTable = utils.loadLvlupTypeTable(version, rom_data)
@@ -126,11 +131,25 @@ class Randomizer:
         self.battleStrTable = utils.loadBattleStringTable(version, rom_data)
 
     
+    def executeRandomizerFunctions(self):
+        
+        curEnemyDigimonInfo = self.enemyDigimonInfo
+
+        self.randomizeStarters(self.rom_data)
+        curEnemyDigimonInfo = self.randomizeAreaEncounters(self.rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
+        self.nerfFirstBoss(self.rom_data)
+        if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
+            self.randomizeDigivolutions(self.rom_data)
+        elif(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") not in [None, RandomizeDigivolutionConditions.UNCHANGED]):
+            self.randomizeDigivolutionConditionsOnly(self.rom_data)   # this only triggers if randomize digivolutions is not applied
+        self.expPatchFlat(self.rom_data, curEnemyDigimonInfo)
+
+    
     def randomizeStarters(self, 
                           rom_data: bytearray):
         # NOTE: If generated digimon's aptitude is lower than target lvl, target lvl becomes digimon's aptitude
 
-        if(RANDOMIZE_STARTERS == RandomizeStartersConfig.UNCHANGED):
+        if(self.config_manager.get("RANDOMIZE_STARTERS") == RandomizeStartersConfig.UNCHANGED):
             return
         
         cur_offset = constants.STARTER_PACK_OFFSET[self.version]
@@ -143,7 +162,7 @@ class Randomizer:
                 cur_y_coord = int.from_bytes(rom_data[cur_offset+6:cur_offset+8], byteorder="little")
                 randomized_digimon_id = -1
 
-                if(RANDOMIZE_STARTERS == RandomizeStartersConfig.RAND_SAME_STAGE):
+                if(self.config_manager.get("RANDOMIZE_STARTERS") == RandomizeStartersConfig.RAND_SAME_STAGE):
                     starter_stage = utils.getDigimonStage(cur_starter_id)
                     if(starter_stage == ""):
                         logger.info("Original starter digimon not recognized, randomizing between rookie and ultimate")
@@ -154,7 +173,7 @@ class Randomizer:
                     new_starter_pack.append(randomized_digimon[0])
 
 
-                elif(RANDOMIZE_STARTERS == RandomizeStartersConfig.RAND_FULL):
+                elif(self.config_manager.get("RANDOMIZE_STARTERS") == RandomizeStartersConfig.RAND_FULL):
                     possibleDigimonIds = utils.getAllDigimonPairs()
                     randomized_digimon = random.choice(possibleDigimonIds)
                     randomized_digimon_id = randomized_digimon[1]
@@ -182,7 +201,7 @@ class Randomizer:
         
         updatedEnemyDigimonInfo = copy.deepcopy(self.enemyDigimonInfo)
 
-        if(not RANDOMIZE_AREA_ENCOUNTERS):
+        if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") == RandomizeWildEncounters.UNCHANGED):
             return updatedEnemyDigimonInfo
         
         offset_start = constants.AREA_ENCOUNTER_OFFSETS[self.version][0]
@@ -225,7 +244,7 @@ class Randomizer:
                 prev_digimon_data = self.enemyDigimonInfo[cur_digimon_id]
                 encounter_level = prev_digimon_data.level
 
-                base_digimon_leveled = utils.generateLvlupStats(self.lvlupTypeTable, self.baseDigimonInfo[randomized_digimon_id], encounter_level, AREA_ENCOUNTERS_STATS)
+                base_digimon_leveled = utils.generateLvlupStats(self.lvlupTypeTable, self.baseDigimonInfo[randomized_digimon_id], encounter_level, self.config_manager.get("AREA_ENCOUNTERS_STATS"))
                 enemy_digimon_offset = self.enemyDigimonInfo[randomized_digimon_id].offset
 
 
@@ -262,7 +281,7 @@ class Randomizer:
     # receives custom curEnemyDigimonInfo since the randomizer's own enemyDigimonInfo is not changed during randomization
     def expPatchFlat(self, rom_data: bytearray, curEnemyDigimonInfo: dict[int, model.EnemyDataDigimon]):
 
-        if not APPLY_EXP_PATCH_FLAT:
+        if not self.config_manager.get("APPLY_EXP_PATCH_FLAT", False):
             return
         
         stage_exp_ref = constants.EXP_FLAT_BY_STAGE
@@ -294,7 +313,7 @@ class Randomizer:
     def randomizeFixedBattles(self,
                               rom_data: bytearray):
         
-        if(not RANDOMIZE_FIXED_BATTLES):
+        if(not self.config_manager.get("RANDOMIZE_FIXED_BATTLES", False)):
             return
         
 
@@ -303,7 +322,7 @@ class Randomizer:
         
     def nerfFirstBoss(self,
                       rom_data: bytearray):
-        if(not NERF_FIRST_BOSS):
+        if(not self.config_manager.get("NERF_FIRST_BOSS", False)):
             return
         # id for first city boss is 0x205
 
@@ -315,7 +334,7 @@ class Randomizer:
 
     def randomizeDigivolutions(self,
                                rom_data: bytearray):
-        if(not RANDOMIZE_DIGIVOLUTIONS):
+        if(not self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS")):
             return
         
         digimon_to_randomize = copy.deepcopy(constants.DIGIMON_IDS)     # this will be used to iterate through all digimon
@@ -323,7 +342,7 @@ class Randomizer:
         generated_conditions = {}
         pre_evos = {}
 
-        if(not RANDOMIZE_DIGIVOLUTION_CONDITIONS):
+        if(not self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS")):
             # do initial scan to add base digivolution conditions to generated_conditions
             # this is used to randomize the digivolutions but keep any original conditions as they were
             for s in range(len(constants.STAGE_NAMES)):
@@ -352,18 +371,18 @@ class Randomizer:
                     try:
                         # pick evo digimon id
                         evo_digi_name = random.choice(list(digimon_pool_selection[constants.STAGE_NAMES[s+1]].keys()))
-                        if(DIGIVOLUTIONS_SIMILAR_SPECIES):
-                            evo_species_prob_dist = np.array(utils.generateSpeciesProbDistribution(digimon_pool_selection[constants.STAGE_NAMES[s+1]], self.baseDigimonInfo, DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS, self.baseDigimonInfo[digimon_id].species))
+                        if(self.config_manager.get("DIGIVOLUTIONS_SIMILAR_SPECIES", False)):
+                            evo_species_prob_dist = np.array(utils.generateSpeciesProbDistribution(digimon_pool_selection[constants.STAGE_NAMES[s+1]], self.baseDigimonInfo, self.config_manager.get("DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS"), self.baseDigimonInfo[digimon_id].species))
                             evo_species_prob_dist /= evo_species_prob_dist.sum()
                             evo_digi_name = np.random.choice(list(digimon_pool_selection[constants.STAGE_NAMES[s+1]].keys()), p=evo_species_prob_dist)
                         evo_digi_id = digimon_pool_selection[constants.STAGE_NAMES[s+1]].pop(evo_digi_name)              # this ensures there are no repeated digimon
                         log_evo_names.append(evo_digi_name)
 
                         # if randomize conditions is enabled, base conditions are overriden; if digimon doesn't have conditions yet, then new conditions are generated for it
-                        if(RANDOMIZE_DIGIVOLUTION_CONDITIONS or evo_digi_id not in generated_conditions.keys()):
+                        if(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") or evo_digi_id not in generated_conditions.keys()):
                             # generate conditions for evo digimon
-                            if(DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP):
-                                conditions_evo = utils.generateBiasedConditions(s+1, DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS, self.baseDigimonInfo[evo_digi_id].species)
+                            if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
+                                conditions_evo = utils.generateBiasedConditions(s+1, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), self.baseDigimonInfo[evo_digi_id].species)
                             else:
                                 conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
                             generated_conditions[evo_digi_id] = conditions_evo
@@ -382,9 +401,9 @@ class Randomizer:
 
                 # if conditions do not exist for current digimon, generate them
                 # NOTE: right now this is inefficient, will randomize up to three times unecessarily in order to account for generatedConditions already being filled at the start if Digimon Conditions is left unchanged
-                if(RANDOMIZE_DIGIVOLUTION_CONDITIONS or digimon_id not in generated_conditions.keys()):
-                    if(DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP):
-                        conditions_cur = utils.generateBiasedConditions(s, DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS, self.baseDigimonInfo[digimon_id].species)
+                if(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") or digimon_id not in generated_conditions.keys()):
+                    if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
+                        conditions_cur = utils.generateBiasedConditions(s, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), self.baseDigimonInfo[digimon_id].species)
                     else:
                         conditions_cur = utils.generateConditions(s)
                     generated_conditions[digimon_id] = conditions_cur
@@ -445,7 +464,8 @@ class Randomizer:
 
         generated_conditions = {}
         for stage in constants.DIGIMON_IDS:
-            for digimon_id in constants.DIGIMON_IDS[stage]:
+            for digimon_name in constants.DIGIMON_IDS[stage]:
+                digimon_id = constants.DIGIMON_IDS[stage][digimon_name]
                 hex_addr = constants.DIGIVOLUTION_ADDRESSES[self.version][digimon_id]
 
                 # do a similar operation to loadDigivolutionInformation but writing immediately and propagating the info
@@ -471,8 +491,8 @@ class Randomizer:
                     if(len(base_conditions) > 0):
                         if(evo_digimon_id in generated_conditions.keys()):
                             conditions_evo = generated_conditions[evo_digimon_id]
-                        elif(DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP):
-                            conditions_evo = utils.generateBiasedConditions(evo_stage_int, DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS, digivolution_baseinfo.species, max_conditions=len(base_conditions))
+                        elif(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
+                            conditions_evo = utils.generateBiasedConditions(evo_stage_int, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), digivolution_baseinfo.species, max_conditions=len(base_conditions))
                             generated_conditions[evo_digimon_id] = conditions_evo
                         else:
                             conditions_evo = utils.generateConditions(evo_stage_int, max_conditions=len(base_conditions))
@@ -492,10 +512,14 @@ class Randomizer:
 if __name__ == '__main__':
     
     logger.info("Creating new rom from source \"" + PATH_SOURCE + "\"")
+
+    config_manager = ConfigManager()
+    config_manager.update_from_ui(default_configmanager_settings)
     
-    rom = DigimonROM(PATH_SOURCE)
+    rom = DigimonROM(PATH_SOURCE, config_manager)
     rom.executeQolChanges()
-    randomizer = Randomizer(rom.version, rom.rom_data)
+    randomizer = Randomizer(rom.version, rom.rom_data, config_manager)
+    '''
     curEnemyDigimonInfo = randomizer.enemyDigimonInfo
 
     randomizer.randomizeStarters(rom.rom_data)
@@ -504,6 +528,7 @@ if __name__ == '__main__':
     randomizer.randomizeDigivolutions(rom.rom_data)
 
     randomizer.expPatchFlat(rom.rom_data, curEnemyDigimonInfo)
-
+    '''
+    randomizer.executeRandomizerFunctions()
     rom.writeRom(PATH_TARGET)
     

@@ -3,16 +3,53 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions
+from configs import RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
 from src.model import LvlUpMode
+from pathlib import Path
+import webbrowser
+
 
 
 class AppState:
     def __init__(self):
-        self.current_rom = None  # Placeholder for the DigimonROM instance
-        self.randomizer = None
+        self.config_manager: ConfigManager = ConfigManager()
+        self.current_rom: DigimonROM = None  
+        self.randomizer: Randomizer = None
 
 app_state = AppState()
+
+
+# this function is called when writing the patched/randomized rom; serves as the equivalent to main() for qol_script
+def execute_rom_changes(save_path):
+
+    patcher_config_options = {
+        "CHANGE_TEXT_SPEED": change_text_speed_var,
+        "CHANGE_MOVEMENT_SPEED": change_movement_speed_var,
+        "CHANGE_ENCOUNTER_RATE": change_wild_encounter_rate_var,
+        "CHANGE_STAT_CAPS": increase_stat_caps_var,
+        "EXTEND_PLAYERNAME_SIZE": expand_player_name_var,
+
+        "APPLY_EXP_PATCH_FLAT": increase_exp_yield_var,
+        "BUFF_SCAN_RATE": increase_flat_scan_rate_var,
+    
+        "RANDOMIZE_STARTERS": RandomizeStartersConfig(starters_option_var.get()),  # RandomizeStartersConfig(starters_option_var) might have to be initialized like this
+        "NERF_FIRST_BOSS": nerf_first_boss_var,
+        
+        "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters(wild_digimon_option_var.get()),
+        "AREA_ENCOUNTERS_STATS": stat_gen_option_var,
+
+        "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions(digivolutions_option_var.get()),
+        "DIGIVOLUTIONS_SIMILAR_SPECIES": digivolution_similar_species_var,
+
+        "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions(digivolution_conditions_option_var.get()),
+        "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": digivolution_conditions_species_exp_var
+    }
+
+
+    app_state.config_manager.update_from_ui(patcher_config_options)
+    app_state.current_rom.executeQolChanges()
+    app_state.randomizer.executeRandomizerFunctions()
+    app_state.current_rom.writeRom(save_path)
 
 
 
@@ -41,6 +78,7 @@ def enable_buttons():
     starters_unchanged_rb.configure(state="normal")
     starters_same_stage_rb.configure(state="normal")
     starters_completely_random_rb.configure(state="normal")
+    nerfFirstBossCheckbox.configure(state="normal")
 
     # Randomize wild digimon
     wild_digimon_unchanged_rb.configure(state="normal")
@@ -63,13 +101,13 @@ def save_changes_function():
         title="Save ROM",
         defaultextension=".nds",
         filetypes=[("ROM Files", "*.nds"), ("All Files", "*.*")],
-        initialdir=rom_dir
+        initialdir=rom_dir,
+        initialfile=Path(app_state.current_rom.fpath).stem + "_patched.nds"
     )
     if save_path:
         try:
-            execute_rom_changes()
-            # Placeholder: Logic to save the ROM
-            messagebox.showinfo("Save Successful", f"Changes saved to {save_path}")
+            execute_rom_changes(save_path)
+            messagebox.showinfo("ROM patched successfully!", f"Changes saved to {save_path}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save changes: {e}")
 
@@ -81,8 +119,8 @@ def open_rom_function():
     )
     if file_path:
         try:
-            app_state.current_rom = DigimonROM(file_path)
-            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data)
+            app_state.current_rom = DigimonROM(file_path, app_state.config_manager)
+            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager)
         except ValueError:
             messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
             return
@@ -101,8 +139,9 @@ def show_about_popup():
     # Create the pop-up window
     about_window = tk.Toplevel(root)
     about_window.title("About")
-    about_window.geometry("300x150")
+    about_window.geometry("360x300")
     about_window.resizable(False, False)
+    about_window.iconbitmap("public/dusk_transparent.ico")
 
     # Get the main window's position
     main_x = root.winfo_rootx()
@@ -113,19 +152,92 @@ def show_about_popup():
     offset_y = 50
     about_window.geometry(f"+{main_x + offset_x}+{main_y + offset_y}")
 
-    # Add content to the pop-up
-    about_label = ttk.Label(
+    title_label = tk.Label(
         about_window,
-        text="QoL and Randomization Tool\nVersion 1.0\nCreated by [Your Name]\nVisit the Wiki: [Link]",
+        text="Digimon World Dawn/Dusk ROM Patcher",
+        font=("Segoe UI", 12, "bold"),
         justify="center",
-        anchor="center",
-        wraplength=280
+        anchor="center"
     )
-    about_label.pack(expand=True, fill="both", padx=10, pady=10)
+    title_label.pack(pady=(10, 0))
+
+    version_label = tk.Label(
+        about_window,
+        text="Version 1.0.0",
+        justify="center",
+        anchor="center"
+    )
+    version_label.pack()
+
+    tk.Label(about_window, text="").pack(pady=1)  # empty label for spacing
+
+    description_label = tk.Label(
+        about_window,
+        text="ROM patcher for Digimon World Dawn/Dusk that provides quality-of-life patches and randomization settings.",
+        wraplength=320, 
+        justify="center",
+        anchor="center"
+    )
+    description_label.pack()
+
+    tk.Label(about_window, text="").pack(pady=1)  # empty label for spacing
+
+    copyright_label = tk.Label(
+        about_window,
+        text="Copyright © 2024-2025 João Santos\nLicensed under the GPL-3.0 license",
+        justify="center",
+        anchor="center"
+    )
+    copyright_label.pack()
+
+    tk.Label(about_window, text="").pack(pady=1) 
+
+    attribution_label = tk.Label(
+        about_window,
+        text="All rights to the original Digimon World Dawn/Dusk belong to Bandai Namco Entertainment.",
+        wraplength=320, 
+        justify="center",
+        anchor="center"
+    )
+    attribution_label.pack(pady=(0, 10))
+
+    links_frame = tk.Frame(about_window)
+    links_frame.pack(pady=10)
+
+    github_label = tk.Label(
+        links_frame,
+        text="GitHub",
+        fg="blue",
+        cursor="hand2",
+        #font=("Helvetica", 10, "underline")
+    )
+    github_label.grid(row=0, column=0, padx=5)
+    github_label.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/joaomlsantos/DWDDRandomizer"))
+
+    wiki_label = tk.Label(
+        links_frame,
+        text="Wiki",
+        fg="blue",
+        cursor="hand2",
+        #font=("Helvetica", 10, "underline")
+    )
+    wiki_label.grid(row=0, column=1, padx=5)
+    wiki_label.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/joaomlsantos/DWDDRandomizer/wiki"))
+    
+    donate_label = tk.Label(
+        links_frame,
+        text="Ko-Fi",
+        fg="blue",
+        cursor="hand2",
+        #font=("Helvetica", 10, "underline")
+    )
+    donate_label.grid(row=0, column=2, padx=5)
+    donate_label.bind("<Button-1>", lambda e: webbrowser.open("https://ko-fi.com/joaomlsantos"))
+
 
 
 def toggle_stat_generation():
-    if wild_digimon_option.get() != RandomizeWildEncounters.UNCHANGED.value:
+    if wild_digimon_option_var.get() != RandomizeWildEncounters.UNCHANGED.value:
         for rb in stat_gen_radio_buttons:
             rb.configure(state="normal")
     else:
@@ -134,7 +246,7 @@ def toggle_stat_generation():
 
 
 def toggle_digivolution_randomization_options():
-    if digivolutions_option.get() != RandomizeDigivolutions.UNCHANGED.value:
+    if digivolutions_option_var.get() != RandomizeDigivolutions.UNCHANGED.value:
         digivolutionSimilarSpeciesCheckbox.configure(state="normal")
     else:
         digivolutionSimilarSpeciesCheckbox.configure(state="disabled")
@@ -143,7 +255,7 @@ def toggle_digivolution_randomization_options():
 
 # Initialize main window
 root = tk.Tk()
-root.title("Digimon World Dawn/Dusk QoL Patcher")
+root.title("Digimon World Dawn/Dusk ROM Patcher")
 root.geometry("")
 root.minsize(800, 600) 
 root.iconbitmap("public/dusk_transparent.ico")
@@ -255,18 +367,32 @@ notebook.add(randomizer_tab, text="Randomization Settings")
 starters_frame = ttk.LabelFrame(randomizer_tab, text="Starter Packs", padding=10)
 starters_frame.pack(side="top", fill="x", padx=10, pady=5)
 
-starters_option = tk.IntVar(value=RandomizeStartersConfig.UNCHANGED.value)
 
-starters_unchanged_rb = tk.Radiobutton(starters_frame, text="Unchanged", variable=starters_option, value=RandomizeStartersConfig.UNCHANGED.value, state="disabled")
+starters_radio_frame = ttk.Frame(starters_frame)
+starters_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+starters_option_var = tk.IntVar(value=RandomizeStartersConfig.UNCHANGED.value)
+
+starters_unchanged_rb = tk.Radiobutton(starters_radio_frame, text="Unchanged", variable=starters_option_var, value=RandomizeStartersConfig.UNCHANGED.value, state="disabled")
 starters_unchanged_rb.pack(anchor="w")
 
-starters_same_stage_rb = tk.Radiobutton(starters_frame, text="Random (same digivolution stages)", variable=starters_option, value=RandomizeStartersConfig.RAND_SAME_STAGE.value, state="disabled")
+starters_same_stage_rb = tk.Radiobutton(starters_radio_frame, text="Random (same digivolution stages)", variable=starters_option_var, value=RandomizeStartersConfig.RAND_SAME_STAGE.value, state="disabled")
 starters_same_stage_rb_tooltip = CreateToolTip(starters_same_stage_rb, "Randomizes each starter digimon pack, keeping the original digivolution stages for each digimon.")
 starters_same_stage_rb.pack(anchor="w")
 
-starters_completely_random_rb = tk.Radiobutton(starters_frame, text="Random (completely)", variable=starters_option, value=RandomizeStartersConfig.RAND_FULL.value, state="disabled")
+starters_completely_random_rb = tk.Radiobutton(starters_radio_frame, text="Random (completely)", variable=starters_option_var, value=RandomizeStartersConfig.RAND_FULL.value, state="disabled")
 starters_completely_random_tooltip = CreateToolTip(starters_completely_random_rb, "Randomizes each starter digimon pack completely.")
 starters_completely_random_rb.pack(anchor="w")
+
+
+starters_misc_frame = ttk.Frame(starters_frame)
+starters_misc_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+nerf_first_boss_var = tk.BooleanVar(value=False)
+nerfFirstBossCheckbox = tk.Checkbutton(starters_misc_frame, text="Nerf First Boss", variable=nerf_first_boss_var, state="disabled")
+nerfFirstBossCheckbox.pack(anchor='w')
+nerfFirstBossTootip = CreateToolTip(nerfFirstBossCheckbox, "Enabling this option reduces the total HP of the first boss (virus that attacks the city) by half.\nThis fight usually relies on the lvl 20 Coronamon / Lunamon to be cleared. \nThis option is recommended if randomizing the starter packs, as any other digimon will be set to rookies at lvl 1 (even the digimon that are already rookies).")
+
 
 
 
@@ -279,16 +405,16 @@ wild_digimon_frame.pack(side="top", fill="x", padx=10, pady=5)
 wild_digimon_inner_container = ttk.Frame(wild_digimon_frame)
 wild_digimon_inner_container.pack(side="top", fill="x")
 
-wild_digimon_option = tk.IntVar(value=RandomizeWildEncounters.UNCHANGED.value)
+wild_digimon_option_var = tk.IntVar(value=RandomizeWildEncounters.UNCHANGED.value)
 
 # Left side: Wild Digimon randomization radio buttons
 wild_digimon_radio_frame = ttk.Frame(wild_digimon_inner_container)
 wild_digimon_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
 
-wild_digimon_unchanged_rb = tk.Radiobutton(wild_digimon_radio_frame, text="Unchanged", variable=wild_digimon_option, value=RandomizeWildEncounters.UNCHANGED.value, state="disabled", command=toggle_stat_generation)
+wild_digimon_unchanged_rb = tk.Radiobutton(wild_digimon_radio_frame, text="Unchanged", variable=wild_digimon_option_var, value=RandomizeWildEncounters.UNCHANGED.value, state="disabled", command=toggle_stat_generation)
 wild_digimon_unchanged_rb.pack(anchor="w")
 
-wild_digimon_randomize_rb = tk.Radiobutton(wild_digimon_radio_frame, text="Random (same stage)", variable=wild_digimon_option, value=RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE.value, state="disabled", command=toggle_stat_generation)
+wild_digimon_randomize_rb = tk.Radiobutton(wild_digimon_radio_frame, text="Random (same stage)", variable=wild_digimon_option_var, value=RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE.value, state="disabled", command=toggle_stat_generation)
 wild_digimon_randomize_tooltip = CreateToolTip(wild_digimon_randomize_rb, "Replaces each wild digimon by another digimon of the same stage.")
 wild_digimon_randomize_rb.pack(anchor="w")
 
@@ -296,7 +422,7 @@ wild_digimon_randomize_rb.pack(anchor="w")
 stat_gen_frame = ttk.LabelFrame(wild_digimon_inner_container, text="Stat Generation", padding=10)
 stat_gen_frame.pack(side="right", fill="y", padx=10, pady=5)
 
-stat_gen_option = tk.IntVar(value=LvlUpMode.RANDOM.value)  # Default to "Random"
+stat_gen_option_var = tk.IntVar(value=LvlUpMode.RANDOM.value)  # Default to "Random"
 
 stat_gen_radio_buttons = []
 stat_gen_options = [("Random", LvlUpMode.RANDOM.value), ("Lowest (easier)", LvlUpMode.FIXED_MIN.value), ("Median", LvlUpMode.FIXED_AVG.value), ("Highest (harder)", LvlUpMode.FIXED_MAX.value)]
@@ -306,7 +432,7 @@ for text, value in stat_gen_options:
     rb = tk.Radiobutton(
         stat_gen_frame,
         text=text,
-        variable=stat_gen_option,
+        variable=stat_gen_option_var,
         value=value,
         state="disabled"  # Initially disabled
     )
@@ -330,17 +456,17 @@ digivolutions_frame.pack(side="left", fill="both", expand=True, padx=10, pady=5)
 digivolutions_inner_container = ttk.Frame(digivolutions_frame)
 digivolutions_inner_container.pack(side="top", fill="x")
 
-digivolutions_option = tk.IntVar(value=RandomizeDigivolutions.UNCHANGED.value)
+digivolutions_option_var = tk.IntVar(value=RandomizeDigivolutions.UNCHANGED.value)
 
 
 # Digivolution radio buttons frame
 digivolutions_radio_frame = ttk.Frame(digivolutions_inner_container)
 digivolutions_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
 
-digivolutions_unchanged_rb = tk.Radiobutton(digivolutions_radio_frame, text="Unchanged", variable=digivolutions_option, value=RandomizeDigivolutions.UNCHANGED.value, state="disabled", command=toggle_digivolution_randomization_options)
+digivolutions_unchanged_rb = tk.Radiobutton(digivolutions_radio_frame, text="Unchanged", variable=digivolutions_option_var, value=RandomizeDigivolutions.UNCHANGED.value, state="disabled", command=toggle_digivolution_randomization_options)
 digivolutions_unchanged_rb.pack(anchor="w")
 
-digivolutions_randomize_rb = tk.Radiobutton(digivolutions_radio_frame, text="Random", variable=digivolutions_option, value=RandomizeDigivolutions.RANDOMIZE.value, state="disabled", command=toggle_digivolution_randomization_options)
+digivolutions_randomize_rb = tk.Radiobutton(digivolutions_radio_frame, text="Random", variable=digivolutions_option_var, value=RandomizeDigivolutions.RANDOMIZE.value, state="disabled", command=toggle_digivolution_randomization_options)
 digivolutions_randomize_rb_tooltip = CreateToolTip(digivolutions_randomize_rb, "Randomizes each digimon's digivolutions, creating up to three different digivolutions for each digimon.\nIf a digimon did not have any digivolution conditions, a set of conditions will be generated for it.")
 digivolutions_randomize_rb.pack(anchor="w")
 
@@ -368,12 +494,12 @@ digivolution_conditions_inner_container.pack(side="top", fill="x")
 digivolution_conditions_radio_frame = ttk.Frame(digivolution_conditions_inner_container)
 digivolution_conditions_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
 
-digivolution_conditions_option = tk.IntVar(value=RandomizeDigivolutionConditions.UNCHANGED.value)
+digivolution_conditions_option_var = tk.IntVar(value=RandomizeDigivolutionConditions.UNCHANGED.value)
 
-digivolution_conditions_unchanged_rb = tk.Radiobutton(digivolution_conditions_radio_frame, text="Unchanged", variable=digivolution_conditions_option, value=RandomizeDigivolutionConditions.UNCHANGED.value, state="disabled")
+digivolution_conditions_unchanged_rb = tk.Radiobutton(digivolution_conditions_radio_frame, text="Unchanged", variable=digivolution_conditions_option_var, value=RandomizeDigivolutionConditions.UNCHANGED.value, state="disabled")
 digivolution_conditions_unchanged_rb.pack(anchor="w")
 
-digivolution_conditions_randomize_rb = tk.Radiobutton(digivolution_conditions_radio_frame, text="Random", variable=digivolution_conditions_option, value=RandomizeDigivolutionConditions.RANDOMIZE.value, state="disabled")
+digivolution_conditions_randomize_rb = tk.Radiobutton(digivolution_conditions_radio_frame, text="Random", variable=digivolution_conditions_option_var, value=RandomizeDigivolutionConditions.RANDOMIZE.value, state="disabled")
 digivolution_conditions_randomize_rb_tooltip = CreateToolTip(digivolution_conditions_randomize_rb, "Randomizes each digimon's digivolution conditions, creating up to three different conditions for each digimon.\nLvl will always be the first condition.")
 digivolution_conditions_randomize_rb.pack(anchor="w")
 

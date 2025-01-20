@@ -30,48 +30,78 @@ class RandomizeDigivolutionConditions(Enum):
     RANDOMIZE = 1                       # randomize (specific randomization options are outside of this enum)
 
 
+
+class ConfigManager:
+    def __init__(self):
+        self.configs = {}
+        self.update_from_ui(inner_configmanager_settings)
+
+    def set(self, key, value):
+        self.configs[key] = value
+
+    def get(self, key, default=None):
+        return self.configs.get(key, default)
+
+    def update_from_ui(self, ui_variables):
+        for key, tk_var in ui_variables.items():
+            if hasattr(tk_var, "get"):
+                self.set(key, tk_var.get())
+            else:
+                self.set(key, tk_var)
+            
+
 # QoL settings
 
-CHANGE_TEXT_SPEED = True
-CHANGE_MOVEMENT_SPEED = True
-MOVEMENT_SPEED_MULTIPLIER = 1.5
-CHANGE_ENCOUNTER_RATE = True
-ENCOUNTER_RATE_MULTIPLIER = 0.5
-CHANGE_STAT_CAPS = True
-EXTEND_PLAYERNAME_SIZE = True
+# these are loaded specifically when running qol_script directly
+default_configmanager_settings = {
 
-APPLY_EXP_PATCH_FLAT = True
+    "CHANGE_TEXT_SPEED": True,
+    "CHANGE_MOVEMENT_SPEED": True,
+    "CHANGE_ENCOUNTER_RATE": True,
+    "CHANGE_STAT_CAPS": True,
+    "EXTEND_PLAYERNAME_SIZE": True,
+    
+    "APPLY_EXP_PATCH_FLAT": True,
+    "BUFF_SCAN_RATE": True,
+    
+    
+    # Randomization settings
+    
+    "ROOKIE_RESET_EVENT": RookieResetConfig.UNCHANGED,
+    "RANDOMIZE_STARTERS": RandomizeStartersConfig.UNCHANGED,
+    "NERF_FIRST_BOSS": False,                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
+    
+    "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters.UNCHANGED,
+    "AREA_ENCOUNTERS_STATS": model.LvlUpMode.FIXED_AVG,      # this defines how the randomized enemy digimon's stats are generated when changing the levels
+    
+    "RANDOMIZE_FIXED_BATTLES": False,
+    "FIXED_BATTLES_DIGIMON_SAME_STAGE": True,                 # digimon will be swapped with another digimon of the same stage
+    "FIXED_BATTLES_KEEP_EXCLUSIVE_BOSSES": False,             # do not change boss-exclusive digimon like ???, SkullBaluchimon, Grimmon, etc
+    "FIXED_BATTLES_BALANCE_BY_BST": False,                    # if true, generated encounter will have roughly the same stat total as the original encounter (which can lead to a different digimon lvl); if false, the generated encounter will be set at the same level regardless of how stronger/weaker the new digimon is
+    "FIXED_BATTLES_KEEP_HP": True,                            # do not change base HP of the encounter: most fixed battles have enemies with slightly more hp than usual, this will keep the digimon's HP stat the same as before
+    
+    
+    "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions.RANDOMIZE,
+    "DIGIVOLUTIONS_SIMILAR_SPECIES": True,        # example: holy digimon will be more likely to evolve into other holy digimon
+    
+    "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions.UNCHANGED,
+    "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": True,       # example: a digivolution from the holy species will be less likely to have aquan/dark/etc exp as a requirement than other conditions
+    
+}
 
-BUFF_SCAN_RATE = True
-NEW_BASE_SCAN_RATE = 25         # this is the base value for scanning an in-training digimon as normal rank tamer; -5 for each subsequent digivolution
-
-
-# Randomization settings
-
-ROOKIE_RESET_EVENT = RookieResetConfig.UNCHANGED
-RANDOMIZE_STARTERS = RandomizeStartersConfig.UNCHANGED
-NERF_FIRST_BOSS = False                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
-
-RANDOMIZE_AREA_ENCOUNTERS = False
-AREA_ENCOUNTERS_STATS = model.LvlUpMode.FIXED_AVG      # this defines how the randomized enemy digimon's stats are generated when changing the levels
-
-RANDOMIZE_FIXED_BATTLES = False
-FIXED_BATTLES_DIGIMON_SAME_STAGE = True                 # digimon will be swapped with another digimon of the same stage
-FIXED_BATTLES_KEEP_EXCLUSIVE_BOSSES = False             # do not change boss-exclusive digimon like ???, SkullBaluchimon, Grimmon, etc
-FIXED_BATTLES_BALANCE_BY_BST = False                    # if true, generated encounter will have roughly the same stat total as the original encounter (which can lead to a different digimon lvl); if false, the generated encounter will be set at the same level regardless of how stronger/weaker the new digimon is
-FIXED_BATTLES_KEEP_HP = True                            # do not change base HP of the encounter: most fixed battles have enemies with slightly more hp than usual, this will keep the digimon's HP stat the same as before
-
-
-RANDOMIZE_DIGIVOLUTIONS = False
-DIGIVOLUTIONS_SIMILAR_SPECIES = True        # example: holy digimon will be more likely to evolve into other holy digimon
-DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS = 0.9    # the total odds for the same species digimon will be the bias value (in this case it's 0.9), total odds for digimon from other species will be the remaining value (1 - bias)
-RANDOMIZE_DIGIVOLUTION_CONDITIONS = False
-DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP = True       # example: a digivolution from the holy species will be less likely to have aquan/dark/etc exp as a requirement than other conditions
-DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS = 0.2          # how less likely each exp condition is to be picked (in this case, the probability for each of those exp conditions is multiplied by the bias value; multiplying by 0.2 makes the condition 5 times less likely)
-
+# these settings are initialized upon creating ConfigManager, thus shared w/ all instances
+# at the moment these are not obtainable through the tkinter ui but are needed nonetheless
+inner_configmanager_settings = {
+    "MOVEMENT_SPEED_MULTIPLIER": 1.5,
+    "ENCOUNTER_RATE_MULTIPLIER": 0.5,
+    "NEW_BASE_SCAN_RATE": 25,        # this is the base value for scanning an in-training digimon as normal rank tamer; -5 for each subsequent digivolution
+    "DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS": 0.9,    # the total odds for the same species digimon will be the bias value (in this case it's 0.9), total odds for digimon from other species will be the remaining value (1 - bias)
+    "DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS": 0.2          # how less likely each exp condition is to be picked (in this case, the probability for each of those exp conditions is multiplied by the bias value; multiplying by 0.2 makes the condition 5 times less likely)
+    
+}
 
 PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
-PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_qolpatch_jan.nds"
+PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_qolpatch_test_1.nds"
 
 #PATH_SOURCE = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA).nds"
 #PATH_TARGET = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA)_qolpatch_contra.nds"
