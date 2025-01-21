@@ -7,7 +7,7 @@ from configs import RandomizeStartersConfig, RandomizeWildEncounters, RandomizeD
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
-
+import sys
 
 
 class AppState:
@@ -17,6 +17,14 @@ class AppState:
         self.randomizer: Randomizer = None
 
 app_state = AppState()
+
+# Path to the icon file
+if getattr(sys, 'frozen', False):  # Running as a bundled app
+    bundle_dir = sys._MEIPASS
+else:  # Running as a script
+    bundle_dir = os.path.dirname(os.path.abspath(__file__))
+
+icon_path = os.path.join(bundle_dir, "public", "dusk_transparent.ico")
 
 
 # this function is called when writing the patched/randomized rom; serves as the equivalent to main() for qol_script
@@ -102,7 +110,7 @@ def save_changes_function():
         defaultextension=".nds",
         filetypes=[("ROM Files", "*.nds"), ("All Files", "*.*")],
         initialdir=rom_dir,
-        initialfile=Path(app_state.current_rom.fpath).stem + "_patched.nds"
+        #initialfile=Path(app_state.current_rom.fpath).stem + "_patched.nds"
     )
     if save_path:
         try:
@@ -141,7 +149,7 @@ def show_about_popup():
     about_window.title("About")
     about_window.geometry("360x300")
     about_window.resizable(False, False)
-    about_window.iconbitmap("public/dusk_transparent.ico")
+    about_window.iconbitmap(icon_path)
 
     # Get the main window's position
     main_x = root.winfo_rootx()
@@ -154,7 +162,7 @@ def show_about_popup():
 
     title_label = tk.Label(
         about_window,
-        text="Digimon World Dawn/Dusk ROM Patcher",
+        text="Digimon World Dawn/Dusk Randomizer",
         font=("Segoe UI", 12, "bold"),
         justify="center",
         anchor="center"
@@ -255,10 +263,10 @@ def toggle_digivolution_randomization_options():
 
 # Initialize main window
 root = tk.Tk()
-root.title("Digimon World Dawn/Dusk ROM Patcher")
+root.title("Digimon World Dawn/Dusk Randomizer")
 root.geometry("")
 root.minsize(800, 600) 
-root.iconbitmap("public/dusk_transparent.ico")
+root.iconbitmap(icon_path)
 
 
 # Create a frame for the ROM Loading section
