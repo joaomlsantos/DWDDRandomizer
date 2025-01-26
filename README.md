@@ -2,11 +2,9 @@
 
 Randomizer and quality-of-life feature patcher for the games **Digimon World: Dawn** and **Digimon World: Dusk**.
 
-
+![Digimon World Dawn/Dusk Randomizer](public/randomizer_preview.png)
 
 The information presented in these pages refers to the USA roms (serial codes NTR-A6RE-USA and NTR-A3VE-USA for Dusk and Dawn respectively).
-
-![Digimon World Dawn/Dusk Randomizer](public/randomizer_preview.png)
 
 ## Contents
 - [How To Use](#how-to-use)
@@ -27,7 +25,7 @@ The information presented in these pages refers to the USA roms (serial codes NT
 1. Download the [latest release](https://github.com/joaomlsantos/DWDDRandomizer/releases/tag/0.1.0) of the randomizer tool.
 2. Unpack the downloaded files and launch `DWDDRandomizer.exe`.
 3. Click `Open ROM` and open a valid .nds ROM of your game.
-4. Pick your quality-of-life and/or randomization features and click `Save Changes`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
+4. Pick your quality-of-life and/or randomization features and click `Save Patched ROM`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
 
 
 ## Features
@@ -72,6 +70,7 @@ See [this page](near-future-randomization-options-link) for more details about t
 
 ## Known Issues
 
+- Some antiviruses may flag the executable as unrecognized, as it does not have a signed publisher. This is expected behavior; proceed by clicking "Run anyway" to open the randomizer.
 - If you have an existing save file for your game, the digivolution + digivolution conditions randomization may cause visual issues on your current save file.
 - Similar to the above, the player name length expansion patch is meant for new-game roms. Loading an existing base-game save into a patched rom may also cause visual issues.
 

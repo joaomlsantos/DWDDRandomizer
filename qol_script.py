@@ -344,9 +344,11 @@ class Randomizer:
                 utils.writeRomBytes(rom_data, enemy_digimon.bird_exp, enemy_digimon.offset+0x4c, 4) 
                 utils.writeRomBytes(rom_data, enemy_digimon.machine_exp, enemy_digimon.offset+0x50, 4) 
                 utils.writeRomBytes(rom_data, enemy_digimon.aquan_exp, enemy_digimon.offset+0x54, 4) 
-                utils.writeRomBytes(rom_data, enemy_digimon.insectplant_exp, enemy_digimon.offset+0x58, 4) 
+                utils.writeRomBytes(rom_data, enemy_digimon.insectplant_exp, enemy_digimon.offset+0x58, 4)
 
-        self.logger.info("Applied exp patch (flat)")
+        str_logger_exp = "halved" if exp_yield_opt == ExpYieldConfig.INCREASE_HALVED else "full"
+
+        self.logger.info("Applied exp patch (" + str_logger_exp + ")")
 
 
 
