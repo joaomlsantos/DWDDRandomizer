@@ -102,6 +102,9 @@ def enable_buttons():
     #increaseExpYieldCheckbox.configure(state="normal")
     increaseFlatScanRateCheckbox.configure(state="normal")
     expandPlayerNameCheckbox.configure(stat="normal")
+    exp_yield_unchanged_rb.configure(stat="normal")
+    exp_yield_halved_rb.configure(stat="normal")
+    exp_yield_full_rb.configure(stat="normal")
 
 
     # Enable tabs
