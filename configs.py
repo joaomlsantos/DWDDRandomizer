@@ -19,6 +19,7 @@ class RandomizeStartersConfig(Enum):
 class RandomizeWildEncounters(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE_1_TO_1_SAME_STAGE = 1     # randomize 1-to-1, same stage digimon
+    RANDOMIZE_1_TO_1_COMPLETELY = 2     # randomize 1-to-1, completely random digimon
 
 
 class RandomizeDigivolutions(Enum):
@@ -29,6 +30,10 @@ class RandomizeDigivolutionConditions(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE = 1                       # randomize (specific randomization options are outside of this enum)
 
+class ExpYieldConfig(Enum):
+    UNCHANGED = 0                       # do not change exp yield
+    INCREASE_HALVED = 1                 # base formula as if exp.share was enabled
+    INCREASE_FULL = 2                   # base formula flat
 
 
 class ConfigManager:
@@ -61,17 +66,17 @@ default_configmanager_settings = {
     "CHANGE_STAT_CAPS": True,
     "EXTEND_PLAYERNAME_SIZE": True,
     
-    "APPLY_EXP_PATCH_FLAT": True,
+    "APPLY_EXP_PATCH_FLAT": ExpYieldConfig.INCREASE_FULL,
     "BUFF_SCAN_RATE": True,
     
     
     # Randomization settings
     
     "ROOKIE_RESET_EVENT": RookieResetConfig.UNCHANGED,
-    "RANDOMIZE_STARTERS": RandomizeStartersConfig.UNCHANGED,
-    "NERF_FIRST_BOSS": False,                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
+    "RANDOMIZE_STARTERS": RandomizeStartersConfig.RAND_SAME_STAGE,
+    "NERF_FIRST_BOSS": True,                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
     
-    "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters.UNCHANGED,
+    "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE,
     "AREA_ENCOUNTERS_STATS": model.LvlUpMode.FIXED_AVG,      # this defines how the randomized enemy digimon's stats are generated when changing the levels
     
     "RANDOMIZE_FIXED_BATTLES": False,

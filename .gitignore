@@ -174,3 +174,4 @@ cython_debug/
 # custom
 
 enemy_exp_extraction_script.py
+!DWDDRandomizer.spec

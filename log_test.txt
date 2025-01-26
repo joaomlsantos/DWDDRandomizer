@@ -1,0 +1,2033 @@
+Creating new rom from source "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
+Increased text speed (1.5x)
+Increased movement speed (1.5x)
+Reduced encounter rate (0.5x)
+Increased stat caps (max value for each stat is now 65535)
+Expanded player name size (max player name size is now 7)
+Increased base scan rate from 15 to 25
+
+==================== STARTER PACKS ====================
+Starter Pack 1: Knightmon, Lalamon, Tyilinmon
+Starter Pack 2: Diatrymon, Hagurumon, Yatagaramon
+Starter Pack 3: Sukamon, Gaomon, BlackWarGrowlmon 
+Starter Pack 4: Dorugamon, Candlemon, Matadormon
+
+==================== WILD DIGIMON ====================
+Area 1: Sangloupmon, Snimon, Tyrannomon, Kimeramon, Sinduramon, RiseGreymon, Etemon, Marine Devimon, Megidramon
+Area 2: Guardromon, Seasarmon, Gatomon, KnightChessmon(White), WarGarurumon(Blue), MetalMamemon, Vademon, Dinobeemon, BlackWarGreymon
+Area 3: Gummymon, Kamemon, DoKunemon, Lunamon
+Area 4: Kamemon, DoKunemon, Aruraumon, PawnChessmon(White)
+Area 5: DoKunemon, Lunamon, Aruraumon, PawnChessmon(White), DotAgumon, Ankylomon, Starmon, DKTyrannomon
+Area 6: Poyomon, Tentomon
+Area 7: Poyomon, Tentomon, Penguinmon, Lopmon, Salamon, Greymon, Hookmon, Gawappamon
+Area 8: Tentomon, Penguinmon, Lopmon, Gabumon, Salamon, KaratsukiNumemon, Greymon, Hookmon, Gawappamon
+Area 9: Moonmon, Pagumon, Gigimon, Wormmon, Tsukaimon
+Area 10: Moonmon, Pagumon, Gigimon, Wormmon, Tsukaimon
+Area 11: Wormmon, Tsukaimon, Muchomon, Floramon, Hawkmon, KnightChessmon(Black), Numemon, Seasarmon
+Area 12: Muchomon, Floramon, Hawkmon, KnightChessmon(Black), Numemon, Seasarmon
+Area 13: Kudamon, Crabmon, BlackAgumon, Tankmon
+Area 14: Kudamon, Tankmon, Sand Yanmamon, Gesomon, Lekismon, Airdramon, Dorugamon
+Area 15: Sand Yanmamon, Gesomon, Lekismon, Airdramon, Dorugamon, Gatomon, Raremon, Antylamon, Lilamon, Megadramon
+Area 16: Sand Yanmamon, Gesomon, Gatomon, Raremon, Antylamon, Lilamon, Megadramon
+Area 17: Tokomon, DemiDevimon, Keramon
+Area 18: DemiDevimon, Keramon, Candlemon, PawnChessmon(Black)
+Area 19: DemiDevimon, Candlemon, PawnChessmon(Black), Sorcerymon, Geremon, Birdramon, Reppamon, Angemon
+Area 20: Sorcerymon, Geremon, Birdramon, Reppamon, Angemon
+Area 21: Kapurimon, Puttimon, Kunemon
+Area 22: Kapurimon, Puttimon, Kunemon, Sunflowmon, Deramon, Clockmon, Flarerizamon, Taomon
+Area 23: Puttimon, Kunemon, Sunflowmon, Deramon, Clockmon, Flarerizamon, Taomon, Gaogamon, Cherubimon (Good)
+Area 24: Sunflowmon, Deramon, Clockmon, Gaogamon, Cherubimon (Good), MarineAngemon
+Area 25: Tsunomon, Falcomon, ToyAgumon(Black), Vilemon, Leomon, Firamon, Icemon, Tortamon, Ninjamon, Kokatorimon, Hyogamon, Karatenmon, Arukenimon
+Area 26: ToyAgumon(Black), Icemon, Tortamon, Ninjamon, Kokatorimon, Hyogamon, Karatenmon, Arukenimon
+Area 27: SnowAgumon, Mushroomon, Kyubimon, Snimon, Peckmon, Minotarumon, Guardromon, Lillymon
+Area 28: Kyubimon, Snimon, Peckmon, Minotarumon, Guardromon, Saberdramon, Apemon, Drimogemon, Divermon, Lillymon, Kongoumon, Digitamamon
+Area 29: Saberdramon, Apemon, Drimogemon, Divermon, Kongoumon, Digitamamon, MaloMyotismon
+Area 30: Tanemon, Tsumemon, Wanyamon, Biyomon
+Area 31: Tanemon, Tsumemon, Wanyamon, Biyomon, Dfalcomon, Yanmamon, Thunderballmon
+Area 32: Biyomon, Dfalcomon, Yanmamon, Thunderballmon, Cherrymon, Flamedramon, Gigadramon, Boltmon
+Area 33: Dfalcomon, Yanmamon, Thunderballmon, Cherrymon, Flamedramon, Gigadramon, Boltmon, Piedmon
+Area 34: Gotsumon, Palmon, Jungle Mojyamon
+Area 35: Gotsumon, Palmon, Jungle Mojyamon, Stingmon, GeoGreymon
+Area 36: Jungle Mojyamon, Stingmon, GeoGreymon, Phantomon, Giromon, Andromon, Vademon
+Area 37: Stingmon, GeoGreymon, Phantomon, Giromon, Andromon, Vademon, Magna Dramon
+Area 38: Octomon, Dokugumon, NiseDrimogemon, Tyrannomon, Etemon, RookChessmon, Sakuyamon
+Area 39: Octomon, NiseDrimogemon, Kiwimon, Shellmon, Weedmon, Devidramon, RookChessmon, Pipismon, Magnamon
+Area 40: Etemon, RookChessmon, Tylomon, RiseGreymon, Pipismon, Magnamon, Sakuyamon, JumboGamemon
+Area 41: Tyrannomon, Kiwimon, Weedmon, Devidramon, Tylomon, RiseGreymon, JumboGamemon
+Area 42: Kokuwamon, Monochromon, Akatorimon, Garurumon, Dragomon
+Area 43: Monochromon, Akatorimon, Garurumon, Mammothmon, Piximon, MachGaogamon, Dragomon, Beelzemon Blast Mode, Mega Gargomon
+Area 44: Mammothmon, Piximon, MachGaogamon, Dorugoramon, Dragomon, Beelzemon Blast Mode, Mega Gargomon
+Area 45: Growlmon, Sangloupmon, Silphymon, MameTyramon, Golemon
+Area 46: Growlmon, Sangloupmon, Silphymon, MameTyramon, Golemon, Kotemon, Musyamon, WarGarurumon(Blue), Mamemon
+Area 47: Golemon, Kotemon, Musyamon, WarGarurumon(Blue), Mamemon, Okuwamon, Kyukimon, IceDevimon, Red Vegiemon, Pandamon, Susanoomon
+Area 48: WarGarurumon(Blue), Mamemon, Okuwamon, Kyukimon, IceDevimon, Red Vegiemon, Pandamon, Susanoomon
+Area 49: Calumon, Grizzmon, Kabuterimon, PlatinumSukamon
+Area 50: Grizzmon, Kabuterimon, BomberNanimon, Kimeramon, Toucanmon, PlatinumSukamon
+Area 51: BomberNanimon, Kimeramon, Toucanmon, Kabukimon, SuperStarmon, Myotismon, SL Angemon, Alphamon
+Area 52: BomberNanimon, Toucanmon, Kabukimon, SuperStarmon, Myotismon, SL Angemon, Alphamon, Black SaintGargomon
+Area 53: Chibomon, DarkLizardmon, Kogamon, KnightChessmon(White)
+Area 54: DarkLizardmon, Kogamon, KnightChessmon(White), Tyilinmon, Flaremon, DoruGreymon
+Area 55: Tyilinmon, Flaremon, Yatakaramon, DoruGreymon, Argomon Mega, WarGrowlmon
+Area 56: Tyilinmon, Flaremon, Yatakaramon, DoruGreymon, Argomon Mega, WarGrowlmon, DotShineGreymon, Justimon
+Area 57: Vermilimon, Matadormon, Tekkamon, Dinobeemon, Crescemon, Marine Devimon, ZeedMillenniummon, Megidramon
+Area 58: Vermilimon, Matadormon, Tekkamon, Dinobeemon, Shurimon, Vajramon, Gryphonmon , BlackWarGreymon
+Area 59: Omekamon, Puppetmon, Lampmon, Moon=Millenniummon  
+Area 60: Sinduramon, EXTyrannomon, MirageGaogamon Burst Mode, Pukumon, HiAndromon, Ghoulmon, Cherubimon (Evil)
+Area 61: Coelamon, Seadramon, MegaSeadramon, Parasimon, Rosemon Burst Mode, WarGreymon, SaberLeomon
+Area 62: Megakabuterimon(Blue), Meteormon, Paildramon, Mummymon, MetalTyrannomon, Chronomon Holy Mode, Imperialdramon Paladin Mode
+Area 63: Whamon (Ultimate), Shaujinmon, Dark Dramon, ShineGreymon, Pharaohmon, Seraphimon, Millenniummon  , MetalEtemon
+Area 64: EXTyrannomon, HiAndromon, Parasimon, SaberLeomon, Paildramon, Imperialdramon Paladin Mode, Whamon (Ultimate), MetalEtemon
+Area 65: Dorimon, Impmon, Guilmon, Sukamon, Mojyamon, Shadramon
+Area 66: Impmon, Guilmon, Snow Goblimon, Gaomon, Centarumon, Betamon, Solarmon, Flymon, Sukamon, Mojyamon, Seahomon, MetalMamemon, Ebemon, Brachiomon
+Area 67: Snow Goblimon, Gaomon, Dracmon, Flymon, Aquilamon, Seahomon, WarGarurumon(Black), MetalMamemon, MetalSeadramon, KingChessmon, Big Mamemon, Brachiomon
+Area 68: Snow Goblimon, Gaomon, Centarumon, Betamon, Solarmon, Aquilamon, Shadramon, Seahomon, Ebemon
+Area 69: 
+Area 70: 
+Area 71: SnowAgumon, Dracmon, Roachmon, Growlmon, MameTyramon
+Area 72: SnowAgumon, Dracmon, ToyAgumon(Black), Kamemon, Kurisarimon, Mushroomon, Impmon, Dorugamon, Roachmon, Growlmon, Matadormon, SuperStarmon, Imperialdramon Dragon Mode(Black)
+Area 73: ToyAgumon(Black), Kamemon, Salamon, Dorugamon, Icemon, Matadormon, Shurimon, SuperStarmon, Mega Gargomon
+Area 74: ToyAgumon(Black), Kamemon, Kurisarimon, Mushroomon, Impmon, Icemon, MameTyramon, Matadormon, Imperialdramon Dragon Mode(Black)
+Nerfed first boss (1400 HP -> 700 HP)
+
+==================== DIGIVOLUTIONS ====================
+
+==================== IN-TRAINING ====================
+
+Calumon
+Digivolutions: 2
+Digivolution 1: Renamon
+LEVEL: 11 | HOLY EXP: 112
+Digivolution 2: Tapirmon
+LEVEL: 9 | APTITUDE STAT: 21
+
+Wanyamon
+Digivolutions: 2
+Digivolution 1: Kumamon
+LEVEL: 11 | BEAST EXP: 120
+Digivolution 2: Shamamon
+LEVEL: 8
+
+Kapurimon
+Digivolutions: 2
+Digivolution 1: Hagurumon
+LEVEL: 9
+Digivolution 2: Gotsumon
+LEVEL: 9 | MACHINE EXP: 393
+
+Gigimon
+Digivolutions: 3
+Digivolution 1: Guilmon
+LEVEL: 15 | SPIRIT STAT: 68
+Digivolution 2: Monodramon
+LEVEL: 9 | SPEED STAT: 71
+Digivolution 3: DotAgumon
+LEVEL: 16 | DRAGON EXP: 218
+
+Tokomon
+Digivolutions: 2
+Digivolution 1: Penguinmon
+LEVEL: 14
+Digivolution 2: Falcomon
+LEVEL: 7
+
+Tanemon
+Digivolutions: 3
+Digivolution 1: Floramon
+LEVEL: 10 | DRAGON EXP: 466
+Digivolution 2: Lalamon
+LEVEL: 14
+Digivolution 3: Tentomon
+LEVEL: 9
+
+Chicchimon
+Digivolutions: 3
+Digivolution 1: Coronamon
+LEVEL: 8 | DRAGON EXP: 211
+Digivolution 2: Kudamon
+LEVEL: 16 | MACHINE EXP: 220 | ATK STAT: 55
+Digivolution 3: Salamon
+LEVEL: 13 | HOLY EXP: 188 | INSECTPLANT EXP: 449
+
+Dorimon
+Digivolutions: 2
+Digivolution 1: Kokuwamon
+LEVEL: 10
+Digivolution 2: Goburimon
+LEVEL: 9
+
+Kuramon
+Digivolutions: 3
+Digivolution 1: Impmon
+LEVEL: 10 | DARK EXP: 491
+Digivolution 2: Tsukaimon
+LEVEL: 15 | APTITUDE STAT: 18
+Digivolution 3: Lopmon
+LEVEL: 13
+
+Tsunomon
+Digivolutions: 3
+Digivolution 1: Gabumon
+LEVEL: 15
+Digivolution 2: Dorumon
+LEVEL: 12 | BEAST EXP: 373
+Digivolution 3: Gaomon
+LEVEL: 13 | BIRD EXP: 238
+
+Koromon
+Digivolutions: 2
+Digivolution 1: BlackAgumon
+LEVEL: 13 | DEF STAT: 80
+Digivolution 2: Veemon
+LEVEL: 12 | DRAGON EXP: 338
+
+Chibomon
+Digivolutions: 2
+Digivolution 1: Agumon
+LEVEL: 15
+Digivolution 2: Syakomon
+LEVEL: 12 | APTITUDE STAT: 17
+
+Gummymon
+Digivolutions: 2
+Digivolution 1: Otamamon
+LEVEL: 10 | SPIRIT STAT: 54
+Digivolution 2: Mushroomon
+LEVEL: 15 | INSECTPLANT EXP: 220
+
+Budmon
+Digivolutions: 2
+Digivolution 1: Palmon
+LEVEL: 14
+Digivolution 2: Wormmon
+LEVEL: 7
+
+Tsumemon
+Digivolutions: 2
+Digivolution 1: Lunamon
+LEVEL: 10 | DARK EXP: 130
+Digivolution 2: Keramon
+LEVEL: 15 | DARK EXP: 469
+
+Moonmon
+Digivolutions: 1
+Digivolution 1: DemiDevimon
+LEVEL: 15
+
+Poyomon
+Digivolutions: 3
+Digivolution 1: Gomamon
+LEVEL: 7
+Digivolution 2: DoKunemon
+LEVEL: 16
+Digivolution 3: Snow Goblimon
+LEVEL: 9
+
+Sunmon
+Digivolutions: 2
+Digivolution 1: Crabmon
+LEVEL: 7 | INSECTPLANT EXP: 424
+Digivolution 2: Betamon
+LEVEL: 11 | AQUAN EXP: 231
+
+Puttimon
+Digivolutions: 3
+Digivolution 1: Kamemon
+LEVEL: 10 | AQUAN EXP: 140
+Digivolution 2: Hawkmon
+LEVEL: 9 | BIRD EXP: 226
+Digivolution 3: Muchomon
+LEVEL: 13
+
+Kokomon
+Digivolutions: 2
+Digivolution 1: Candlemon
+LEVEL: 16 | DARK EXP: 228 | BIRD EXP: 231
+Digivolution 2: Dracmon
+LEVEL: 14 | SPEED STAT: 79
+
+Botamon
+Digivolutions: 2
+Digivolution 1: Biyomon
+LEVEL: 13 | BIRD EXP: 207
+Digivolution 2: SnowAgumon
+LEVEL: 10 | AQUAN EXP: 185
+
+Minomon
+Digivolutions: 2
+Digivolution 1: Aruraumon
+LEVEL: 7 | APTITUDE STAT: 21
+Digivolution 2: Kunemon
+LEVEL: 11
+
+Pagumon
+Digivolutions: 3
+Digivolution 1: Dfalcomon
+LEVEL: 11
+Digivolution 2: Gizamon
+LEVEL: 16 | DRAGON EXP: 144
+Digivolution 3: PawnChessmon(White)
+LEVEL: 10 | MACHINE EXP: 142 | BEAST EXP: 494
+
+==================== ROOKIE ====================
+
+Lunamon
+Digivolutions: 3
+Digivolution 1: Bakemon
+LEVEL: 20 | SPECIES EXP: 2804
+Digivolution 2: Devimon
+LEVEL: 21
+Digivolution 3: DKTyrannomon
+LEVEL: 19 | ATK STAT: 116
+
+Guilmon
+Digivolutions: 2
+Digivolution 1: Airdramon
+LEVEL: 27 | SPECIES EXP: 1930 | DRAGON EXP: 300
+Digivolution 2: GeoGreymon
+LEVEL: 24 | DRAGON EXP: 471 | ATK STAT: 112
+
+Dfalcomon
+Digivolutions: 1
+Digivolution 1: Diatrymon
+LEVEL: 19 | DEF STAT: 105 | FRIENDSHIP % STAT: 66
+
+Solarmon
+Digivolutions: 3
+Digivolution 1: PlatinumSukamon
+LEVEL: 19
+Digivolution 2: Omekamon
+LEVEL: 18 | AQUAN EXP: 710
+Digivolution 3: KnightChessmon(Black)
+LEVEL: 20 | DEF STAT: 142
+
+Armadillomon
+Digivolutions: 1
+Digivolution 1: Centarumon
+LEVEL: 17 | FRIENDSHIP % STAT: 70 | HOLY EXP: 436
+
+Lalamon
+Digivolutions: 1
+Digivolution 1: Weedmon
+LEVEL: 27
+
+ToyAgumon(Black)
+Digivolutions: 2
+Digivolution 1: KnightChessmon(White)
+LEVEL: 20 | MACHINE EXP: 651
+Digivolution 2: Sukamon
+LEVEL: 25 | MACHINE EXP: 999
+
+Penguinmon
+Digivolutions: 2
+Digivolution 1: Peckmon
+LEVEL: 20 | DARK EXP: 516
+Digivolution 2: Kokatorimon
+LEVEL: 27 | BIRD EXP: 796
+
+Aruraumon
+Digivolutions: 2
+Digivolution 1: Sunflowmon
+LEVEL: 21 | FRIENDSHIP % STAT: 65
+Digivolution 2: Togemon
+LEVEL: 21 | INSECTPLANT EXP: 759 | SPEED STAT: 112
+
+Betamon
+Digivolutions: 2
+Digivolution 1: Gawappamon
+LEVEL: 20 | DARK EXP: 742 | SPIRIT STAT: 139
+Digivolution 2: KaratsukiNumemon
+LEVEL: 19
+
+Tentomon
+Digivolutions: 2
+Digivolution 1: Stingmon
+LEVEL: 24 | BIRD EXP: 775 | INSECTPLANT EXP: 446
+Digivolution 2: Flymon
+LEVEL: 30 | ATK STAT: 135 | SPECIES EXP: 1836
+
+Snow Goblimon
+Digivolutions: 2
+Digivolution 1: Ebidramon
+LEVEL: 28 | SPEED STAT: 141 | FRIENDSHIP % STAT: 61
+Digivolution 2: IceDevimon
+LEVEL: 20 | AQUAN EXP: 369
+
+Hagurumon
+Digivolutions: 2
+Digivolution 1: Mekanorimon
+LEVEL: 29 | MACHINE EXP: 341
+Digivolution 2: Hookmon
+LEVEL: 28 | SPEED STAT: 101 | DEF STAT: 109
+
+Renamon
+Digivolutions: 3
+Digivolution 1: Saberdramon
+LEVEL: 21 | BIRD EXP: 621
+Digivolution 2: Angemon
+LEVEL: 19 | HOLY EXP: 596
+Digivolution 3: Frigimon
+LEVEL: 27 | INSECTPLANT EXP: 797 | FRIENDSHIP % STAT: 66
+
+Tsukaimon
+Digivolutions: 1
+Digivolution 1: Sangloupmon
+LEVEL: 19 | MACHINE EXP: 525 | DARK EXP: 986
+
+PawnChessmon(White)
+Digivolutions: 2
+Digivolution 1: Clockmon
+LEVEL: 24 | AQUAN EXP: 593
+Digivolution 2: Thunderballmon
+LEVEL: 21 | MACHINE EXP: 310 | ATK STAT: 140
+
+Dorumon
+Digivolutions: 3
+Digivolution 1: Grizzmon
+LEVEL: 17 | BEAST EXP: 340 | FRIENDSHIP % STAT: 64
+Digivolution 2: Ogremon
+LEVEL: 25 | BEAST EXP: 387
+Digivolution 3: Apemon
+LEVEL: 22 | BEAST EXP: 356 | SPIRIT STAT: 130
+
+BlackAgumon
+Digivolutions: 1
+Digivolution 1: Monochromon
+LEVEL: 23 | SPECIES EXP: 1439 | DRAGON EXP: 320
+
+PawnChessmon(Black)
+Digivolutions: 3
+Digivolution 1: Nanimon
+LEVEL: 20 | AQUAN EXP: 920
+Digivolution 2: Yanmamon
+LEVEL: 29 | APTITUDE STAT: 31 | SPIRIT STAT: 118
+Digivolution 3: Flarerizamon
+LEVEL: 24 | SPECIES EXP: 2936 | AQUAN EXP: 776
+
+Biyomon
+Digivolutions: 1
+Digivolution 1: Birdramon
+LEVEL: 17 | HOLY EXP: 581 | APTITUDE STAT: 28
+
+Syakomon
+Digivolutions: 2
+Digivolution 1: Ikkakumon
+LEVEL: 24 | DRAGON EXP: 364
+Digivolution 2: Gekomon
+LEVEL: 26
+
+Monodramon
+Digivolutions: 2
+Digivolution 1: Greymon
+LEVEL: 24 | INSECTPLANT EXP: 940 | DEF STAT: 149
+Digivolution 2: Veedramon
+LEVEL: 28 | DEF STAT: 119 | INSECTPLANT EXP: 628
+
+Falcomon
+Digivolutions: 2
+Digivolution 1: Kiwimon
+LEVEL: 30 | BIRD EXP: 754 | SPEED STAT: 136
+Digivolution 2: Aquilamon
+LEVEL: 30 | BIRD EXP: 379
+
+Impmon
+Digivolutions: 2
+Digivolution 1: Vilemon
+LEVEL: 26 | FRIENDSHIP % STAT: 66
+Digivolution 2: Wizardmon
+LEVEL: 20 | DARK EXP: 802 | SPEED STAT: 149
+
+Dracmon
+Digivolutions: 2
+Digivolution 1: DarkLizardmon
+LEVEL: 20 | DARK EXP: 917
+Digivolution 2: Veggiemon
+LEVEL: 28 | SPEED STAT: 91
+
+Otamamon
+Digivolutions: 2
+Digivolution 1: Coelamon
+LEVEL: 21 | AQUAN EXP: 450
+Digivolution 2: Tortamon
+LEVEL: 21 | AQUAN EXP: 642 | SPIRIT STAT: 108
+
+Kumamon
+Digivolutions: 2
+Digivolution 1: Gaogamon
+LEVEL: 24 | SPIRIT STAT: 135
+Digivolution 2: Leomon
+LEVEL: 26 | HOLY EXP: 731 | SPEED STAT: 92
+
+Gabumon
+Digivolutions: 2
+Digivolution 1: Jungle Mojyamon
+LEVEL: 22 | BEAST EXP: 802 | APTITUDE STAT: 32
+Digivolution 2: Minotarumon
+LEVEL: 21 | ATK STAT: 98
+
+Veemon
+Digivolutions: 2
+Digivolution 1: ExVeemon
+LEVEL: 19 | DRAGON EXP: 948
+Digivolution 2: Reptiledramon
+LEVEL: 17 | DRAGON EXP: 906 | INSECTPLANT EXP: 761
+
+Muchomon
+Digivolutions: 3
+Digivolution 1: Akatorimon
+LEVEL: 28 | BIRD EXP: 309 | SPIRIT STAT: 117
+Digivolution 2: Kurisarimon
+LEVEL: 28 | DARK EXP: 699 | SPEED STAT: 100
+Digivolution 3: Unimon
+LEVEL: 17 | HOLY EXP: 892 | DEF STAT: 132
+
+DotAgumon
+Digivolutions: 2
+Digivolution 1: Tyrannomon
+LEVEL: 27 | INSECTPLANT EXP: 473 | FRIENDSHIP % STAT: 63
+Digivolution 2: Dinohumon
+LEVEL: 27 | ATK STAT: 91
+
+Goburimon
+Digivolutions: 2
+Digivolution 1: Mojyamon
+LEVEL: 28 | BEAST EXP: 480 | INSECTPLANT EXP: 368
+Digivolution 2: Wendigomon
+LEVEL: 18 | FRIENDSHIP % STAT: 62 | INSECTPLANT EXP: 813
+
+DemiDevimon
+Digivolutions: 3
+Digivolution 1: Musyamon
+LEVEL: 18
+Digivolution 2: Devidramon
+LEVEL: 24 | APTITUDE STAT: 37
+Digivolution 3: Gatomon
+LEVEL: 18 | HOLY EXP: 535
+
+Kokuwamon
+Digivolutions: 3
+Digivolution 1: Raremon
+LEVEL: 25 | INSECTPLANT EXP: 543
+Digivolution 2: Deputymon
+LEVEL: 24 | DEF STAT: 118
+Digivolution 3: Tankmon
+LEVEL: 21 | MACHINE EXP: 418 | FRIENDSHIP % STAT: 66
+
+Palmon
+Digivolutions: 2
+Digivolution 1: Dokugumon
+LEVEL: 27 | SPECIES EXP: 2671
+Digivolution 2: Ninjamon
+LEVEL: 20 | DEF STAT: 104
+
+Agumon
+Digivolutions: 2
+Digivolution 1: Growlmon
+LEVEL: 22 | DRAGON EXP: 653 | SPECIES EXP: 2590
+Digivolution 2: Woodmon
+LEVEL: 18 | INSECTPLANT EXP: 987
+
+Salamon
+Digivolutions: 2
+Digivolution 1: Starmon
+LEVEL: 22 | HOLY EXP: 365 | DEF STAT: 120
+Digivolution 2: Firamon
+LEVEL: 18 | HOLY EXP: 753 | DARK EXP: 306
+
+Tapirmon
+Digivolutions: 1
+Digivolution 1: Reppamon
+LEVEL: 22 | FRIENDSHIP % STAT: 62 | HOLY EXP: 556
+
+Floramon
+Digivolutions: 2
+Digivolution 1: Roachmon
+LEVEL: 23 | INSECTPLANT EXP: 480
+Digivolution 2: Kogamon
+LEVEL: 21 | INSECTPLANT EXP: 999
+
+Crabmon
+Digivolutions: 2
+Digivolution 1: Dolphmon
+LEVEL: 20 | SPEED STAT: 120 | FRIENDSHIP % STAT: 66
+Digivolution 2: Icemon
+LEVEL: 20 | AQUAN EXP: 317
+
+Kotemon
+Digivolutions: 1
+Digivolution 1: Sorcerymon
+LEVEL: 23 | APTITUDE STAT: 31 | DRAGON EXP: 717
+
+Terriermon
+Digivolutions: 1
+Digivolution 1: MoriShellmon
+LEVEL: 22 | BEAST EXP: 561 | MACHINE EXP: 719
+
+Keramon
+Digivolutions: 3
+Digivolution 1: Lekismon
+LEVEL: 25 | BEAST EXP: 518
+Digivolution 2: Kuwagamon
+LEVEL: 19 | HOLY EXP: 846
+Digivolution 3: Dorugamon
+LEVEL: 18 | BEAST EXP: 775 | FRIENDSHIP % STAT: 70
+
+Kamemon
+Digivolutions: 2
+Digivolution 1: Octomon
+LEVEL: 29 | AQUAN EXP: 853
+Digivolution 2: Hyogamon
+LEVEL: 23 | ATK STAT: 120 | DEF STAT: 123
+
+Patamon
+Digivolutions: 3
+Digivolution 1: Fugamon
+LEVEL: 23 | DRAGON EXP: 330
+Digivolution 2: Kabuterimon
+LEVEL: 19 | SPECIES EXP: 1683 | INSECTPLANT EXP: 856
+Digivolution 3: Drimogemon
+LEVEL: 30 | BEAST EXP: 949
+
+SnowAgumon
+Digivolutions: 2
+Digivolution 1: Geremon
+LEVEL: 19
+Digivolution 2: Gargomon
+LEVEL: 22 | SPECIES EXP: 1477
+
+Mushroomon
+Digivolutions: 1
+Digivolution 1: Sand Yanmamon
+LEVEL: 24 | DARK EXP: 819
+
+Gomamon
+Digivolutions: 2
+Digivolution 1: Seadramon
+LEVEL: 22 | DEF STAT: 106 | APTITUDE STAT: 31
+Digivolution 2: Numemon
+LEVEL: 28 | AQUAN EXP: 522
+
+Lopmon
+Digivolutions: 2
+Digivolution 1: Golemon
+LEVEL: 28 | MACHINE EXP: 579 | APTITUDE STAT: 36
+Digivolution 2: BomberNanimon
+LEVEL: 22 | SPIRIT STAT: 109 | APTITUDE STAT: 32
+
+Wormmon
+Digivolutions: 2
+Digivolution 1: Red Vegiemon
+LEVEL: 30 | HOLY EXP: 787 | SPIRIT STAT: 107
+Digivolution 2: Snimon
+LEVEL: 26 | INSECTPLANT EXP: 543 | SPEED STAT: 149
+
+Candlemon
+Digivolutions: 3
+Digivolution 1: Seasarmon
+LEVEL: 17 | BEAST EXP: 988 | SPECIES EXP: 1909
+Digivolution 2: Shellmon
+LEVEL: 24 | HOLY EXP: 976
+Digivolution 3: Guardromon
+LEVEL: 22 | MACHINE EXP: 781
+
+Coronamon
+Digivolutions: 2
+Digivolution 1: Kyubimon
+LEVEL: 29 | AQUAN EXP: 485 | HOLY EXP: 407
+Digivolution 2: Ankylomon
+LEVEL: 28 | DARK EXP: 808 | BIRD EXP: 658
+
+Kudamon
+Digivolutions: 2
+Digivolution 1: NiseDrimogemon
+LEVEL: 26 | BEAST EXP: 604 | DARK EXP: 924
+Digivolution 2: Tsuchidarumon
+LEVEL: 30 | FRIENDSHIP % STAT: 67 | BEAST EXP: 582
+
+Gotsumon
+Digivolutions: 3
+Digivolution 1: Gesomon
+LEVEL: 24 | AQUAN EXP: 559 | MACHINE EXP: 901
+Digivolution 2: Garurumon
+LEVEL: 17 | DARK EXP: 386
+
+Gaomon
+Digivolutions: 2
+
+Kunemon
+Digivolutions: 2
+
+Gizamon
+Digivolutions: 3
+
+Hawkmon
+Digivolutions: 2
+
+DoKunemon
+Digivolutions: 3
+
+ToyAgumon
+Digivolutions: 3
+
+Shamamon
+Digivolutions: 1
+
+==================== CHAMPION ====================
+
+Sangloupmon
+Digivolutions: 2
+Digivolution 1: Argomon Ultimate
+LEVEL: 33 | DARK EXP: 4347 | BEAST EXP: 4987
+Digivolution 2: LadyDevimon
+LEVEL: 36 | DARK EXP: 5632
+
+Tyrannomon
+Digivolutions: 1
+Digivolution 1: Angewomon
+LEVEL: 35 | HOLY EXP: 6936 | SPEED STAT: 191
+
+Yanmamon
+Digivolutions: 1
+Digivolution 1: Lillymon
+LEVEL: 32 | INSECTPLANT EXP: 6349 | ATK STAT: 175
+
+Garurumon
+Digivolutions: 0
+
+Birdramon
+Digivolutions: 1
+Digivolution 1: Yatakaramon
+LEVEL: 32 | ATK STAT: 173
+
+Angemon
+Digivolutions: 2
+Digivolution 1: Monzaemon
+LEVEL: 32 | HOLY EXP: 3541 | SPECIES EXP: 19383
+Digivolution 2: Digitamamon
+LEVEL: 33
+
+Kabuterimon
+Digivolutions: 1
+Digivolution 1: Shadramon
+LEVEL: 36 | INSECTPLANT EXP: 5463 | SPIRIT STAT: 181
+
+Saberdramon
+Digivolutions: 0
+
+Togemon
+Digivolutions: 2
+Digivolution 1: Okuwamon
+LEVEL: 42 | INSECTPLANT EXP: 5599 | BIRD EXP: 4706
+Digivolution 2: Megakabuterimon(Blue)
+LEVEL: 41
+
+Hookmon
+Digivolutions: 0
+
+MoriShellmon
+Digivolutions: 1
+Digivolution 1: Kyukimon
+LEVEL: 35 | BEAST EXP: 3498
+
+Tsuchidarumon
+Digivolutions: 2
+Digivolution 1: Pandamon
+LEVEL: 36 | APTITUDE STAT: 43 | BEAST EXP: 6960
+Digivolution 2: WarGarurumon(Blue)
+LEVEL: 41 | DARK EXP: 6429 | SPECIES EXP: 5471
+
+Gesomon
+Digivolutions: 1
+Digivolution 1: WarGarurumon(Black)
+LEVEL: 45 | BEAST EXP: 4679 | SPECIES EXP: 15137
+
+Kyubimon
+Digivolutions: 1
+Digivolution 1: Taomon
+LEVEL: 43 | SPECIES EXP: 7265 | APTITUDE STAT: 44
+
+Ninjamon
+Digivolutions: 1
+Digivolution 1: MegaKabuterimon(Red)
+LEVEL: 36 | INSECTPLANT EXP: 4540
+
+Musyamon
+Digivolutions: 1
+Digivolution 1: Volcanomon
+LEVEL: 44 | ATK STAT: 162 | SPEED STAT: 159
+
+Gatomon
+Digivolutions: 2
+Digivolution 1: Magnamon
+LEVEL: 35 | AQUAN EXP: 4558
+Digivolution 2: Shakkoumon
+LEVEL: 36 | HOLY EXP: 6419 | MACHINE EXP: 4902
+
+Tankmon
+Digivolutions: 1
+Digivolution 1: Giromon
+LEVEL: 34 | DARK EXP: 1673 | DEF STAT: 223
+
+Reppamon
+Digivolutions: 1
+Digivolution 1: SuperStarmon
+LEVEL: 36 | BEAST EXP: 1692 | HOLY EXP: 4763
+
+Leomon
+Digivolutions: 1
+Digivolution 1: Etemon
+LEVEL: 35 | BEAST EXP: 7170 | APTITUDE STAT: 49
+
+Diatrymon
+Digivolutions: 1
+Digivolution 1: WarGrowlmon
+LEVEL: 33 | APTITUDE STAT: 50 | ATK STAT: 131
+
+Reptiledramon
+Digivolutions: 0
+
+Monochromon
+Digivolutions: 2
+Digivolution 1: RiseGreymon
+LEVEL: 36 | INSECTPLANT EXP: 6847 | APTITUDE STAT: 46
+Digivolution 2: MetalGreymon
+LEVEL: 32 | FRIENDSHIP % STAT: 80 | DRAGON EXP: 6027
+
+Dolphmon
+Digivolutions: 1
+Digivolution 1: Shaujinmon
+LEVEL: 42 | SPECIES EXP: 5507 | AQUAN EXP: 6057
+
+IceDevimon
+Digivolutions: 1
+Digivolution 1: MegaSeadramon
+LEVEL: 43 | DRAGON EXP: 7934 | ATK STAT: 177
+
+Growlmon
+Digivolutions: 1
+Digivolution 1: AeroVeedramon
+LEVEL: 44 | DRAGON EXP: 6435 | BIRD EXP: 6346
+
+Weedmon
+Digivolutions: 1
+Digivolution 1: Cherrymon
+LEVEL: 41 | INSECTPLANT EXP: 4907 | SPEED STAT: 223
+
+Mekanorimon
+Digivolutions: 0
+
+Snimon
+Digivolutions: 2
+Digivolution 1: Dinobeemon
+LEVEL: 45 | INSECTPLANT EXP: 5038
+Digivolution 2: Blossomon
+LEVEL: 44 | FRIENDSHIP % STAT: 72 | ATK STAT: 176
+
+Shellmon
+Digivolutions: 1
+Digivolution 1: Triceramon
+LEVEL: 44 | DRAGON EXP: 5836 | SPECIES EXP: 9302
+
+Deputymon
+Digivolutions: 0
+
+Grizzmon
+Digivolutions: 2
+Digivolution 1: Prairiemon
+LEVEL: 38 | DEF STAT: 153 | SPECIES EXP: 8705
+Digivolution 2: Grapleomon
+LEVEL: 40 | FRIENDSHIP % STAT: 78 | APTITUDE STAT: 43
+
+Guardromon
+Digivolutions: 1
+Digivolution 1: RookChessmon
+LEVEL: 37 | MACHINE EXP: 1623 | INSECTPLANT EXP: 3089
+
+Tortamon
+Digivolutions: 2
+Digivolution 1: Whamon (Ultimate)
+LEVEL: 35 | AQUAN EXP: 1623 | DEF STAT: 150
+Digivolution 2: ShogunGekomon
+LEVEL: 41 | APTITUDE STAT: 42 | AQUAN EXP: 7949
+
+Akatorimon
+Digivolutions: 2
+Digivolution 1: Silphymon
+LEVEL: 34 | SPEED STAT: 139
+Digivolution 2: Crescemon
+LEVEL: 34 | AQUAN EXP: 5858 | HOLY EXP: 5521
+
+KnightChessmon(Black)
+Digivolutions: 1
+Digivolution 1: Flamedramon
+LEVEL: 35 | DRAGON EXP: 6914 | FRIENDSHIP % STAT: 78
+
+Peckmon
+Digivolutions: 0
+
+Woodmon
+Digivolutions: 0
+
+Kogamon
+Digivolutions: 1
+Digivolution 1: Kongoumon
+LEVEL: 39 | INSECTPLANT EXP: 2183 | ATK STAT: 176
+
+Centarumon
+Digivolutions: 2
+Digivolution 1: MachGaogamon
+LEVEL: 35 | ATK STAT: 225 | BEAST EXP: 7746
+Digivolution 2: Rapidmon
+LEVEL: 38 | BEAST EXP: 5189 | DRAGON EXP: 4467
+
+GeoGreymon
+Digivolutions: 0
+
+Apemon
+Digivolutions: 0
+
+PlatinumSukamon
+Digivolutions: 0
+
+Geremon
+Digivolutions: 1
+Digivolution 1: Tylomon
+LEVEL: 38 | SPIRIT STAT: 155 | DEF STAT: 157
+
+Dokugumon
+Digivolutions: 2
+Digivolution 1: Lilamon
+LEVEL: 45 | INSECTPLANT EXP: 7659 | DRAGON EXP: 4027
+Digivolution 2: Arukenimon
+LEVEL: 32 | INSECTPLANT EXP: 5445 | BEAST EXP: 6968
+
+Wizardmon
+Digivolutions: 2
+Digivolution 1: Infermon
+LEVEL: 37 | DARK EXP: 5166 | SPEED STAT: 134
+Digivolution 2: Pipismon
+LEVEL: 40 | BIRD EXP: 6805
+
+Wendigomon
+Digivolutions: 1
+Digivolution 1: Mammothmon
+LEVEL: 32 | BEAST EXP: 2306 | AQUAN EXP: 6580
+
+Coelamon
+Digivolutions: 1
+Digivolution 1: Brachiomon
+LEVEL: 34 | SPECIES EXP: 7587 | AQUAN EXP: 5403
+
+Gaogamon
+Digivolutions: 1
+Digivolution 1: Lanksmon
+LEVEL: 36 | DEF STAT: 174 | ATK STAT: 151
+
+Flarerizamon
+Digivolutions: 2
+Digivolution 1: Vermilimon
+LEVEL: 33 | ATK STAT: 143 | INSECTPLANT EXP: 6645
+Digivolution 2: MetalTyrannomon
+LEVEL: 40 | APTITUDE STAT: 48 | ATK STAT: 172
+
+Hyogamon
+Digivolutions: 0
+
+KnightChessmon(White)
+Digivolutions: 0
+
+Raremon
+Digivolutions: 1
+Digivolution 1: Vademon
+LEVEL: 32 | APTITUDE STAT: 43 | SPIRIT STAT: 168
+
+Ogremon
+Digivolutions: 1
+Digivolution 1: Garbagemon
+LEVEL: 32 | MACHINE EXP: 1518 | FRIENDSHIP % STAT: 70
+
+Omekamon
+Digivolutions: 3
+Digivolution 1: Mamemon
+LEVEL: 42 | APTITUDE STAT: 45
+Digivolution 2: Meteormon
+LEVEL: 33 | DEF STAT: 165 | ATK STAT: 158
+Digivolution 3: Tekkamon
+LEVEL: 42 | SPEED STAT: 144 | APTITUDE STAT: 50
+
+Ankylomon
+Digivolutions: 1
+Digivolution 1: MameTyramon
+LEVEL: 32 | DARK EXP: 2497 | ATK STAT: 195
+
+Firamon
+Digivolutions: 2
+Digivolution 1: Knightmon
+LEVEL: 35 | HOLY EXP: 5771 | AQUAN EXP: 3368
+Digivolution 2: Piximon
+LEVEL: 44 | HOLY EXP: 1806 | MACHINE EXP: 7043
+
+Octomon
+Digivolutions: 0
+
+KaratsukiNumemon
+Digivolutions: 1
+Digivolution 1: Marine Devimon
+LEVEL: 44 | SPECIES EXP: 8642 | AQUAN EXP: 4519
+
+Sand Yanmamon
+Digivolutions: 1
+Digivolution 1: Kabukimon
+LEVEL: 40 | APTITUDE STAT: 49 | INSECTPLANT EXP: 5282
+
+Devidramon
+Digivolutions: 1
+Digivolution 1: Kimeramon
+LEVEL: 40 | FRIENDSHIP % STAT: 76 | DARK EXP: 1838
+
+Sorcerymon
+Digivolutions: 0
+
+Veggiemon
+Digivolutions: 3
+Digivolution 1: Sinduramon
+LEVEL: 35 | BIRD EXP: 7143 | FRIENDSHIP % STAT: 70
+Digivolution 2: Andromon
+LEVEL: 44 | MACHINE EXP: 5571 | APTITUDE STAT: 42
+Digivolution 3: Ponchomon
+LEVEL: 37 | ATK STAT: 132 | APTITUDE STAT: 45
+
+ExVeemon
+Digivolutions: 2
+Digivolution 1: Allomon
+LEVEL: 36 | AQUAN EXP: 4436 | DRAGON EXP: 3931
+Digivolution 2: Paildramon
+LEVEL: 43 | SPIRIT STAT: 166 | DRAGON EXP: 7109
+
+Lekismon
+Digivolutions: 2
+Digivolution 1: BlackWarGrowlmon 
+LEVEL: 33 | DRAGON EXP: 5523 | SPEED STAT: 163
+Digivolution 2: Myotismon
+LEVEL: 38 | BIRD EXP: 4498 | BEAST EXP: 7685
+
+Numemon
+Digivolutions: 1
+Digivolution 1: Divermon
+LEVEL: 45 | AQUAN EXP: 4299
+
+Kokatorimon
+Digivolutions: 0
+
+BomberNanimon
+Digivolutions: 0
+
+Frigimon
+Digivolutions: 2
+Digivolution 1: Dragomon
+LEVEL: 39 | AQUAN EXP: 6288 | APTITUDE STAT: 40
+Digivolution 2: Zudomon
+LEVEL: 32 | DEF STAT: 181 | AQUAN EXP: 2392
+
+Kiwimon
+Digivolutions: 1
+Digivolution 1: Deramon
+LEVEL: 41 | BIRD EXP: 3822 | APTITUDE STAT: 43
+
+Airdramon
+Digivolutions: 1
+Digivolution 1: Cyberdramon
+LEVEL: 44 | DRAGON EXP: 7237 | DEF STAT: 150
+
+Vilemon
+Digivolutions: 1
+Digivolution 1: BlackRapidmon
+LEVEL: 34 | DRAGON EXP: 5369 | SPIRIT STAT: 137
+
+Clockmon
+Digivolutions: 1
+Digivolution 1: Seahomon
+LEVEL: 45 | AQUAN EXP: 3319 | DRAGON EXP: 7433
+
+Gekomon
+Digivolutions: 1
+Digivolution 1: Scorpiomon
+LEVEL: 42 | AQUAN EXP: 7320 | APTITUDE STAT: 49
+
+Sukamon
+Digivolutions: 0
+
+Nanimon
+Digivolutions: 0
+
+Kurisarimon
+Digivolutions: 1
+Digivolution 1: Antylamon
+LEVEL: 42 | DEF STAT: 175
+
+Flymon
+Digivolutions: 1
+Digivolution 1: DoruGreymon
+LEVEL: 41 | DRAGON EXP: 7707 | APTITUDE STAT: 42
+
+Seadramon
+Digivolutions: 0
+
+Gawappamon
+Digivolutions: 1
+Digivolution 1: Tyilinmon
+LEVEL: 38 | SPECIES EXP: 8053 | FRIENDSHIP % STAT: 70
+
+Gargomon
+Digivolutions: 1
+Digivolution 1: Megadramon
+LEVEL: 39 | MACHINE EXP: 2624 | APTITUDE STAT: 43
+
+Icemon
+Digivolutions: 0
+
+Dorugamon
+Digivolutions: 1
+Digivolution 1: Flaremon
+LEVEL: 41 | BIRD EXP: 6306 | SPECIES EXP: 13644
+
+Starmon
+Digivolutions: 1
+Digivolution 1: MagnaAngemon
+LEVEL: 36
+
+NiseDrimogemon
+Digivolutions: 1
+Digivolution 1: Toucanmon
+LEVEL: 42 | BIRD EXP: 4292 | SPECIES EXP: 14868
+
+Red Vegiemon
+Digivolutions: 1
+Digivolution 1: Aurumon
+LEVEL: 43 | BIRD EXP: 4892 | HOLY EXP: 5983
+
+Minotarumon
+Digivolutions: 1
+Digivolution 1: Parrotmon
+LEVEL: 45 | DRAGON EXP: 4477 | BIRD EXP: 6962
+
+Veedramon
+Digivolutions: 2
+Digivolution 1: EXTyrannomon
+LEVEL: 41 | MACHINE EXP: 5245 | DEF STAT: 187
+Digivolution 2: Big Mamemon
+LEVEL: 41 | MACHINE EXP: 6192
+
+Unimon
+Digivolutions: 2
+Digivolution 1: Lucemon Chaos Mode
+LEVEL: 43 | SPIRIT STAT: 140 | HOLY EXP: 3868
+Digivolution 2: MetalMamemon
+LEVEL: 42 | APTITUDE STAT: 40 | MACHINE EXP: 7652
+
+Thunderballmon
+Digivolutions: 1
+Digivolution 1: Datamon
+LEVEL: 32 | MACHINE EXP: 2362 | ATK STAT: 144
+
+Greymon
+Digivolutions: 1
+Digivolution 1: Gigadramon
+LEVEL: 41 | DARK EXP: 1874 | SPECIES EXP: 10307
+
+Roachmon
+Digivolutions: 2
+Digivolution 1: Karatenmon
+LEVEL: 39 | SPIRIT STAT: 150 | BEAST EXP: 7824
+Digivolution 2: Mummymon
+LEVEL: 39 | AQUAN EXP: 4559 | DARK EXP: 4279
+
+Bakemon
+Digivolutions: 2
+Digivolution 1: Phantomon
+LEVEL: 37 | DARK EXP: 3015 | APTITUDE STAT: 40
+Digivolution 2: Vajramon
+LEVEL: 32 | ATK STAT: 182
+
+DarkLizardmon
+Digivolutions: 2
+Digivolution 1: SkullGreymon
+LEVEL: 40 | DARK EXP: 6344
+Digivolution 2: Matadormon
+LEVEL: 45 | DARK EXP: 4251 | BEAST EXP: 7665
+
+Mojyamon
+Digivolutions: 0
+
+DKTyrannomon
+Digivolutions: 2
+Digivolution 1: Kenkimon
+LEVEL: 35 | MACHINE EXP: 2496 | APTITUDE STAT: 45
+Digivolution 2: BishopChessmon
+LEVEL: 34 | MACHINE EXP: 2488 | BEAST EXP: 4887
+
+Aquilamon
+Digivolutions: 2
+Digivolution 1: Yatagaramon
+LEVEL: 42 | BIRD EXP: 5255 | SPECIES EXP: 16358
+Digivolution 2: Garudamon
+LEVEL: 45 | DRAGON EXP: 5625 | FRIENDSHIP % STAT: 76
+
+Golemon
+Digivolutions: 1
+Digivolution 1: Shurimon
+LEVEL: 39 | BIRD EXP: 2117 | SPIRIT STAT: 223
+
+Sunflowmon
+Digivolutions: 2
+
+Seasarmon
+Digivolutions: 0
+
+Fugamon
+Digivolutions: 1
+
+Devimon
+Digivolutions: 1
+
+Ikkakumon
+Digivolutions: 1
+
+Stingmon
+Digivolutions: 2
+
+Drimogemon
+Digivolutions: 0
+
+Kuwagamon
+Digivolutions: 2
+
+Dinohumon
+Digivolutions: 1
+
+Jungle Mojyamon
+Digivolutions: 1
+
+Ebidramon
+Digivolutions: 1
+
+==================== ULTIMATE ====================
+
+DoruGreymon
+Digivolutions: 2
+Digivolution 1: WarGreymon
+LEVEL: 63 | DRAGON EXP: 18031 | SPECIES EXP: 89024
+Digivolution 2: Imperialdramon Dragon Mode
+LEVEL: 53 | SPEED STAT: 379 | DRAGON EXP: 16449
+
+Datamon
+Digivolutions: 1
+Digivolution 1: QueenChessmon
+LEVEL: 48 | ATK STAT: 393 | DRAGON EXP: 21256
+
+Piximon
+Digivolutions: 0
+
+Garbagemon
+Digivolutions: 2
+Digivolution 1: Ebemon
+LEVEL: 59 | DEF STAT: 200
+Digivolution 2: MachineDramon
+LEVEL: 53 | BEAST EXP: 23992 | ATK STAT: 397
+
+Kabukimon
+Digivolutions: 1
+Digivolution 1: Lotosmon
+LEVEL: 55 | BEAST EXP: 11001 | AQUAN EXP: 28481
+
+Pipismon
+Digivolutions: 2
+Digivolution 1: Varodurumon
+LEVEL: 64 | BIRD EXP: 8537 | SPIRIT STAT: 389
+Digivolution 2: Eaglemon
+LEVEL: 50 | DEF STAT: 201 | SPECIES EXP: 45613
+
+Megakabuterimon(Blue)
+Digivolutions: 1
+Digivolution 1: Rosemon Burst Mode
+LEVEL: 54 | ATK STAT: 321 | INSECTPLANT EXP: 19854
+
+Rapidmon
+Digivolutions: 1
+Digivolution 1: Mega Gargomon
+LEVEL: 55 | ATK STAT: 213
+
+Lillymon
+Digivolutions: 2
+Digivolution 1: Rosemon
+LEVEL: 60 | DEF STAT: 308 | AQUAN EXP: 13212
+Digivolution 2: GrandisKuwagamon
+LEVEL: 46 | INSECTPLANT EXP: 24403 | SPIRIT STAT: 271
+
+Cherrymon
+Digivolutions: 1
+Digivolution 1: HerculesKabuterimon
+LEVEL: 61 | APTITUDE STAT: 56 | ATK STAT: 312
+
+Mummymon
+Digivolutions: 0
+
+BlackWarGrowlmon 
+Digivolutions: 2
+Digivolution 1: ShineGreymon
+LEVEL: 54 | DARK EXP: 22468 | DRAGON EXP: 24886
+Digivolution 2: Imperialdramon Dragon Mode(Black)
+LEVEL: 56 | DRAGON EXP: 29491 | APTITUDE STAT: 64
+
+WarGrowlmon
+Digivolutions: 1
+Digivolution 1: DotShineGreymon
+LEVEL: 56 | SPECIES EXP: 59988 | DRAGON EXP: 10567
+
+Parrotmon
+Digivolutions: 1
+Digivolution 1: Valkyrimon
+LEVEL: 57 | SPIRIT STAT: 375 | BIRD EXP: 29342
+
+Shakkoumon
+Digivolutions: 2
+Digivolution 1: Boltmon
+LEVEL: 48 | APTITUDE STAT: 52 | DARK EXP: 21682
+Digivolution 2: Babamon
+LEVEL: 62 | INSECTPLANT EXP: 27509 | SPECIES EXP: 65617
+
+MagnaAngemon
+Digivolutions: 0
+
+Etemon
+Digivolutions: 2
+Digivolution 1: MirageGaogamon Burst Mode
+LEVEL: 57 | DARK EXP: 23613 | FRIENDSHIP % STAT: 91
+Digivolution 2: Minervamon
+LEVEL: 59 | BEAST EXP: 26091 | SPIRIT STAT: 398
+
+Aurumon
+Digivolutions: 2
+Digivolution 1: Ravemon Burst Mode
+LEVEL: 49 | BIRD EXP: 10483 | SPEED STAT: 351
+Digivolution 2: Phoenixmon
+LEVEL: 60 | FRIENDSHIP % STAT: 91 | APTITUDE STAT: 59
+
+Megadramon
+Digivolutions: 2
+Digivolution 1: Justimon
+LEVEL: 55 | MACHINE EXP: 19606 | BIRD EXP: 10918
+Digivolution 2: HiAndromon
+LEVEL: 57 | DRAGON EXP: 19812 | SPECIES EXP: 51749
+
+Volcanomon
+Digivolutions: 1
+Digivolution 1: Chaos Gallantmon
+LEVEL: 54 | SPECIES EXP: 65482 | BIRD EXP: 9736
+
+Allomon
+Digivolutions: 0
+
+Kongoumon
+Digivolutions: 1
+Digivolution 1: Pharaohmon
+LEVEL: 51 | SPIRIT STAT: 305 | AQUAN EXP: 15210
+
+Giromon
+Digivolutions: 1
+Digivolution 1: PrinceMamemon
+LEVEL: 58 | DRAGON EXP: 29080 | MACHINE EXP: 7613
+
+Matadormon
+Digivolutions: 0
+
+Magnamon
+Digivolutions: 0
+
+Blossomon
+Digivolutions: 2
+Digivolution 1: SaberLeomon
+LEVEL: 61 | BEAST EXP: 12185 | APTITUDE STAT: 54
+Digivolution 2: Zanbamon
+LEVEL: 52 | DARK EXP: 9404 | SPECIES EXP: 59790
+
+Triceramon
+Digivolutions: 0
+
+Ponchomon
+Digivolutions: 0
+
+Prairiemon
+Digivolutions: 2
+Digivolution 1: MirageGaogamon
+LEVEL: 51 | APTITUDE STAT: 60 | BEAST EXP: 13616
+Digivolution 2: DotMirageGaogamon
+LEVEL: 55 | BEAST EXP: 8029 | SPEED STAT: 266
+
+Shurimon
+Digivolutions: 1
+Digivolution 1: Ravemon
+LEVEL: 46 | BIRD EXP: 12427 | MACHINE EXP: 29845
+
+MachGaogamon
+Digivolutions: 2
+Digivolution 1: MetalGarurumon
+LEVEL: 55 | BEAST EXP: 16923 | ATK STAT: 271
+Digivolution 2: GigaSeadramon
+LEVEL: 64 | APTITUDE STAT: 65 | FRIENDSHIP % STAT: 96
+
+MameTyramon
+Digivolutions: 1
+Digivolution 1: Parasimon
+LEVEL: 54 | MACHINE EXP: 20700 | FRIENDSHIP % STAT: 99
+
+Lucemon Chaos Mode
+Digivolutions: 1
+Digivolution 1: Diaboromon
+LEVEL: 65 | SPECIES EXP: 68086 | DARK EXP: 28677
+
+Crescemon
+Digivolutions: 1
+Digivolution 1: VenomMyotismon
+LEVEL: 59 | DARK EXP: 17413 | APTITUDE STAT: 60
+
+Dinobeemon
+Digivolutions: 1
+Digivolution 1: Seraphimon
+LEVEL: 64 | MACHINE EXP: 21585 | HOLY EXP: 18946
+
+Flaremon
+Digivolutions: 2
+Digivolution 1: Ghoulmon
+LEVEL: 52 | DARK EXP: 25299 | ATK STAT: 270
+Digivolution 2: Gallantmon
+LEVEL: 57 | HOLY EXP: 15585 | DARK EXP: 16571
+
+Vajramon
+Digivolutions: 0
+
+Kenkimon
+Digivolutions: 0
+
+MegaKabuterimon(Red)
+Digivolutions: 1
+Digivolution 1: Beelzemon
+LEVEL: 64 | DARK EXP: 12688 | SPEED STAT: 249
+
+Marine Devimon
+Digivolutions: 1
+Digivolution 1: Pukumon
+LEVEL: 59 | SPEED STAT: 308
+
+Shaujinmon
+Digivolutions: 1
+Digivolution 1: Preciomon
+LEVEL: 49 | DARK EXP: 20410 | ATK STAT: 382
+
+Myotismon
+Digivolutions: 2
+Digivolution 1: MaloMyotismon
+LEVEL: 56 | DARK EXP: 7424 | SPECIES EXP: 21983
+Digivolution 2: Millenniummon  
+LEVEL: 46 | HOLY EXP: 29716 | INSECTPLANT EXP: 28309
+
+Shadramon
+Digivolutions: 1
+Digivolution 1: Moon=Millenniummon  
+LEVEL: 63 | SPEED STAT: 256 | DARK EXP: 13152
+
+Seahomon
+Digivolutions: 2
+Digivolution 1: JumboGamemon
+LEVEL: 49 | SPEED STAT: 226 | AQUAN EXP: 6148
+Digivolution 2: MetalSeadramon
+LEVEL: 60 | AQUAN EXP: 24488 | SPECIES EXP: 29675
+
+Phantomon
+Digivolutions: 1
+Digivolution 1: Beelzemon Blast Mode
+LEVEL: 63 | ATK STAT: 318 | DARK EXP: 10481
+
+Okuwamon
+Digivolutions: 1
+Digivolution 1: SL Angemon
+LEVEL: 65 | INSECTPLANT EXP: 19266 | HOLY EXP: 16262
+
+BlackRapidmon
+Digivolutions: 0
+
+Deramon
+Digivolutions: 2
+Digivolution 1: Gryphonmon 
+LEVEL: 57 | FRIENDSHIP % STAT: 95 | BIRD EXP: 11965
+Digivolution 2: Susanoomon
+LEVEL: 48 | DEF STAT: 250 | DRAGON EXP: 19900
+
+Angewomon
+Digivolutions: 2
+Digivolution 1: Shine Greymon Burst Mode
+LEVEL: 58 | BEAST EXP: 11777 | DRAGON EXP: 14631
+Digivolution 2: Apollomon
+LEVEL: 46 | DEF STAT: 366 | SPIRIT STAT: 223
+
+Dragomon
+Digivolutions: 0
+
+Yatagaramon
+Digivolutions: 3
+Digivolution 1: Devitamamon
+LEVEL: 60 | DARK EXP: 28271 | DEF STAT: 292
+Digivolution 2: Cherubimon (Evil)
+LEVEL: 60 | DARK EXP: 16313 | SPEED STAT: 336
+Digivolution 3: Creepymon
+LEVEL: 54 | DARK EXP: 27964 | SPIRIT STAT: 308
+
+BishopChessmon
+Digivolutions: 2
+Digivolution 1: KingChessmon
+LEVEL: 48 | MACHINE EXP: 28052 | APTITUDE STAT: 63
+Digivolution 2: Puppetmon
+LEVEL: 58 | DEF STAT: 345 | SPEED STAT: 207
+
+Silphymon
+Digivolutions: 1
+Digivolution 1: Cherubimon (Good)
+LEVEL: 52 | SPEED STAT: 306 | HOLY EXP: 12204
+
+Sinduramon
+Digivolutions: 0
+
+WarGarurumon(Black)
+Digivolutions: 1
+Digivolution 1: Bantyo Leomon
+LEVEL: 52 | BEAST EXP: 28606 | SPEED STAT: 338
+
+Grapleomon
+Digivolutions: 0
+
+Divermon
+Digivolutions: 2
+Digivolution 1: Neptunmon
+LEVEL: 59 | SPIRIT STAT: 269 | SPEED STAT: 306
+Digivolution 2: Ophanimon
+LEVEL: 57 | HOLY EXP: 5498 | SPEED STAT: 217
+
+Andromon
+Digivolutions: 1
+Digivolution 1: Imperialdramon Paladin Mode
+LEVEL: 59 | APTITUDE STAT: 65 | FRIENDSHIP % STAT: 96
+
+Paildramon
+Digivolutions: 2
+Digivolution 1: Cannondramon
+LEVEL: 50 | AQUAN EXP: 13024
+Digivolution 2: Megidramon
+LEVEL: 56 | MACHINE EXP: 15601 | DRAGON EXP: 13573
+
+Karatenmon
+Digivolutions: 0
+
+Lilamon
+Digivolutions: 1
+Digivolution 1: Kuzuhamon
+LEVEL: 57 | HOLY EXP: 29126 | APTITUDE STAT: 62
+
+Whamon (Ultimate)
+Digivolutions: 1
+Digivolution 1: MarineAngemon
+LEVEL: 60 | DEF STAT: 265
+
+LadyDevimon
+Digivolutions: 0
+
+Kimeramon
+Digivolutions: 0
+
+Gigadramon
+Digivolutions: 1
+Digivolution 1: Argomon Mega
+LEVEL: 51 | DARK EXP: 10117 | ATK STAT: 295
+
+SkullGreymon
+Digivolutions: 1
+Digivolution 1: Piedmon
+LEVEL: 56 | FRIENDSHIP % STAT: 91 | SPEED STAT: 262
+
+Cyberdramon
+Digivolutions: 1
+Digivolution 1: Imperialdramon Fighter Mode
+LEVEL: 62 | MACHINE EXP: 5734 | DEF STAT: 334
+
+MegaSeadramon
+Digivolutions: 0
+
+AeroVeedramon
+Digivolutions: 2
+Digivolution 1: Lampmon
+LEVEL: 46 | SPIRIT STAT: 255 | INSECTPLANT EXP: 5664
+Digivolution 2: Dark Dramon
+LEVEL: 52 | DRAGON EXP: 25370 | BEAST EXP: 6041
+
+Infermon
+Digivolutions: 2
+Digivolution 1: Lilithmon
+LEVEL: 51 | DARK EXP: 25541 | SPIRIT STAT: 397
+Digivolution 2: Armageddemon
+LEVEL: 63 | DARK EXP: 13395 | DEF STAT: 375
+
+Lanksmon
+Digivolutions: 0
+
+Monzaemon
+Digivolutions: 0
+
+Meteormon
+Digivolutions: 0
+
+Zudomon
+Digivolutions: 1
+Digivolution 1: Vikemon
+LEVEL: 53 | SPIRIT STAT: 252 | BIRD EXP: 5092
+
+Toucanmon
+Digivolutions: 1
+Digivolution 1: Dianamon
+LEVEL: 51 | SPECIES EXP: 62079 | DARK EXP: 23071
+
+Brachiomon
+Digivolutions: 1
+Digivolution 1: Goldramon
+LEVEL: 54 | HOLY EXP: 28276 | SPECIES EXP: 39424
+
+MetalMamemon
+Digivolutions: 0
+
+Vermilimon
+Digivolutions: 1
+Digivolution 1: BlackWarGreymon
+LEVEL: 52 | BEAST EXP: 22922 | DRAGON EXP: 28774
+
+Knightmon
+Digivolutions: 1
+Digivolution 1: Jijimon
+LEVEL: 59 | SPEED STAT: 299 | HOLY EXP: 13864
+
+Antylamon
+Digivolutions: 0
+
+Tylomon
+Digivolutions: 1
+Digivolution 1: Duftmon
+LEVEL: 47 | HOLY EXP: 27527 | BEAST EXP: 12974
+
+EXTyrannomon
+Digivolutions: 2
+Digivolution 1: Black SaintGargomon
+LEVEL: 57 | BEAST EXP: 25884
+Digivolution 2: ZeedMillenniummon
+LEVEL: 53 | DARK EXP: 13092 | DEF STAT: 209
+
+Vademon
+Digivolutions: 1
+Digivolution 1: Omnimon
+LEVEL: 53 | FRIENDSHIP % STAT: 93 | HOLY EXP: 21651
+
+Kyukimon
+Digivolutions: 1
+Digivolution 1: MetalEtemon
+LEVEL: 64 | APTITUDE STAT: 62 | SPEED STAT: 224
+
+Taomon
+Digivolutions: 1
+Digivolution 1: Shine Greymon Ruin Mode
+LEVEL: 61 | AQUAN EXP: 20060 | FRIENDSHIP % STAT: 96
+
+RookChessmon
+Digivolutions: 0
+
+Argomon Ultimate
+Digivolutions: 2
+Digivolution 1: Ghoulmon (Black)
+LEVEL: 57 | SPECIES EXP: 62334 | MACHINE EXP: 29231
+Digivolution 2: Gulfmon 
+LEVEL: 48 | DARK EXP: 13747 | DEF STAT: 309
+
+Mammothmon
+Digivolutions: 0
+
+ShogunGekomon
+Digivolutions: 1
+Digivolution 1: Magna Dramon
+LEVEL: 61 | DRAGON EXP: 26372 | DEF STAT: 287
+
+SuperStarmon
+Digivolutions: 2
+Digivolution 1: Sleipmon
+LEVEL: 47 | SPECIES EXP: 71767 | DEF STAT: 275
+Digivolution 2: Anubismon
+LEVEL: 57 | HOLY EXP: 17597 | BIRD EXP: 14819
+
+Mamemon
+Digivolutions: 1
+Digivolution 1: Dorugoramon
+LEVEL: 59 | INSECTPLANT EXP: 13692 | DEF STAT: 296
+
+Pandamon
+Digivolutions: 1
+Digivolution 1: Skull Mammothmon
+LEVEL: 62 | ATK STAT: 380 | APTITUDE STAT: 50
+
+Tyilinmon
+Digivolutions: 1
+Digivolution 1: Gallantmon Crimson Mode
+LEVEL: 63 | HOLY EXP: 24201
+
+Scorpiomon
+Digivolutions: 0
+
+Big Mamemon
+Digivolutions: 1
+Digivolution 1: Chronomon Holy Mode
+LEVEL: 54 | HOLY EXP: 9840 | DARK EXP: 27272
+
+RiseGreymon
+Digivolutions: 0
+
+Flamedramon
+Digivolutions: 0
+
+Garudamon
+Digivolutions: 0
+
+Tekkamon
+Digivolutions: 1
+Digivolution 1: Chaosmon
+LEVEL: 61 | HOLY EXP: 23098 | DEF STAT: 200
+
+Yatakaramon
+Digivolutions: 2
+Digivolution 1: Apocalymon
+LEVEL: 47 | DEF STAT: 391 | SPIRIT STAT: 362
+Digivolution 2: Alphamon
+LEVEL: 59 | MACHINE EXP: 20543 | HOLY EXP: 29956
+
+Arukenimon
+Digivolutions: 0
+
+Digitamamon
+Digivolutions: 0
+
+WarGarurumon(Blue)
+Digivolutions: 0
+
+MetalGreymon
+Digivolutions: 0
+
+MetalTyrannomon
+Digivolutions: 1
+Digivolution 1: Sakuyamon
+LEVEL: 65 | SPEED STAT: 344 | HOLY EXP: 12702
+
+==================== MEGA ====================
+
+Boltmon
+Digivolutions: 0
+
+Minervamon
+Digivolutions: 0
+
+Magna Dramon
+Digivolutions: 0
+
+Zanbamon
+Digivolutions: 0
+
+SaberLeomon
+Digivolutions: 0
+
+MirageGaogamon Burst Mode
+Digivolutions: 0
+
+ShineGreymon
+Digivolutions: 0
+
+Susanoomon
+Digivolutions: 0
+
+Varodurumon
+Digivolutions: 0
+
+Bantyo Leomon
+Digivolutions: 0
+
+Omnimon
+Digivolutions: 0
+
+MachineDramon
+Digivolutions: 0
+
+Ghoulmon (Black)
+Digivolutions: 0
+
+Imperialdramon Fighter Mode
+Digivolutions: 0
+
+Mega Gargomon
+Digivolutions: 0
+
+Jijimon
+Digivolutions: 0
+
+Skull Mammothmon
+Digivolutions: 0
+
+Neptunmon
+Digivolutions: 0
+
+Cherubimon (Good)
+Digivolutions: 0
+
+Puppetmon
+Digivolutions: 0
+
+Rosemon Burst Mode
+Digivolutions: 0
+
+Sakuyamon
+Digivolutions: 0
+
+Gallantmon Crimson Mode
+Digivolutions: 0
+
+MetalEtemon
+Digivolutions: 0
+
+Black SaintGargomon
+Digivolutions: 0
+
+Sleipmon
+Digivolutions: 0
+
+Goldramon
+Digivolutions: 0
+
+Ophanimon
+Digivolutions: 0
+
+Ebemon
+Digivolutions: 0
+
+JumboGamemon
+Digivolutions: 0
+
+Creepymon
+Digivolutions: 0
+
+Ghoulmon
+Digivolutions: 0
+
+Lotosmon
+Digivolutions: 0
+
+Justimon
+Digivolutions: 0
+
+HerculesKabuterimon
+Digivolutions: 0
+
+Megidramon
+Digivolutions: 0
+
+MaloMyotismon
+Digivolutions: 0
+
+Imperialdramon Paladin Mode
+Digivolutions: 0
+
+Ravemon Burst Mode
+Digivolutions: 0
+
+Babamon
+Digivolutions: 0
+
+BlackWarGreymon
+Digivolutions: 0
+
+Cherubimon (Evil)
+Digivolutions: 0
+
+Cannondramon
+Digivolutions: 0
+
+Lampmon
+Digivolutions: 0
+
+QueenChessmon
+Digivolutions: 0
+
+Dianamon
+Digivolutions: 0
+
+GigaSeadramon
+Digivolutions: 0
+
+ZeedMillenniummon
+Digivolutions: 0
+
+WarGreymon
+Digivolutions: 0
+
+GrandisKuwagamon
+Digivolutions: 0
+
+Alphamon
+Digivolutions: 0
+
+Valkyrimon
+Digivolutions: 0
+
+Preciomon
+Digivolutions: 0
+
+Gulfmon 
+Digivolutions: 0
+
+Piedmon
+Digivolutions: 0
+
+Moon=Millenniummon  
+Digivolutions: 0
+
+DotShineGreymon
+Digivolutions: 0
+
+Duftmon
+Digivolutions: 0
+
+Rosemon
+Digivolutions: 0
+
+Beelzemon Blast Mode
+Digivolutions: 0
+
+Parasimon
+Digivolutions: 0
+
+Seraphimon
+Digivolutions: 0
+
+Chaosmon
+Digivolutions: 0
+
+Gallantmon
+Digivolutions: 0
+
+Shine Greymon Burst Mode
+Digivolutions: 0
+
+Gryphonmon 
+Digivolutions: 0
+
+HiAndromon
+Digivolutions: 0
+
+Argomon Mega
+Digivolutions: 0
+
+Kuzuhamon
+Digivolutions: 0
+
+Lilithmon
+Digivolutions: 0
+
+PrinceMamemon
+Digivolutions: 0
+
+Chronomon Holy Mode
+Digivolutions: 0
+
+DotMirageGaogamon
+Digivolutions: 0
+
+MarineAngemon
+Digivolutions: 0
+
+SL Angemon
+Digivolutions: 0
+
+KingChessmon
+Digivolutions: 0
+
+Pukumon
+Digivolutions: 0
+
+Diaboromon
+Digivolutions: 0
+
+VenomMyotismon
+Digivolutions: 0
+
+Dark Dramon
+Digivolutions: 0
+
+Devitamamon
+Digivolutions: 0
+
+Phoenixmon
+Digivolutions: 0
+
+Millenniummon  
+Digivolutions: 0
+
+Vikemon
+Digivolutions: 0
+
+Imperialdramon Dragon Mode(Black)
+Digivolutions: 0
+
+MetalSeadramon
+Digivolutions: 0
+
+Apocalymon
+Digivolutions: 0
+
+Imperialdramon Dragon Mode
+Digivolutions: 0
+
+Pharaohmon
+Digivolutions: 0
+
+Anubismon
+Digivolutions: 0
+
+Eaglemon
+Digivolutions: 0
+
+Chaos Gallantmon
+Digivolutions: 0
+
+Ravemon
+Digivolutions: 0
+
+MirageGaogamon
+Digivolutions: 0
+
+MetalGarurumon
+Digivolutions: 0
+
+Beelzemon
+Digivolutions: 0
+
+Shine Greymon Ruin Mode
+Digivolutions: 0
+
+Armageddemon
+Digivolutions: 0
+
+Dorugoramon
+Digivolutions: 0
+
+Apollomon
+Digivolutions: 0
+Applied exp patch (flat)
+Created new rom at target path "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_qolpatch_test_1.nds"
+

@@ -3,11 +3,16 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
+from configs import ExpYieldConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
 import sys
+import random
+import numpy as np
+import logging
+from io import StringIO
+
 
 
 class AppState:
@@ -15,6 +20,23 @@ class AppState:
         self.config_manager: ConfigManager = ConfigManager()
         self.current_rom: DigimonROM = None  
         self.randomizer: Randomizer = None
+        self.log_stream: StringIO = StringIO()
+        self.logger: logging.Logger = self.setLogger()
+        self.seed: int = -1
+
+    def setLogger(self):
+        logger = logging.getLogger(__name__)
+        logging.basicConfig(stream=self.log_stream, level=logging.INFO, format='%(message)s')
+        return logger
+    
+    def writeLog(self, fpath: str):
+        with open(fpath + ".log", "w", encoding="utf8") as log_f:
+            log_f.write(self.log_stream.getvalue())
+
+    def apply_seed(self):
+        random.seed(self.seed)
+        np.random.seed(self.seed)
+
 
 app_state = AppState()
 
@@ -34,10 +56,10 @@ def execute_rom_changes(save_path):
         "CHANGE_TEXT_SPEED": change_text_speed_var,
         "CHANGE_MOVEMENT_SPEED": change_movement_speed_var,
         "CHANGE_ENCOUNTER_RATE": change_wild_encounter_rate_var,
-        "CHANGE_STAT_CAPS": increase_stat_caps_var,
+        #"CHANGE_STAT_CAPS": increase_stat_caps_var,
         "EXTEND_PLAYERNAME_SIZE": expand_player_name_var,
 
-        "APPLY_EXP_PATCH_FLAT": increase_exp_yield_var,
+        "APPLY_EXP_PATCH_FLAT": ExpYieldConfig(exp_yield_option_var.get()),
         "BUFF_SCAN_RATE": increase_flat_scan_rate_var,
     
         "RANDOMIZE_STARTERS": RandomizeStartersConfig(starters_option_var.get()),  # RandomizeStartersConfig(starters_option_var) might have to be initialized like this
@@ -54,10 +76,15 @@ def execute_rom_changes(save_path):
     }
 
 
+    if(app_state.seed == -1):
+        app_state.seed = random.Random(random.randrange(sys.maxsize))
+        
+    app_state.apply_seed()
     app_state.config_manager.update_from_ui(patcher_config_options)
     app_state.current_rom.executeQolChanges()
     app_state.randomizer.executeRandomizerFunctions()
     app_state.current_rom.writeRom(save_path)
+    app_state.writeLog(save_path)
 
 
 
@@ -71,8 +98,8 @@ def enable_buttons():
     textSpeedCheckbox.configure(state="normal")
     increaseMovementSpeedCheckbox.configure(state="normal")
     decreaseWildEncounterCheckbox.configure(state="normal")
-    increaseStatCapsCheckbox.configure(state="normal")
-    increaseExpYieldCheckbox.configure(state="normal")
+    #increaseStatCapsCheckbox.configure(state="normal")
+    #increaseExpYieldCheckbox.configure(state="normal")
     increaseFlatScanRateCheckbox.configure(state="normal")
     expandPlayerNameCheckbox.configure(stat="normal")
 
@@ -91,6 +118,7 @@ def enable_buttons():
     # Randomize wild digimon
     wild_digimon_unchanged_rb.configure(state="normal")
     wild_digimon_randomize_rb.configure(state="normal")
+    wild_digimon_randomize_completely_rb.configure(state="normal")
 
     # Randomize digivolutions and conditions
 
@@ -102,7 +130,30 @@ def enable_buttons():
 
 
 
-def save_changes_function():
+def open_rom():
+    file_path = filedialog.askopenfilename(
+        title="Open ROM",
+        filetypes=[("ROM Files", "*.nds"), ("All Files", "*.*")]
+    )
+    if file_path:
+        try:
+            app_state.current_rom = DigimonROM(file_path, app_state.config_manager, app_state.logger)
+            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager, app_state.logger)
+        except ValueError:
+            messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
+            return
+        rom_name_label.config(text=f"ROM Name: {file_path.split('/')[-1]}")
+        #rom_size_label.config(text=f"ROM Size: {os.path.getsize(file_path) / 1024:.2f} KB")
+        rom_version_label.config(text=f"ROM Version: {app_state.current_rom.version}")
+        rom_path_label.config(text=f"ROM Path: {file_path}")
+        
+        rom_status_label.config(text="Status: Loaded")
+
+        # Enable interface
+        enable_buttons()
+
+
+def save_changes():
     
     rom_dir = os.path.dirname(app_state.current_rom.fpath)
     save_path = filedialog.asksaveasfilename(
@@ -120,27 +171,72 @@ def save_changes_function():
             messagebox.showerror("Error", f"Failed to save changes: {e}")
 
 
-def open_rom_function():
-    file_path = filedialog.askopenfilename(
-        title="Open ROM",
-        filetypes=[("ROM Files", "*.nds"), ("All Files", "*.*")]
-    )
-    if file_path:
-        try:
-            app_state.current_rom = DigimonROM(file_path, app_state.config_manager)
-            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager)
-        except ValueError:
-            messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
-            return
-        rom_name_label.config(text=f"ROM Name: {file_path.split('/')[-1]}")
-        #rom_size_label.config(text=f"ROM Size: {os.path.getsize(file_path) / 1024:.2f} KB")
-        rom_version_label.config(text=f"ROM Version: {app_state.current_rom.version}")
-        rom_path_label.config(text=f"ROM Path: {file_path}")
-        
-        rom_status_label.config(text="Status: Loaded")
+def set_random_seed():
 
-        # Enable interface
-        enable_buttons()
+    set_random_seed_window = tk.Toplevel(root)
+    set_random_seed_window.title("Set Random Seed")
+    #set_random_seed_window.geometry("600x360")
+    set_random_seed_window.resizable(False, False)
+
+
+    # Get the main window's position
+    main_x = root.winfo_rootx()
+    main_y = root.winfo_rooty()
+
+    # Offset the pop-up slightly (e.g., center it over the main window)
+    offset_x = 250
+    offset_y = 150
+    set_random_seed_window.geometry(f"+{main_x + offset_x}+{main_y + offset_y}")
+
+    frame = tk.Frame(set_random_seed_window)
+    frame.pack(padx=20, pady=20)
+
+    random_seed_label = tk.Label(frame, text="Random Seed:")
+    random_seed_label.grid(row=0, column=0, padx=10, pady=5, sticky="e")
+
+    cur_seed_val = str(app_state.seed) if app_state.seed != -1 else "N/A"
+
+    description_label = tk.Label(
+        set_random_seed_window,
+        text="Current seed value: " + cur_seed_val,
+        wraplength=320
+    )
+    description_label.pack()
+
+
+    def validate_seed_input(P):
+        if P == "" or P.isdigit():  
+            return True
+        else:
+            return False
+
+    validate_seed = set_random_seed_window.register(validate_seed_input)
+    random_seed_entry = tk.Entry(frame, validate="key", validatecommand=(validate_seed, "%P"))
+    random_seed_entry.grid(row=0, column=1, padx=10, pady=5)
+
+    def submit_seed():
+        try:
+            random_seed_val = random_seed_entry.get().strip()
+            if random_seed_val and random_seed_val.isdigit(): 
+                random_seed_val = int(random_seed_val)
+                app_state.seed = random_seed_val
+                messagebox.showinfo("Random Seed Set", f"Seed set to: {random_seed_val}")
+                set_random_seed_window.destroy()
+            elif(len(random_seed_val) == 0):
+                messagebox.showinfo("Random Seed Set", f"Random seed not set (empty input field).")
+                app_state.seed = -1
+                set_random_seed_window.destroy()
+            else:
+                messagebox.showerror("Error", f"Invalid seed input. Please enter a valid number or leave the field empty (no set seed).")
+        except Exception as e:
+            messagebox.showerror("Error", f"Invalid seed input. Please enter a valid number.")
+
+            
+    submit_button = tk.Button(set_random_seed_window, text="Submit", command=submit_seed)
+    submit_button.pack(pady=20)
+
+
+
 
 
 def show_about_popup():
@@ -156,8 +252,8 @@ def show_about_popup():
     main_y = root.winfo_rooty()
 
     # Offset the pop-up slightly (e.g., center it over the main window)
-    offset_x = 50
-    offset_y = 50
+    offset_x = 150
+    offset_y = 120
     about_window.geometry(f"+{main_x + offset_x}+{main_y + offset_y}")
 
     title_label = tk.Label(
@@ -171,7 +267,7 @@ def show_about_popup():
 
     version_label = tk.Label(
         about_window,
-        text="Version 1.0.0",
+        text="Version 0.1.0",
         justify="center",
         anchor="center"
     )
@@ -277,11 +373,14 @@ rom_frame.pack(side="top", fill="x", pady=10)
 button_frame = ttk.Frame(rom_frame)
 button_frame.pack(side="left", fill="y", padx=10)
 
-open_rom_button = ttk.Button(button_frame, text="Open ROM", command=open_rom_function)
+open_rom_button = ttk.Button(button_frame, text="Open ROM", command=open_rom)
 open_rom_button.pack(fill="x", pady=5, ipadx=30)
 
-save_changes_button = ttk.Button(button_frame, text="Save Changes", command=save_changes_function, state="disabled")
+save_changes_button = ttk.Button(button_frame, text="Save Patched ROM", command=save_changes, state="disabled")
 save_changes_button.pack(fill="x", pady=5)
+
+premade_seed_button = ttk.Button(button_frame, text="Set Random Seed", command=set_random_seed)
+premade_seed_button.pack(fill="x", pady=5)
 
 about_button = ttk.Button(button_frame, text="About", command=show_about_popup)
 about_button.pack(fill="x", pady=5)
@@ -315,7 +414,7 @@ notebook.pack(fill="both", expand=True)
 # QoL Changes Tab
 qol_frame = ttk.Frame(notebook, padding=10)
 qol_frame.pack(fill="both", expand=True)  # Ensure frame fills space
-notebook.add(qol_frame, text="QoL Changes")
+notebook.add(qol_frame, text="QoL Patches")
 
 # QoL Checkbuttons
 change_text_speed_var = tk.BooleanVar(value=True)
@@ -333,10 +432,10 @@ decreaseWildEncounterCheckbox = tk.Checkbutton(qol_frame, text="Reduce Wild Enco
 decreaseWildEncounterCheckbox.pack(anchor='w')
 decreaseWildEncounterTooltip = CreateToolTip(decreaseWildEncounterCheckbox, "Reduces the wild encounter rate in all areas by 0.5x.")
 
-increase_exp_yield_var = tk.BooleanVar(value=True)
-increaseExpYieldCheckbox = tk.Checkbutton(qol_frame, text="Increase Exp Yield for Wild Digimon", variable=increase_exp_yield_var, state="disabled")
-increaseExpYieldCheckbox.pack(anchor='w')
-increaseExpYieldTootip = CreateToolTip(increaseExpYieldCheckbox, "Changes the exp given by all wild digimon to match game progression.\nThe exp yield values are roughly calculated through pokémon's standard formula for experience yield: base_exp * encounter_lvl / 7, where base_exp is a fixed value depending on the digimon's digivolution stage, and encounter_lvl is the level of the encounter.")
+#increase_exp_yield_var = tk.BooleanVar(value=True)
+#increaseExpYieldCheckbox = tk.Checkbutton(qol_frame, text="Increase Exp Yield for Wild Digimon", variable=increase_exp_yield_var, state="disabled")
+#increaseExpYieldCheckbox.pack(anchor='w')
+#increaseExpYieldTootip = CreateToolTip(increaseExpYieldCheckbox, "Changes the exp given by all wild digimon to match game progression.\nThe exp yield values are roughly calculated through pokémon's standard formula for experience yield: base_exp * encounter_lvl / 7, where base_exp is a fixed value depending on the digimon's digivolution stage, and encounter_lvl is the level of the encounter.")
 
 increase_flat_scan_rate_var = tk.BooleanVar(value=True)
 increaseFlatScanRateCheckbox = tk.Checkbutton(qol_frame, text="Increase Scan Rate", variable=increase_flat_scan_rate_var, state="disabled")
@@ -348,11 +447,29 @@ expandPlayerNameCheckbox = tk.Checkbutton(qol_frame, text="Expand Player Name Le
 expandPlayerNameCheckbox.pack(anchor="w")
 expandPlayerNameTooltip = CreateToolTip(expandPlayerNameCheckbox, "Expands the maximum length of the player's name from 5 to 7 characters.")
 
-increase_stat_caps_var = tk.BooleanVar(value=False)
-increaseStatCapsCheckbox = tk.Checkbutton(qol_frame, text="Increase Stat Caps", variable=increase_stat_caps_var, state="disabled")
-increaseStatCapsCheckbox.pack(anchor='w')
-increaseStatCapsTooltip = CreateToolTip(increaseStatCapsCheckbox, "Increases the stat cap to 65535 for all stats.\nOriginally the HP and MP are limited to 9999, and the other stats are limited to 999.")
+#increase_stat_caps_var = tk.BooleanVar(value=False)
+#increaseStatCapsCheckbox = tk.Checkbutton(qol_frame, text="Increase Stat Caps", variable=increase_stat_caps_var, state="disabled")
+#increaseStatCapsCheckbox.pack(anchor='w')
+#increaseStatCapsTooltip = CreateToolTip(increaseStatCapsCheckbox, "Increases the stat cap to 65535 for all stats.\nOriginally the HP and MP are limited to 9999, and the other stats are limited to 999.")
 
+
+# Exp Yield frame
+exp_yield_frame = ttk.LabelFrame(qol_frame, text="Exp. Yield", padding=10)
+exp_yield_frame.pack(side="top", anchor="w", padx=10, pady=10)
+
+
+exp_yield_option_var = tk.IntVar(value=ExpYieldConfig.INCREASE_HALVED.value)
+
+exp_yield_unchanged_rb = tk.Radiobutton(exp_yield_frame, text="Unchanged", variable=exp_yield_option_var, value=ExpYieldConfig.UNCHANGED.value, state="disabled")
+exp_yield_unchanged_rb.pack(anchor="w")
+
+exp_yield_halved_rb = tk.Radiobutton(exp_yield_frame, text="Increase (halved)", variable=exp_yield_option_var, value=ExpYieldConfig.INCREASE_HALVED.value, state="disabled")
+exp_yield_halved_tooltip = CreateToolTip(exp_yield_halved_rb, "Adjusts wild Digimon exp to match progression with half increase.\nExp is calculated using Pokémon's exp.share formula: base_exp * level / 14, where base_exp depends on evolution stage and level is the encounter level.\nFor reference, a lvl 33 wild Greymon's exp yield increases from 71 to 283 points.")
+exp_yield_halved_rb.pack(anchor="w")
+
+exp_yield_full_rb = tk.Radiobutton(exp_yield_frame, text="Increase (full)", variable=exp_yield_option_var, value=ExpYieldConfig.INCREASE_FULL.value, state="disabled")
+exp_yield_full_tooltip = CreateToolTip(exp_yield_full_rb, "Adjusts wild Digimon exp to match progression with full increase.\nExp is calculated using Pokémon's formula: base_exp * level / 7, where base_exp depends on evolution stage and level is the encounter level.\nFor reference, a lvl 33 wild Greymon's exp yield increases from 71 to 566 points.")
+exp_yield_full_rb.pack(anchor="w")
 
 
 '''
@@ -422,9 +539,13 @@ wild_digimon_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
 wild_digimon_unchanged_rb = tk.Radiobutton(wild_digimon_radio_frame, text="Unchanged", variable=wild_digimon_option_var, value=RandomizeWildEncounters.UNCHANGED.value, state="disabled", command=toggle_stat_generation)
 wild_digimon_unchanged_rb.pack(anchor="w")
 
-wild_digimon_randomize_rb = tk.Radiobutton(wild_digimon_radio_frame, text="Random (same stage)", variable=wild_digimon_option_var, value=RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE.value, state="disabled", command=toggle_stat_generation)
+wild_digimon_randomize_rb = tk.Radiobutton(wild_digimon_radio_frame, text="Random (same digivolution stages)", variable=wild_digimon_option_var, value=RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE.value, state="disabled", command=toggle_stat_generation)
 wild_digimon_randomize_tooltip = CreateToolTip(wild_digimon_randomize_rb, "Replaces each wild digimon by another digimon of the same stage.")
 wild_digimon_randomize_rb.pack(anchor="w")
+
+wild_digimon_randomize_completely_rb = tk.Radiobutton(wild_digimon_radio_frame, text="Random (completely)", variable=wild_digimon_option_var, value=RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY.value, state="disabled", command=toggle_stat_generation)
+wild_digimon_randomize_tooltip = CreateToolTip(wild_digimon_randomize_completely_rb, "Replaces each wild digimon by a random digimon of any stage.")
+wild_digimon_randomize_completely_rb.pack(anchor="w")
 
 # Right side: Stat Generation frame
 stat_gen_frame = ttk.LabelFrame(wild_digimon_inner_container, text="Stat Generation", padding=10)
