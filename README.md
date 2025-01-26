@@ -14,6 +14,8 @@ The information presented in these pages refers to the USA roms (serial codes NT
 - [Features](#features)
     - [Quality-of-Life Patches](#quality-of-life-patches)
     - [Randomization Settings](#randomization-settings)
+- [Known Issues](#known-issues)
+- [Run From Source](#run-from-source)
 - [Contact](#contact)
 - [Acknowledgements](#acknowledgements)
 - [Copyright Notice](#copyright-notice)
