@@ -22,8 +22,15 @@ The information presented in these pages refers to the USA roms (serial codes NT
 
 ### Windows
 
-1. Download the [latest release](https://github.com/joaomlsantos/DWDDRandomizer/releases/tag/0.1.0) of the randomizer tool.
+1. Download the [latest release](https://github.com/joaomlsantos/DWDDRandomizer/releases/tag/0.1.0) of the randomizer tool (`DWDDRandomizer_windows.zip`).
 2. Unpack the downloaded files and launch `DWDDRandomizer.exe`.
+3. Click `Open ROM` and open a valid .nds ROM of your game.
+4. Pick your quality-of-life and/or randomization features and click `Save Patched ROM`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
+
+### MacOS
+
+1. Download the [latest release](https://github.com/joaomlsantos/DWDDRandomizer/releases/tag/0.1.0) of the randomizer tool (`DWDDRandomizer_macOS.zip`).
+2. Unpack the downloaded files and launch `DWDDRandomizer.app`. If your system alerts `Apple could not verify "DWDDRandomizer" is free of malware that could harm your Mac or compromise your privacy`, close the warning, go to `Settings -> Privacy & Security`, scroll down to `"DWDDRandomizer" was blocked to protect your Mac`, and click `Open Anyway`.
 3. Click `Open ROM` and open a valid .nds ROM of your game.
 4. Pick your quality-of-life and/or randomization features and click `Save Patched ROM`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
 
@@ -96,7 +103,11 @@ Most of the research work for this game was accomplished using [HxD](https://mh-
 
 The implemented user interface was heavily inspired by [Universal Pokémon Randomizer's](https://github.com/Ajarmar/universal-pokemon-randomizer-zx) design.
 
-Special thanks to [@Dreaker](https://github.com/Dreaker75), who composed a set of thorough [code notes](https://retroachievements.org/codenotes.php?g=16152) for these games and has been supporting this project's efforts through brainstorming, feature testing and listening to me yap about ROM editing for hours [:
+Special thanks to:
+
+- [@Dreaker](https://github.com/Dreaker75), who composed a set of thorough [code notes](https://retroachievements.org/codenotes.php?g=16152) for these games and has been supporting this project's efforts through brainstorming, feature testing and listening to me yap about ROM editing for hours [:
+- [@PocketRotom](https://github.com/PocketRotom), who helped me generate the macOS application release and found a couple of very critical bugs right before the initial release 🙏
+
 
 
 ## Support
