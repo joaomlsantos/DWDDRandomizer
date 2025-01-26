@@ -77,7 +77,7 @@ def execute_rom_changes(save_path):
 
 
     if(app_state.seed == -1):
-        app_state.seed = random.Random(random.randrange(sys.maxsize))
+        app_state.seed = random.randrange(2**32-1)
         
     app_state.apply_seed()
     app_state.config_manager.update_from_ui(patcher_config_options)
@@ -85,6 +85,7 @@ def execute_rom_changes(save_path):
     app_state.randomizer.executeRandomizerFunctions()
     app_state.current_rom.writeRom(save_path)
     app_state.writeLog(save_path)
+    app_state.seed = -1
 
 
 
@@ -220,14 +221,17 @@ def set_random_seed():
     def submit_seed():
         try:
             random_seed_val = random_seed_entry.get().strip()
-            if random_seed_val and random_seed_val.isdigit(): 
-                random_seed_val = int(random_seed_val)
-                app_state.seed = random_seed_val
-                messagebox.showinfo("Random Seed Set", f"Seed set to: {random_seed_val}")
+            if random_seed_val and random_seed_val.isdigit():
+                random_seed_val_int = int(random_seed_val)
+                if(random_seed_val_int > 2**32 - 1):
+                    messagebox.showinfo("Random Seed Set", f"Random seed not set (seed value must not exceed 4294967295).")
+                    set_random_seed_window.destroy()
+                else:
+                    app_state.seed = random_seed_val_int
+                    messagebox.showinfo("Random Seed Set", f"Seed set to: {random_seed_val}")
                 set_random_seed_window.destroy()
             elif(len(random_seed_val) == 0):
                 messagebox.showinfo("Random Seed Set", f"Random seed not set (empty input field).")
-                app_state.seed = -1
                 set_random_seed_window.destroy()
             else:
                 messagebox.showerror("Error", f"Invalid seed input. Please enter a valid number or leave the field empty (no set seed).")
