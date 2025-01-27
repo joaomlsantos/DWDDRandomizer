@@ -9,6 +9,7 @@ The information presented in these pages refers to the USA roms (serial codes NT
 ## Contents
 - [How To Use](#how-to-use)
     - [Windows](#windows)
+    - [MacOS](#macos)
 - [Features](#features)
     - [Quality-of-Life Patches](#quality-of-life-patches)
     - [Randomization Settings](#randomization-settings)
