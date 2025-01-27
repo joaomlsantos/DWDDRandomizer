@@ -73,7 +73,7 @@ The following [**randomization options**](https://github.com/joaomlsantos/DWDDRa
 - Digivolutions
 - Digivolution Conditions
 
-See [this page](near-future-randomization-options-link) for more details about the current randomization options and work-in-progress.
+See [this page](https://github.com/joaomlsantos/DWDDRandomizer/wiki/Randomizer-Options#near-future-randomization-features) for more details about the current randomization options and work-in-progress.
 
 
 ## Known Issues
