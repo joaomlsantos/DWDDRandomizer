@@ -95,7 +95,7 @@ This application was built with Python 3.9.0, but most other versions of Python3
 
 ## Contact
 
-For bug reports, questions or suggestions, please reach out via Issues, by email ([joao.l.santos@tecnico.ulisboa.pt](mailto:joao.l.santos@tecnico.ulisboa.pt)) or through [Twitter](https://twitter.com/ProjectHawke).
+For bug reports, questions or suggestions, please reach out via Issues, by email ([joao.l.santos@tecnico.ulisboa.pt](mailto:joao.l.santos@tecnico.ulisboa.pt)) or through twitter ([@ProjectHawke](https://twitter.com/ProjectHawke)).
 
 
 ## Acknowledgements
