@@ -436,6 +436,7 @@ DIGIMON_ID_TO_STR = {
     0x1dc: "Sleipmon",
     0x1dd: "ShineGreymon",
     0x1de: "MirageGaogamon",
+    0x1df: "JumboGamemon",
     0x1e0: "Ravemon",
     0x1e1: "QueenChessmon",
     0x1e2: "KingChessmon",

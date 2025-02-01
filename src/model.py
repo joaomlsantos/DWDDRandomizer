@@ -87,7 +87,7 @@ class BaseDataDigimon:
     move_4: int
     unknown_0x38: int
     unknown_0x3A: int
-    unknown_0x3C: int
+    exp_curve: int
 
     def __init__(self, digimon_data: bytearray, offset: int):
         try:
@@ -125,7 +125,7 @@ class BaseDataDigimon:
             self.move_4 = int.from_bytes(digimon_data[0x36:0x38], byteorder="little")
             self.unknown_0x38 = int.from_bytes(digimon_data[0x38:0x3a], byteorder="little")
             self.unknown_0x3A = int.from_bytes(digimon_data[0x3a:0x3c], byteorder="little")
-            self.unknown_0x3C = int.from_bytes(digimon_data[0x3c:0x40], byteorder="little")
+            self.exp_curve = int.from_bytes(digimon_data[0x3c:0x40], byteorder="little")             # this is 0 by default for all digimon, can also be 1 or 2 logically
         except:
             print("Exception on BaseDataDigimon call")
             return None

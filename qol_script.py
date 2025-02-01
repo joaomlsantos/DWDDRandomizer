@@ -413,9 +413,12 @@ class Randomizer:
                 hex_addr = constants.DIGIVOLUTION_ADDRESSES[self.version][digimon_id]
                 evos_amount = np.random.choice(list(range(len(evo_amount_distribution))), p=evo_amount_distribution)
                 
+                hasPreDigivolution = digimon_id in pre_evos.keys()      # hotfix to avoid deadlocking due to lvl requirement higher than aptitude
+                
                 self.logger.info("Digivolutions: %d", evos_amount)
-                log_evo_names = []
+                #log_evo_names = []
                 evo_ids = []
+                evo_conditions_debug = []             # setting this here to avoid lvl requirement deadlocking
                 for e in range(evos_amount):
                     try:
                         # pick evo digimon id
@@ -425,20 +428,22 @@ class Randomizer:
                             evo_species_prob_dist /= evo_species_prob_dist.sum()
                             evo_digi_name = np.random.choice(list(digimon_pool_selection[constants.STAGE_NAMES[s+1]].keys()), p=evo_species_prob_dist)
                         evo_digi_id = digimon_pool_selection[constants.STAGE_NAMES[s+1]].pop(evo_digi_name)              # this ensures there are no repeated digimon
-                        log_evo_names.append(evo_digi_name)
-                        self.logger.info("Digivolution " + str(e+1) + ": " + evo_digi_name)
+                        #log_evo_names.append(evo_digi_name)
+                        #self.logger.info("Digivolution " + str(e+1) + ": " + evo_digi_name)
 
                         # if randomize conditions is enabled, base conditions are overriden; if digimon doesn't have conditions yet, then new conditions are generated for it
                         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") or evo_digi_id not in generated_conditions.keys()):
                             # generate conditions for evo digimon
+                            # no need to override w/ hasPreDigivolution here
                             if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
                                 conditions_evo = utils.generateBiasedConditions(s+1, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), self.baseDigimonInfo[evo_digi_id].species)
                             else:
                                 conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
                             generated_conditions[evo_digi_id] = conditions_evo
+                            evo_conditions_debug.append(conditions_evo)
 
-                            log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_evo]
-                            self.logger.info(" | ".join(log_conditions))
+                            #log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_evo]
+                            #self.logger.info(" | ".join(log_conditions))
 
 
                         # add pre-evo register to propagate conditions on next cycles
@@ -459,6 +464,16 @@ class Randomizer:
                         conditions_cur = utils.generateBiasedConditions(s, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), self.baseDigimonInfo[digimon_id].species)
                     else:
                         conditions_cur = utils.generateConditions(s)
+
+                    # check hasPreDigivolution here since we do not know
+                    # if it does not have a predigivolution (and it does have at least a digivolution), change one of them randomly to match aptitude level
+                    
+                    if(not hasPreDigivolution):
+                        log_deadlock = utils.checkAptitudeDeadlockTuple(evo_conditions_debug, self.baseDigimonInfo[digimon_id].aptitude)
+                        # no need to return anything other than log, conditions_evo changes are propagated by reference
+                        if(log_deadlock != ""):
+                            self.logger.info(log_deadlock)
+
                     generated_conditions[digimon_id] = conditions_cur
 
 
@@ -469,6 +484,13 @@ class Randomizer:
                 if(digimon_id in pre_evos.keys()):
                     utils.writeRomBytes(rom_data, pre_evos[digimon_id], hex_addr, 4)
                     conditions_cur = generated_conditions[pre_evos[digimon_id]]
+
+                    # write log for pre-digivolution
+                    self.logger.info("Pre-digivolution: " +  constants.DIGIMON_ID_TO_STR[pre_evos[digimon_id]])
+
+                    log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_cur]
+                    self.logger.info(" | ".join(log_conditions))
+
                     for i in range(3):  # write conditions
                         if(len(conditions_cur) > i):
                             utils.writeRomBytes(rom_data, conditions_cur[i][0], hex_addr+0x10 + (0x8*i), 4)
@@ -490,6 +512,12 @@ class Randomizer:
                         cur_evo_id = evo_ids[i]
                         utils.writeRomBytes(rom_data, cur_evo_id, hex_addr+(0x4*(i+1)), 4)
                         conditions_cur = generated_conditions[cur_evo_id]
+
+                        # write log for digivolution
+                        self.logger.info("Digivolution " + str(i+1) + ": " +  constants.DIGIMON_ID_TO_STR[cur_evo_id])
+                        log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_cur]
+                        self.logger.info(" | ".join(log_conditions))
+
                         for j in range(3):  # write conditions
                             if(len(conditions_cur) > j):
                                 utils.writeRomBytes(rom_data, conditions_cur[j][0], hex_addr+0x10 + (0x8*j) + (0x18*(i+1)), 4)
@@ -518,19 +546,25 @@ class Randomizer:
         self.logger.info("\n==================== DIGIVOLUTIONS ====================")
         generated_conditions = {}
         for stage in constants.DIGIMON_IDS:
+            self.logger.info("\n==================== " + stage + " ====================")
             for digimon_name in constants.DIGIMON_IDS[stage]:
                 self.logger.info("\n" + digimon_name)
                 digimon_id = constants.DIGIMON_IDS[stage][digimon_name]
                 hex_addr = constants.DIGIVOLUTION_ADDRESSES[self.version][digimon_id]
+                hasPreDigivolution = True           # hotfix to avoid deadlocking due to lvl requirement higher than aptitude
 
                 # do a similar operation to loadDigivolutionInformation but writing immediately and propagating the info
                 digivolution_hex_info = rom_data[hex_addr:hex_addr+0x70]            # length of digivolution info for a given digimon is always 0x70
+
+                data_to_write = []      # make it like this so that conditions are only written at the end; this allows us to check for the aptitude requirement
                 
                 # check up to 4 ids; if the id is different than 0xffffffff, then it's a valid digimon
                 for n in range(4):
                     evo_digimon_id = int.from_bytes(digivolution_hex_info[n*4:(n*4)+4], byteorder="little")
                     evo_stage_int = constants.STAGE_NAMES.index(stage) - 1 if n == 0 else constants.STAGE_NAMES.index(stage) + 1    # [0, 1, 2, 3, 4]
                     if(evo_digimon_id == 0xffffffff):
+                        if(n == 0):         # change hasPreDigivolution to false
+                            hasPreDigivolution = False
                         continue
 
                     digivolution_baseinfo = self.baseDigimonInfo[evo_digimon_id]    # load this to account for biased conditions
@@ -554,7 +588,9 @@ class Randomizer:
                             generated_conditions[evo_digimon_id] = conditions_evo
 
                         log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_evo]
-                        self.logger.info("Digivolution " + str(n+1) + ": " + constants.DIGIMON_ID_TO_STR[evo_digimon_id])
+                        prepend_info = "Pre-digivolution: " if n == 0 else "Digivolution " + str(n+1) + ": "
+
+                        self.logger.info(prepend_info + constants.DIGIMON_ID_TO_STR[evo_digimon_id])
                         self.logger.info(" | ".join(log_conditions))
 
                         # write conditions_evo in the corresponding memory
@@ -562,9 +598,24 @@ class Randomizer:
                         for condition in conditions_evo:
                             condition_id = condition[0]
                             condition_value = condition[1]
-                            utils.writeRomBytes(rom_data, condition_id, hex_addr + cur_pointer, 4)
-                            utils.writeRomBytes(rom_data, condition_value, hex_addr + cur_pointer + 4, 4)
+                            #utils.writeRomBytes(rom_data, condition_id, hex_addr + cur_pointer, 4)
+                            #utils.writeRomBytes(rom_data, condition_value, hex_addr + cur_pointer + 4, 4)
+                            condition_data = {}
+                            condition_data["condition_id"] = condition_id
+                            condition_data["condition_value"] = condition_value
+                            condition_data["base_addr"] = hex_addr + cur_pointer
+                            data_to_write.append(condition_data)
                             cur_pointer += 8    # advance to next condition
+
+                if not hasPreDigivolution:
+                    data_to_write, log_deadlock = utils.checkAptitudeDeadlockDict(data_to_write, self.baseDigimonInfo[digimon_id].aptitude)
+                    if(log_deadlock != ""):
+                        self.logger.info(log_deadlock)
+
+                for condition in data_to_write:
+                    utils.writeRomBytes(rom_data, condition["condition_id"], condition["base_addr"], 4)
+                    utils.writeRomBytes(rom_data, condition["condition_value"], condition["base_addr"] + 4, 4)
+
 
 
 
