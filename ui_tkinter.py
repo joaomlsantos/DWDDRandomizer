@@ -46,7 +46,8 @@ if getattr(sys, 'frozen', False):  # Running as a bundled app
 else:  # Running as a script
     bundle_dir = os.path.dirname(os.path.abspath(__file__))
 
-icon_path = os.path.join(bundle_dir, "public", "dusk_transparent.ico")
+#icon_path = os.path.join(bundle_dir, "public", "dusk_transparent.ico")
+icon_png_path = os.path.join(bundle_dir, "public", "dusk_transparent.png")      # fixing issue w linux icons, making icon universal
 
 
 # this function is called when writing the patched/randomized rom; serves as the equivalent to main() for qol_script
@@ -252,7 +253,8 @@ def show_about_popup():
     about_window.title("About")
     about_window.geometry("360x300")
     about_window.resizable(False, False)
-    about_window.iconbitmap(icon_path)
+    #about_window.iconbitmap(icon_path)
+    about_window.iconphoto(False, tk.PhotoImage(file=icon_png_path))
 
     # Get the main window's position
     main_x = root.winfo_rootx()
@@ -369,7 +371,8 @@ root = tk.Tk()
 root.title("Digimon World Dawn/Dusk Randomizer")
 root.geometry("")
 root.minsize(800, 600) 
-root.iconbitmap(icon_path)
+#root.iconbitmap(icon_path)
+root.iconphoto(False, tk.PhotoImage(file=icon_png_path))
 
 
 # Create a frame for the ROM Loading section
