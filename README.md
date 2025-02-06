@@ -36,6 +36,16 @@ The information presented in these pages refers to the USA roms (serial codes NT
 4. Pick your quality-of-life and/or randomization features and click `Save Patched ROM`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
 
 
+### Linux
+
+1. Download the [latest release](https://github.com/joaomlsantos/DWDDRandomizer/releases/latest) of the Digimon World Dawn/Dusk Randomizer (`DWDDRandomizer-linux.tar.gz`).
+2. Extract the archive by running `tar -xzvf DWDDRandomizer-linux.tar.gz`.
+3. Open a terminal in the extracted folder and make sure the binary is executable by running `chmod +x DWDDRandomizer`, then run the application: `./DWDDRandomizer`.
+4. Click `Open ROM` and open a valid .nds ROM of your game.
+5. Pick your quality-of-life and/or randomization features and click `Save Patched ROM`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
+
+
+
 ## Features
 
 ### Quality-of-Life Patches
