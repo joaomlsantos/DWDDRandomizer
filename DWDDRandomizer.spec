@@ -5,7 +5,7 @@ a = Analysis(
     ['ui_tkinter.py'],
     pathex=['.'],
     binaries=[],
-    datas=[('public/dusk_transparent.ico', 'public')],
+    datas=[('public/dusk_transparent.png', 'public')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -32,7 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon="public/dusk_transparent.ico",
+    icon="public/dusk_transparent.png",
     version="version_info.txt"
 )
 coll = COLLECT(

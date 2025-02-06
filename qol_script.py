@@ -593,7 +593,7 @@ class Randomizer:
                             generated_conditions[evo_digimon_id] = conditions_evo
 
                         log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_evo]
-                        prepend_info = "Pre-digivolution: " if n == 0 else "Digivolution " + str(n+1) + ": "
+                        prepend_info = "Pre-digivolution: " if n == 0 else "Digivolution " + str(n) + ": "
 
                         self.logger.info(prepend_info + constants.DIGIMON_ID_TO_STR[evo_digimon_id])
                         self.logger.info(" | ".join(log_conditions))
