@@ -23,14 +23,14 @@ The information presented in these pages refers to the USA roms (serial codes NT
 
 ### Windows
 
-1. Download the [latest release](https://github.com/joaomlsantos/DWDDRandomizer/releases/tag/0.1.0) of the Digimon World Dawn/Dusk Randomizer (`DWDDRandomizer_windows.zip`).
+1. Download the [latest release](https://github.com/joaomlsantos/DWDDRandomizer/releases/latest) of the Digimon World Dawn/Dusk Randomizer (`DWDDRandomizer_windows.zip`).
 2. Unpack the downloaded files and launch `DWDDRandomizer.exe`.
 3. Click `Open ROM` and open a valid .nds ROM of your game.
 4. Pick your quality-of-life and/or randomization features and click `Save Patched ROM`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
 
 ### MacOS
 
-1. Download the [latest release](https://github.com/joaomlsantos/DWDDRandomizer/releases/tag/0.1.0) of the Digimon World Dawn/Dusk Randomizer (`DWDDRandomizer_macOS.zip`).
+1. Download the [latest release](https://github.com/joaomlsantos/DWDDRandomizer/releases/latest) of the Digimon World Dawn/Dusk Randomizer (`DWDDRandomizer_macOS.zip`).
 2. Launch `DWDDRandomizer.app`. If your system alerts `Apple could not verify "DWDDRandomizer" is free of malware that could harm your Mac or compromise your privacy`, close the warning, go to `Settings -> Privacy & Security`, scroll down to `"DWDDRandomizer" was blocked to protect your Mac`, and click `Open Anyway`.
 3. Click `Open ROM` and open a valid .nds ROM of your game.
 4. Pick your quality-of-life and/or randomization features and click `Save Patched ROM`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
