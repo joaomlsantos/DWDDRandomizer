@@ -42,5 +42,6 @@ coll = BUNDLE(
     strip=False,
     upx=False, 
     upx_exclude=[],
+    icon='public/dusk_transparent.ico'
     name='DWDDRandomizer.app',
 )
