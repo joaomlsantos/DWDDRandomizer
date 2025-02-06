@@ -252,8 +252,9 @@ def show_about_popup():
     # Create the pop-up window
     about_window = tk.Toplevel(root)
     about_window.title("About")
-    about_window.geometry("360x300")
+    about_window.geometry("")
     about_window.resizable(False, False)
+    about_window.minsize(360, 300)
     #about_window.iconbitmap(icon_path)
     about_window.iconphoto(False, tk.PhotoImage(file=icon_png_path))
 
