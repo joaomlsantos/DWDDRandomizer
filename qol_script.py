@@ -543,6 +543,11 @@ class Randomizer:
         # only replace existing conditions; new conditions do not have to be created
         # need to track generated conditions
 
+
+        # extra check to ensure that we don't run this if digivolutions were already randomized: 
+        if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
+            return
+
         self.logger.info("\n==================== DIGIVOLUTIONS ====================")
         generated_conditions = {}
         for stage in constants.DIGIMON_IDS:
@@ -615,7 +620,6 @@ class Randomizer:
                 for condition in data_to_write:
                     utils.writeRomBytes(rom_data, condition["condition_id"], condition["base_addr"], 4)
                     utils.writeRomBytes(rom_data, condition["condition_value"], condition["base_addr"] + 4, 4)
-
 
 
 
