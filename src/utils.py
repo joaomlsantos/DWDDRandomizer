@@ -317,6 +317,64 @@ def generateBiasedConditions(stage_id: int, bias: float, species: int, max_condi
     return conditions
 
 
+
+def checkAptitudeDeadlockDict(conditions_dictarray: List[dict[str, int]], aptitude: int) -> List[dict[str, int]]:
+    isDeadlocked = False
+    for condition in conditions_dictarray:
+        if(condition["condition_id"] == 0x1):
+            if(condition["condition_value"] > aptitude):       # check level conditions
+                isDeadlocked = True
+            else:
+                return conditions_dictarray, ""
+    
+    log_val = ""
+
+    if(isDeadlocked):
+        # shuffle list so that it picks one of the level conditions at random
+        random.shuffle(conditions_dictarray)
+        for condition in conditions_dictarray:
+            # find first lvl condition, change it to aptitude val after shuffling
+            if(condition["condition_id"] == 0x1):
+                log_val = "Changed lvl requirement at address " + str(condition["base_addr"]) + " from " + str(condition["condition_value"]) + " to " + str(aptitude) + " due to lvl requirement deadlock"
+                condition["condition_value"] = aptitude
+                break
+
+    return conditions_dictarray, log_val
+
+
+def checkAptitudeDeadlockTuple(conditions_evo, aptitude: int):
+    isDeadlocked = False
+    for condition_evo in conditions_evo:
+        if(condition_evo[0][0] == 0x1):
+            if (condition_evo[0][1] > aptitude):
+                isDeadlocked = True
+            else:   # lvl lower or equal to aptitude, no deadlock
+                return ""
+        # most correct way to accommodate lvl not being in the conditions or not being the first would be to check each subcondition    
+        
+
+    log_val = ""
+    if(isDeadlocked):
+        # shuffle conditions - each element corresponds to a single digimon's conditions;
+        # by shuffling this we're directly shuffling the order of the digimon, thus, we can just change the first condition as it'll always be the level
+
+        random.shuffle(conditions_evo)
+
+        # change lvl of first shuffled element directly
+        # this assumes lvl is ALWAYS the first condition
+
+        log_val = "Changed lvl requirement from " + str(conditions_evo[0][0][1]) + " to " + str(aptitude) + " due to lvl requirement deadlock"
+
+        conditions_evo[0][0][1] = aptitude
+
+    return log_val
+
+
+    
+
+
+
+
 def generateSpeciesProbDistribution(stage_digimon_pool: dict, 
                                     base_digimon_info: dict, 
                                     species_bias: float, 

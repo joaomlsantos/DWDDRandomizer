@@ -233,6 +233,7 @@ def set_random_seed():
                 set_random_seed_window.destroy()
             elif(len(random_seed_val) == 0):
                 messagebox.showinfo("Random Seed Set", f"Random seed not set (empty input field).")
+                app_state.seed = -1
                 set_random_seed_window.destroy()
             else:
                 messagebox.showerror("Error", f"Invalid seed input. Please enter a valid number or leave the field empty (no set seed).")
