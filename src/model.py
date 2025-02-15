@@ -241,3 +241,107 @@ class EnemyDataDigimon:
         for exp_species in ["holy_exp", "dark_exp", "dragon_exp", "beast_exp", "bird_exp", "machine_exp", "aquan_exp", "insectplant_exp"]:
             if getattr(self, exp_species) > 0:
                 setattr(self, exp_species, exp_yield)
+
+
+class FarmTerrain:
+    offset: int
+    id: int
+    unknown_0x2: int
+    farm_digimon_limit: int
+    unknown_0x6: int
+    unknown_0x8: int
+    unknown_0xA: int
+    unknown_0xC: int
+    unknown_0xE: int
+    unknown_0x10: int
+    unknown_0x12: int
+    unknown_0x14: int
+    unknown_0x16: int
+    unknown_0x18: int
+    unknown_0x1A: int
+    unknown_0x1C: int
+    unknown_0x1E: int
+    unknown_0x20: int
+    unknown_0x22: int
+    unknown_0x24: int
+    unknown_0x26: int
+    unknown_0x28: int
+    unknown_0x2A: int
+    unknown_0x2C: int
+    unknown_0x2E: int
+    unknown_0x30: int
+    unknown_0x32: int
+    unknown_0x34: int
+    unknown_0x36: int
+    unknown_0x38: int
+    unknown_0x3A: int
+    unknown_0x3C: int
+    unknown_0x3E: int
+    unknown_0x40: int
+    unknown_0x42: int
+    unknown_0x44: int
+    unknown_0x46: int
+    unknown_0x48: int
+    unknown_0x4A: int
+    holy_exp: int
+    dark_exp: int
+    dragon_exp: int
+    beast_exp: int
+    bird_exp: int
+    machine_exp: int
+    aquan_exp: int
+    insectplant_exp: int
+
+    def __init__(self, digimon_data: bytearray, offset: int):
+        try:
+            self.offset = offset
+            self.id = int.from_bytes(digimon_data[0:2], byteorder="little")
+            self.unknown_0x2 = int.from_bytes(digimon_data[2:0x4], byteorder="little")
+            self.farm_digimon_limit = int.from_bytes(digimon_data[4:6], byteorder="little")
+            self.unknown_0x6 = int.from_bytes(digimon_data[6:0x8], byteorder="little")
+            self.unknown_0x8 = int.from_bytes(digimon_data[8:0xa], byteorder="little")
+            self.unknown_0xA = int.from_bytes(digimon_data[0xa:0xc], byteorder="little")
+            self.unknown_0xC = int.from_bytes(digimon_data[0xc:0xe], byteorder="little")
+            self.unknown_0xE = int.from_bytes(digimon_data[0xe:0x10], byteorder="little")
+            self.unknown_0x10 = int.from_bytes(digimon_data[0x10:0x12], byteorder="little")
+            self.unknown_0x12 = int.from_bytes(digimon_data[0x12:0x14], byteorder="little")
+            self.unknown_0x14 = int.from_bytes(digimon_data[0x14:0x16], byteorder="little")
+            self.unknown_0x16 = int.from_bytes(digimon_data[0x16:0x18], byteorder="little")
+            self.unknown_0x18 = int.from_bytes(digimon_data[0x18:0x1a], byteorder="little")
+            self.unknown_0x1A = int.from_bytes(digimon_data[0x1a:0x1c], byteorder="little")
+            self.unknown_0x1C = int.from_bytes(digimon_data[0x1c:0x1e], byteorder="little")
+            self.unknown_0x1E = int.from_bytes(digimon_data[0x1e:0x20], byteorder="little")
+            self.unknown_0x20 = int.from_bytes(digimon_data[0x20:0x22], byteorder="little")
+            self.unknown_0x22 = int.from_bytes(digimon_data[0x22:0x24], byteorder="little")
+            self.unknown_0x24 = int.from_bytes(digimon_data[0x24:0x26], byteorder="little")
+            self.unknown_0x26 = int.from_bytes(digimon_data[0x26:0x28], byteorder="little")
+            self.unknown_0x28 = int.from_bytes(digimon_data[0x28:0x2a], byteorder="little")
+            self.unknown_0x2A = int.from_bytes(digimon_data[0x2a:0x2c], byteorder="little")
+            self.unknown_0x2C = int.from_bytes(digimon_data[0x2c:0x2e], byteorder="little")
+            self.unknown_0x2E = int.from_bytes(digimon_data[0x2e:0x30], byteorder="little")
+            self.unknown_0x30 = int.from_bytes(digimon_data[0x30:0x32], byteorder="little")
+            self.unknown_0x32 = int.from_bytes(digimon_data[0x32:0x34], byteorder="little")
+            self.unknown_0x34 = int.from_bytes(digimon_data[0x34:0x36], byteorder="little")
+            self.unknown_0x36 = int.from_bytes(digimon_data[0x36:0x38], byteorder="little")
+            self.unknown_0x38 = int.from_bytes(digimon_data[0x38:0x3A], byteorder="little")
+            self.unknown_0x3A = int.from_bytes(digimon_data[0x3A:0x3C], byteorder="little")
+            self.unknown_0x3C = int.from_bytes(digimon_data[0x3C:0x3E], byteorder="little")
+            self.unknown_0x3E = int.from_bytes(digimon_data[0x3E:0x40], byteorder="little")
+            self.unknown_0x40 = int.from_bytes(digimon_data[0x40:0x42], byteorder="little")
+            self.unknown_0x42 = int.from_bytes(digimon_data[0x42:0x44], byteorder="little")
+            self.unknown_0x44 = int.from_bytes(digimon_data[0x44:0x46], byteorder="little")
+            self.unknown_0x46 = int.from_bytes(digimon_data[0x46:0x48], byteorder="little")
+            self.unknown_0x48 = int.from_bytes(digimon_data[0x48:0x4A], byteorder="little")
+            self.unknown_0x4A = int.from_bytes(digimon_data[0x4A:0x4C], byteorder="little")
+            self.holy_exp = int.from_bytes(digimon_data[0x4C:0x4E], byteorder="little")
+            self.dark_exp = int.from_bytes(digimon_data[0x4E:0x50], byteorder="little")
+            self.dragon_exp = int.from_bytes(digimon_data[0x50:0x52], byteorder="little")
+            self.beast_exp = int.from_bytes(digimon_data[0x52:0x54], byteorder="little")
+            self.bird_exp = int.from_bytes(digimon_data[0x54:0x56], byteorder="little")
+            self.machine_exp = int.from_bytes(digimon_data[0x56:0x58], byteorder="little")
+            self.aquan_exp = int.from_bytes(digimon_data[0x58:0x5A], byteorder="little")
+            self.insectplant_exp = int.from_bytes(digimon_data[0x5A:0x5c], byteorder="little")
+
+        except:
+            print("Exception on FarmTerrain call")
+            return None

@@ -56,6 +56,21 @@ STRING_BATTLE_TABLE_OFFSET = {
     "DAWN": (0X00116998, 0x00117824)
 }
 
+FARM_TERRAINS_START_OFFSET = {
+    "DUSK": 0x001310A8,
+    "DAWN": 0x00130EE8
+}
+
+VERSION_EXCLUSIVE_AREA_UNLOCKS = {
+    "DUSK": [
+        (0x001200FA, 0xCBA, "Task Canyon unlocked alongside Magnet Mine")
+    ],
+    "DAWN": [
+        (0x0011FF0E, 0XCBD, "Magnet Mine unlocked alongside Task Canyon"),
+        (0x0011FF9E, 0xCBE, "Process Factory unlocked alongside Pallette Amazon")
+    ]
+}
+
 
 STAGE_NAMES = ["IN-TRAINING", "ROOKIE", "CHAMPION", "ULTIMATE", "MEGA"]
 

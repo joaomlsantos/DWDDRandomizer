@@ -62,11 +62,14 @@ def execute_rom_changes(save_path):
 
         "APPLY_EXP_PATCH_FLAT": ExpYieldConfig(exp_yield_option_var.get()),
         "BUFF_SCAN_RATE": increase_flat_scan_rate_var,
+        "CHANGE_FARM_EXP": change_farm_exp_var,
+        "ENABLE_VERSION_EXCLUSIVE_AREAS": unlock_version_exclusive_areas_var,
     
         "RANDOMIZE_STARTERS": RandomizeStartersConfig(starters_option_var.get()),  # RandomizeStartersConfig(starters_option_var) might have to be initialized like this
         "NERF_FIRST_BOSS": nerf_first_boss_var,
         
         "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters(wild_digimon_option_var.get()),
+        "WILD_DIGIMON_EXCLUDE_CALUMON": wild_digimon_exclude_calumon_var,
         "AREA_ENCOUNTERS_STATS": stat_gen_option_var,
 
         "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions(digivolutions_option_var.get()),
@@ -103,10 +106,12 @@ def enable_buttons():
     #increaseStatCapsCheckbox.configure(state="normal")
     #increaseExpYieldCheckbox.configure(state="normal")
     increaseFlatScanRateCheckbox.configure(state="normal")
-    expandPlayerNameCheckbox.configure(stat="normal")
-    exp_yield_unchanged_rb.configure(stat="normal")
-    exp_yield_halved_rb.configure(stat="normal")
-    exp_yield_full_rb.configure(stat="normal")
+    expandPlayerNameCheckbox.configure(state="normal")
+    increaseFarmExpCheckbox.configure(state="normal")
+    unlockVersionExclusiveAreasCheckbox.configure(state="normal")
+    exp_yield_unchanged_rb.configure(state="normal")
+    exp_yield_halved_rb.configure(state="normal")
+    exp_yield_full_rb.configure(state="normal")
 
 
     # Enable tabs
@@ -124,6 +129,7 @@ def enable_buttons():
     wild_digimon_unchanged_rb.configure(state="normal")
     wild_digimon_randomize_rb.configure(state="normal")
     wild_digimon_randomize_completely_rb.configure(state="normal")
+    wildDigimonExcludeCalumonCheckbox.configure(state="normal")
 
     # Randomize digivolutions and conditions
 
@@ -465,6 +471,25 @@ expandPlayerNameTooltip = CreateToolTip(expandPlayerNameCheckbox, "Expands the m
 #increaseStatCapsTooltip = CreateToolTip(increaseStatCapsCheckbox, "Increases the stat cap to 65535 for all stats.\nOriginally the HP and MP are limited to 9999, and the other stats are limited to 999.")
 
 
+# Farm EXP; might do a custom frame for all exp-related stuff
+
+
+change_farm_exp_var = tk.BooleanVar(value=True)
+increaseFarmExpCheckbox = tk.Checkbutton(qol_frame, text="Increase Farm EXP", variable=change_farm_exp_var, state="disabled")
+increaseFarmExpCheckbox.pack(anchor='w')
+increaseFarmExpTooltip = CreateToolTip(increaseFarmExpCheckbox, "Increases the base farm exp by 10x.")
+
+
+# unlock version-exclusive areas
+
+unlock_version_exclusive_areas_var = tk.BooleanVar(value=True)
+unlockVersionExclusiveAreasCheckbox = tk.Checkbutton(qol_frame, text="Unlock Version-Exclusive Areas", variable=unlock_version_exclusive_areas_var, state="disabled")
+unlockVersionExclusiveAreasCheckbox.pack(anchor='w')
+unlockVersionExclusiveAreasTooltip = CreateToolTip(unlockVersionExclusiveAreasCheckbox, "Unlocks areas that were previously exclusive to a single version of the game.\nFor DAWN, this option unlocks Magnet Mine at the same time that Task Canyon is unlocked, and unlocks Process Factory at the same time that Pallette Amazon is unlocked.\nFor DUSK, this option unlocks Task Canyon at the same time that Magnet Mine is unlocked.")
+
+
+
+
 # Exp Yield frame
 exp_yield_frame = ttk.LabelFrame(qol_frame, text="Exp. Yield", padding=10)
 exp_yield_frame.pack(side="top", anchor="w", padx=10, pady=10)
@@ -558,6 +583,22 @@ wild_digimon_randomize_rb.pack(anchor="w")
 wild_digimon_randomize_completely_rb = tk.Radiobutton(wild_digimon_radio_frame, text="Random (completely)", variable=wild_digimon_option_var, value=RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY.value, state="disabled", command=toggle_stat_generation)
 wild_digimon_randomize_tooltip = CreateToolTip(wild_digimon_randomize_completely_rb, "Replaces each wild digimon by a random digimon of any stage.")
 wild_digimon_randomize_completely_rb.pack(anchor="w")
+
+
+
+# Specific options for wild digimon randomization
+
+wild_digimon_sub_frame = ttk.Frame(wild_digimon_inner_container)
+wild_digimon_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+
+wild_digimon_exclude_calumon_var = tk.BooleanVar(value=True)
+wildDigimonExcludeCalumonCheckbox = tk.Checkbutton(wild_digimon_sub_frame, text="Exclude Calumon", variable=wild_digimon_exclude_calumon_var, state="disabled")
+wildDigimonExcludeCalumonCheckbox.pack(anchor='w')
+wildDigimonExcludeCalumonTooltip = CreateToolTip(wildDigimonExcludeCalumonCheckbox, "Excludes Calumon from the wild digimon pool.\nWhile Calumon is an In-Training digimon, its stats are equivalent to the stats of a Mega.\nExcluding Calumon from the wild digimon pool avoids situations where a player would struggle to defeat (or run from) Calumon encounters.")
+
+
+
 
 # Right side: Stat Generation frame
 stat_gen_frame = ttk.LabelFrame(wild_digimon_inner_container, text="Stat Generation", padding=10)

@@ -388,6 +388,17 @@ def generateSpeciesProbDistribution(stage_digimon_pool: dict,
 
 
 
+def applyFarmExpModifier(rom_data: bytearray, farm_terrain: model.FarmTerrain, exp_modifier: int):
+    # we can write these values directly since bytearray passes by reference
+    writeRomBytes(rom_data, farm_terrain.holy_exp * exp_modifier, farm_terrain.offset + 0x4c, 2)   
+    writeRomBytes(rom_data, farm_terrain.dark_exp * exp_modifier, farm_terrain.offset + 0x4e, 2) 
+    writeRomBytes(rom_data, farm_terrain.dragon_exp * exp_modifier, farm_terrain.offset + 0x50, 2) 
+    writeRomBytes(rom_data, farm_terrain.beast_exp * exp_modifier, farm_terrain.offset + 0x52, 2) 
+    writeRomBytes(rom_data, farm_terrain.bird_exp * exp_modifier, farm_terrain.offset + 0x54, 2) 
+    writeRomBytes(rom_data, farm_terrain.machine_exp * exp_modifier, farm_terrain.offset + 0x56, 2) 
+    writeRomBytes(rom_data, farm_terrain.aquan_exp * exp_modifier, farm_terrain.offset + 0x58, 2) 
+    writeRomBytes(rom_data, farm_terrain.insectplant_exp * exp_modifier, farm_terrain.offset + 0x5a, 2) 
+    
 
 
 

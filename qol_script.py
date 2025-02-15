@@ -41,6 +41,10 @@ class DigimonROM:
             self.extendPlayerNameSize()
         if(self.config_manager.get("BUFF_SCAN_RATE", False)):
             self.buffScanRate()
+        if(self.config_manager.get("CHANGE_FARM_EXP", False)):
+            self.changeFarmExp()
+        if(self.config_manager.get("ENABLE_VERSION_EXCLUSIVE_AREAS", False)):
+            self.unlockExclusiveAreas()
         
 
     def loadRom(self, 
@@ -112,9 +116,33 @@ class DigimonROM:
         offset = constants.BASE_SCAN_RATE_OFFSET[self.version]
         old_scan_rate = self.rom_data[offset]
         self.rom_data[offset] = self.config_manager.get("NEW_BASE_SCAN_RATE")
-        self.logger.info("Increased base scan rate from %d to %d", old_scan_rate, self.config_manager.get("NEW_BASE_SCAN_RATE"))
+        self.logger.info(f"Increased base scan rate from {old_scan_rate} to {self.config_manager.get('NEW_BASE_SCAN_RATE')}")
 
     
+    def changeFarmExp(self):
+        cur_offset = constants.FARM_TERRAINS_START_OFFSET[self.version]
+        exp_modifier = self.config_manager.get("FARM_EXP_MODIFIER", 1)
+        for t in range(17):         # 17 terrains
+            # load terrain memory here? could load earlier if needed for other things
+            cur_terrain = model.FarmTerrain(self.rom_data[cur_offset : cur_offset+0x5c], cur_offset)
+            utils.applyFarmExpModifier(self.rom_data, cur_terrain, exp_modifier)
+            self.logger.info(f"Farm {t} EXP: {cur_terrain.holy_exp * exp_modifier} HOLY, {cur_terrain.dark_exp * exp_modifier} DARK, {cur_terrain.dragon_exp * exp_modifier} DRAGON, {cur_terrain.beast_exp * exp_modifier} BEAST, {cur_terrain.bird_exp * exp_modifier} BIRD, {cur_terrain.machine_exp * exp_modifier} MACHINE, {cur_terrain.aquan_exp * exp_modifier} AQUAN, {cur_terrain.insectplant_exp * exp_modifier} INSECTPLANT")
+            cur_offset += 0x5c      # advance to next terrain
+            
+
+    def unlockExclusiveAreas(self):
+        areas_to_unlock = constants.VERSION_EXCLUSIVE_AREA_UNLOCKS[self.version]
+        # format is always (offset, new value, description)
+        # byte_size is always 2
+        for area_el in areas_to_unlock:
+            cur_address = area_el[0]
+            cur_value = area_el[1]
+            cur_description = area_el[2]
+            utils.writeRomBytes(self.rom_data, cur_value, cur_address, 2)
+            self.logger.info("VERSION-EXCLUSIVE AREA UNLOCK:", cur_description)
+
+            
+
         
 
 
@@ -222,6 +250,8 @@ class Randomizer:
 
         if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") in options_same_stage):
             digimon_stage_pool = copy.deepcopy(constants.DIGIMON_IDS)
+            if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
+                digimon_stage_pool["IN-TRAINING"].pop("Calumon")
         
         # if completely random, digimon_pool is mixed between all digimon
         if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") in options_completely_random):
@@ -229,6 +259,8 @@ class Randomizer:
             digimon_pool = {}
             for stage in digimon_ids_by_stage:
                 digimon_pool = digimon_pool | digimon_ids_by_stage[stage]
+            if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
+                digimon_pool.pop("Calumon")
 
         randomized_digimon_history = {}
 
