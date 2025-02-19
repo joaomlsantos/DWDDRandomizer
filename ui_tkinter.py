@@ -556,6 +556,37 @@ nerfFirstBossCheckbox.pack(anchor='w')
 nerfFirstBossTootip = CreateToolTip(nerfFirstBossCheckbox, "Enabling this option reduces the total HP of the first boss (virus that attacks the city) by half.\nThis fight usually relies on the lvl 20 Coronamon / Lunamon to be cleared. \nThis option is recommended if randomizing the starter packs, as any other digimon will be set to rookies at lvl 1 (even the digimon that are already rookies).")
 
 
+# Right side: Rookie Reset Event
+
+rookie_reset_frame = ttk.LabelFrame(starters_frame, text="Rookie Reset Event", padding=10)
+rookie_reset_frame.pack(side="right", fill="y", padx=10, pady=5)
+
+rookie_reset_option_var = tk.IntVar(value=RookieResetConfig.UNCHANGED.value)    # Default to UNCHANGED
+
+rookie_reset_unchanged_rb = tk.Radiobutton(rookie_reset_frame, text="Unchanged", variable=rookie_reset_option_var, value=RookieResetConfig.UNCHANGED.value, state="disabled")
+rookie_reset_unchanged_rb_tooltip = CreateToolTip(rookie_reset_unchanged_rb, "Resets each starter digimon to level 1, and reverts its digivolution stage to a rookie.\nExample: a starter lvl 35 SkullGreymon will be a lvl 1 BlackAgumon after the rookie reset event (if digivolution lines are not randomized).")
+rookie_reset_unchanged_rb.pack(anchor="w")
+
+rookie_reset_same_stage_rb = tk.Radiobutton(rookie_reset_frame, text="Keep Digivolution Stages", variable=rookie_reset_option_var, value=RookieResetConfig.RESET_KEEPING_EVO.value, state="disabled")
+rookie_reset_same_stage_rb_tooltip = CreateToolTip(rookie_reset_same_stage_rb, "Resets each starter digimon to level 1, but keeps its current digivolution stage instead of reverting the digimon to a rookie.\nExample: a starter lvl 35 SkullGreymon will be a lvl 1 SkullGreymon after the rookie reset event.")
+rookie_reset_same_stage_rb.pack(anchor="w")
+
+
+rookie_reset_cancel_rb = tk.Radiobutton(rookie_reset_frame, text="Cancel Rookie Reset Event", variable=rookie_reset_option_var, value=RookieResetConfig.DO_NOT_RESET.value, state="disabled")
+rookie_reset_cancel_rb_tooltip = CreateToolTip(rookie_reset_cancel_rb, "Cancels the rookie reset event entirely: starter digimon keep their current level and digivolution stage.\nExample: a starter lvl 35 SkullGreymon will be a lvl 35 SkullGreymon after the rookie reset event.")
+rookie_reset_cancel_rb.pack(anchor="w")
+
+'''
+
+starters_same_stage_rb = tk.Radiobutton(starters_radio_frame, text="Random (same digivolution stages)", variable=starters_option_var, value=RandomizeStartersConfig.RAND_SAME_STAGE.value, state="disabled")
+starters_same_stage_rb_tooltip = CreateToolTip(starters_same_stage_rb, "Randomizes each starter digimon pack, keeping the original digivolution stages for each digimon.")
+starters_same_stage_rb.pack(anchor="w")
+
+starters_completely_random_rb = tk.Radiobutton(starters_radio_frame, text="Random (completely)", variable=starters_option_var, value=RandomizeStartersConfig.RAND_FULL.value, state="disabled")
+starters_completely_random_tooltip = CreateToolTip(starters_completely_random_rb, "Randomizes each starter digimon pack completely.")
+starters_completely_random_rb.pack(anchor="w")
+
+'''
 
 
 # Wild digimon frame

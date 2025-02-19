@@ -5,9 +5,9 @@ from src import model
 # strife was here
 class RookieResetConfig(Enum):
     UNCHANGED = 0                       # same as base game; resets digimon to rookies after the chaos event 
-    RESET_ALL_INCLUDING_LUNAMON = 1     # same as base game but also resets Lunamon to lvl 1
-    RESET_KEEPING_EVO = 2               # reset digimon's levels, stats, etc, but keep them at their original form (ex: SkullGreymon stays as SkullGreymon but lvl 1) 
-    DO_NOT_RESET = 3                    # rookie reset event does not happen; keeps digimon as they were before the chaos event
+    #RESET_ALL_INCLUDING_LUNAMON = 1     # same as base game but also resets Lunamon to lvl 1
+    RESET_KEEPING_EVO = 1               # reset digimon's levels, stats, etc, but keep them at their original form (ex: SkullGreymon stays as SkullGreymon but lvl 1) 
+    DO_NOT_RESET = 2                    # rookie reset event does not happen; keeps digimon as they were before the chaos event
 
 
 class RandomizeStartersConfig(Enum):
