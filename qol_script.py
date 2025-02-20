@@ -5,7 +5,7 @@ import random
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeStartersConfig, RandomizeWildEncounters, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 
 
@@ -171,6 +171,7 @@ class Randomizer:
         
         curEnemyDigimonInfo = self.enemyDigimonInfo
 
+        self.rookieResetEvent(self.rom_data)
         self.randomizeStarters(self.rom_data)
         curEnemyDigimonInfo = self.randomizeAreaEncounters(self.rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
         self.nerfFirstBoss(self.rom_data)
@@ -232,6 +233,26 @@ class Randomizer:
             self.logger.info("Starter Pack " + str(spack_i + 1) + ": " + ", ".join(new_starter_pack))
 
         # we actually don't need to do anything w the outer cycle i think, each starter advances the offset by 8 already
+
+
+    def rookieResetEvent(self,
+                         rom_data: bytearray):
+        
+        rookie_reset_event_var = self.config_manager.get("ROOKIE_RESET_EVENT")
+        if(rookie_reset_event_var == RookieResetConfig.UNCHANGED):
+            return
+        
+        if(rookie_reset_event_var == RookieResetConfig.RESET_KEEPING_EVO):
+            offsets_array = constants.ROOKIE_RESET_KEEPING_EVO[self.version]
+            for offset in offsets_array:
+                utils.writeRomBytes(rom_data, 0xb3a08002, offset, 4)
+            self.logger.info("Changed rookie reset event to reset stats but keep the original digivolutions")
+
+        if(rookie_reset_event_var == RookieResetConfig.DO_NOT_RESET):
+            cancel_offset = constants.ROOKIE_RESET_CANCEL[self.version]
+            utils.writeRomBytes(rom_data, 0xe3500040, cancel_offset, 4)
+            utils.writeRomBytes(rom_data, 0x1a000017, cancel_offset+4, 4)
+            self.logger.info("Disabled the rookie reset event")
 
     
     def randomizeAreaEncounters(self, 

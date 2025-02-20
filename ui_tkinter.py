@@ -66,6 +66,7 @@ def execute_rom_changes(save_path):
         "ENABLE_VERSION_EXCLUSIVE_AREAS": unlock_version_exclusive_areas_var,
     
         "RANDOMIZE_STARTERS": RandomizeStartersConfig(starters_option_var.get()),  # RandomizeStartersConfig(starters_option_var) might have to be initialized like this
+        "ROOKIE_RESET_EVENT": RookieResetConfig(rookie_reset_option_var.get()),
         "NERF_FIRST_BOSS": nerf_first_boss_var,
         
         "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters(wild_digimon_option_var.get()),
@@ -123,6 +124,9 @@ def enable_buttons():
     starters_unchanged_rb.configure(state="normal")
     starters_same_stage_rb.configure(state="normal")
     starters_completely_random_rb.configure(state="normal")
+    rookie_reset_unchanged_rb.configure(state="normal")
+    rookie_reset_same_stage_rb.configure(state="normal")
+    rookie_reset_cancel_rb.configure(state="normal")
     nerfFirstBossCheckbox.configure(state="normal")
 
     # Randomize wild digimon
@@ -572,8 +576,8 @@ rookie_reset_same_stage_rb_tooltip = CreateToolTip(rookie_reset_same_stage_rb, "
 rookie_reset_same_stage_rb.pack(anchor="w")
 
 
-rookie_reset_cancel_rb = tk.Radiobutton(rookie_reset_frame, text="Cancel Rookie Reset Event", variable=rookie_reset_option_var, value=RookieResetConfig.DO_NOT_RESET.value, state="disabled")
-rookie_reset_cancel_rb_tooltip = CreateToolTip(rookie_reset_cancel_rb, "Cancels the rookie reset event entirely: starter digimon keep their current level and digivolution stage.\nExample: a starter lvl 35 SkullGreymon will be a lvl 35 SkullGreymon after the rookie reset event.")
+rookie_reset_cancel_rb = tk.Radiobutton(rookie_reset_frame, text="Disable Rookie Reset Event", variable=rookie_reset_option_var, value=RookieResetConfig.DO_NOT_RESET.value, state="disabled")
+rookie_reset_cancel_rb_tooltip = CreateToolTip(rookie_reset_cancel_rb, "Disables the rookie reset event entirely: starter digimon keep their current level and digivolution stage.\nExample: a starter lvl 35 SkullGreymon will be a lvl 35 SkullGreymon after the rookie reset event.")
 rookie_reset_cancel_rb.pack(anchor="w")
 
 '''
