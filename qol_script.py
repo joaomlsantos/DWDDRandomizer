@@ -5,7 +5,7 @@ import random
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 
 
@@ -175,6 +175,7 @@ class Randomizer:
         self.randomizeStarters(self.rom_data)
         curEnemyDigimonInfo = self.randomizeAreaEncounters(self.rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
         self.nerfFirstBoss(self.rom_data)
+        self.randomizeOverworldItems(self.rom_data)
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             self.randomizeDigivolutions(self.rom_data)
         elif(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") not in [None, RandomizeDigivolutionConditions.UNCHANGED]):
@@ -402,6 +403,51 @@ class Randomizer:
         str_logger_exp = "halved" if exp_yield_opt == ExpYieldConfig.INCREASE_HALVED else "full"
 
         self.logger.info("Applied exp patch (" + str_logger_exp + ")")
+
+
+
+    def randomizeOverworldItems(self,
+                                rom_data: bytearray):
+        
+        config_randomize_overworld_items = self.config_manager.get("RANDOMIZE_OVERWORLD_ITEMS")
+        
+        if(config_randomize_overworld_items == RandomizeOverworldItems.UNCHANGED):
+            return
+        
+        overworld_item_addrs = constants.OVERWORLD_ITEM_ADDRESSES[self.version]
+
+        item_lookup_table = {
+            item_id: category
+            for category, (min_id, max_id) in constants.ITEM_TYPE_IDS.items()
+            for item_id in range(min_id, max_id + 1)
+        }
+
+        non_key_item_ids = [item_id for category, (min_id, max_id) in constants.ITEM_TYPE_IDS.items() if category != "KEY_ITEM" for item_id in range(min_id, max_id + 1)]
+
+        self.logger.info("\n==================== OVERWORLD ITEMS ====================")
+
+        # right now this is using the preset values instead of looking at the rom's current item values; might want to change this in the future
+        for addr, item_value in overworld_item_addrs.items():
+            item_category = item_lookup_table[item_value]
+
+            # skip key items and digieggs for now
+            if(model.ItemType[item_category] in [model.ItemType.KEY_ITEM, model.ItemType.DIGIEGG]):
+                continue    
+
+            new_item_value = -1
+            if(config_randomize_overworld_items == RandomizeOverworldItems.RANDOMIZE_KEEP_CATEGORY):
+                new_item_value = random.randint(*constants.ITEM_TYPE_IDS[item_category])
+
+            if(config_randomize_overworld_items == RandomizeOverworldItems.RANDOMIZE_COMPLETELY):
+                new_item_value = random.choice(non_key_item_ids)
+
+            
+            # need to eventually determine location of each address
+            self.logger.info(hex(addr) + "(" + constants.ITEM_ID_TO_STR[item_value] + ") -> " + constants.ITEM_ID_TO_STR[new_item_value])
+
+            utils.writeRomBytes(rom_data, new_item_value, addr+4, 2)
+
+
 
 
 

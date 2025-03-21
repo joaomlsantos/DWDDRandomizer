@@ -28,6 +28,16 @@ class LvlUpMode(Enum):
     FIXED_MAX = 3
 
 
+class ItemType(Enum):
+    NULL = 0
+    FARM_ITEM = 1
+    CONSUMABLE = 2
+    EQUIPMENT = 3
+    DIGIEGG = 4
+    KEY_ITEM = 5
+
+
+
 class SpriteMapEntry:
     offset: int
     id: int

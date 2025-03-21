@@ -30,6 +30,13 @@ class RandomizeDigivolutionConditions(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE = 1                       # randomize (specific randomization options are outside of this enum)
 
+
+class RandomizeOverworldItems(Enum):
+    UNCHANGED = 0                       # do not randomize
+    RANDOMIZE_KEEP_CATEGORY = 1         # randomize while keeping the original item's category (consumables replaced by other consumables, farm items replaced by other farm items, etc)
+    RANDOMIZE_COMPLETELY = 2            # randomize completely
+
+
 class ExpYieldConfig(Enum):
     UNCHANGED = 0                       # do not change exp yield
     INCREASE_HALVED = 1                 # base formula as if exp.share was enabled
@@ -77,7 +84,7 @@ default_configmanager_settings = {
     "RANDOMIZE_STARTERS": RandomizeStartersConfig.RAND_SAME_STAGE,
     "NERF_FIRST_BOSS": True,                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
     
-    "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE,
+    "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters.UNCHANGED,
     "AREA_ENCOUNTERS_STATS": model.LvlUpMode.FIXED_AVG,      # this defines how the randomized enemy digimon's stats are generated when changing the levels
     
     "RANDOMIZE_FIXED_BATTLES": False,
@@ -87,11 +94,13 @@ default_configmanager_settings = {
     "FIXED_BATTLES_KEEP_HP": True,                            # do not change base HP of the encounter: most fixed battles have enemies with slightly more hp than usual, this will keep the digimon's HP stat the same as before
     
     
-    "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions.RANDOMIZE,
+    "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions.UNCHANGED,
     "DIGIVOLUTIONS_SIMILAR_SPECIES": True,        # example: holy digimon will be more likely to evolve into other holy digimon
     
     "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions.UNCHANGED,
     "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": True,       # example: a digivolution from the holy species will be less likely to have aquan/dark/etc exp as a requirement than other conditions
+
+    "RANDOMIZE_OVERWORLD_ITEMS": RandomizeOverworldItems.RANDOMIZE_COMPLETELY
     
 }
 
@@ -108,7 +117,7 @@ inner_configmanager_settings = {
 }
 
 PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
-PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_qolpatch_test_1.nds"
+PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_overworlditem_test.nds"
 
 #PATH_SOURCE = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA).nds"
 #PATH_TARGET = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA)_qolpatch_contra.nds"
