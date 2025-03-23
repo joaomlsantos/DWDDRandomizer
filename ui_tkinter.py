@@ -3,7 +3,7 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
+from configs import ExpYieldConfig, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -77,7 +77,9 @@ def execute_rom_changes(save_path):
         "DIGIVOLUTIONS_SIMILAR_SPECIES": digivolution_similar_species_var,
 
         "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions(digivolution_conditions_option_var.get()),
-        "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": digivolution_conditions_species_exp_var
+        "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": digivolution_conditions_species_exp_var,
+
+        "RANDOMIZE_OVERWORLD_ITEMS": RandomizeOverworldItems(overworld_items_option_var.get())
     }
 
 
@@ -142,6 +144,12 @@ def enable_buttons():
     digivolution_conditions_unchanged_rb.configure(state="normal")
     digivolution_conditions_randomize_rb.configure(state="normal")
     digivolutionConditionsSpeciesExpCheckbox.configure(state="normal")
+
+    # Randomize overworld items
+
+    overworld_items_unchanged_rb.configure(state="normal")
+    overworld_items_same_category_rb.configure(state="normal")
+    overworld_items_completely_random_rb.configure(state="normal")
 
 
 
@@ -730,6 +738,33 @@ digivolution_conditions_species_exp_var = tk.BooleanVar(value=False)
 digivolutionConditionsSpeciesExpCheckbox = tk.Checkbutton(digivolution_conditions_sub_frame, text="Follow Species EXP", variable=digivolution_conditions_species_exp_var, state="disabled")
 digivolutionConditionsSpeciesExpCheckbox.pack(anchor='w')
 digivolutionConditionsSpeciesExpTootip = CreateToolTip(digivolutionConditionsSpeciesExpCheckbox, "Digivolutions will be less likely to need EXP from different species than their own.\nExample: a digivolution from the HOLY species will be less likely to have AQUAN/DARK/etc EXP as a requirement.\nThis can be applied to newly generated digivolutions even if the base conditions are not randomized (if a digimon did not have any digivolution conditions, it will follow this rule).")
+
+
+
+# Overworld Items Frame
+overworld_items_frame = ttk.LabelFrame(randomizer_tab, text="Overworld Items", padding=10)
+overworld_items_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+
+overworld_items_radio_frame = ttk.Frame(overworld_items_frame)
+overworld_items_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+overworld_items_option_var = tk.IntVar(value=RandomizeOverworldItems.UNCHANGED.value)
+
+overworld_items_unchanged_rb = tk.Radiobutton(overworld_items_radio_frame, text="Unchanged", variable=overworld_items_option_var, value=RandomizeOverworldItems.UNCHANGED.value, state="disabled")
+overworld_items_unchanged_rb.pack(anchor="w")
+
+overworld_items_same_category_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (same category)", variable=overworld_items_option_var, value=RandomizeOverworldItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
+overworld_items_same_category_rb_tooltip = CreateToolTip(overworld_items_same_category_rb, "Randomizes each overworld item chest while keeping the original category of the item (for example, a consumable like a GateDisk will be replaced by another consumable, farm items will be replaced by other farm items, etc).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
+overworld_items_same_category_rb.pack(anchor="w")
+
+overworld_items_completely_random_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (completely)", variable=overworld_items_option_var, value=RandomizeOverworldItems.RANDOMIZE_COMPLETELY.value, state="disabled")
+overworld_items_completely_random_tooltip = CreateToolTip(overworld_items_completely_random_rb, "Randomizes each overworld item chest completely (a chest can have any item, regardless of its original item).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
+overworld_items_completely_random_rb.pack(anchor="w")
+
+
+
+
 
 
 # Apply buttons at the bottom
