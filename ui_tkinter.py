@@ -1,3 +1,4 @@
+import copy
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
@@ -19,6 +20,7 @@ class AppState:
     def __init__(self):
         self.config_manager: ConfigManager = ConfigManager()
         self.current_rom: DigimonROM = None  
+        self.target_rom: DigimonROM = None  
         self.randomizer: Randomizer = None
         self.log_stream: StringIO = StringIO()
         self.logger: logging.Logger = self.setLogger()
@@ -88,11 +90,12 @@ def execute_rom_changes(save_path):
         
     app_state.apply_seed()
     app_state.config_manager.update_from_ui(patcher_config_options)
-    app_state.current_rom.executeQolChanges()
+    app_state.target_rom.executeQolChanges()
     app_state.randomizer.executeRandomizerFunctions()
-    app_state.current_rom.writeRom(save_path)
+    app_state.target_rom.writeRom(save_path)
     app_state.writeLog(save_path)
     app_state.seed = -1
+    app_state.target_rom = copy.deepcopy(app_state.current_rom)     # next randomization will be applied to base rom instead of previously randomized rom again
 
 
 
@@ -162,6 +165,7 @@ def open_rom():
         try:
             app_state.current_rom = DigimonROM(file_path, app_state.config_manager, app_state.logger)
             app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager, app_state.logger)
+            app_state.target_rom = copy.deepcopy(app_state.current_rom)
         except ValueError:
             messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
             return
@@ -178,7 +182,7 @@ def open_rom():
 
 def save_changes():
     
-    rom_dir = os.path.dirname(app_state.current_rom.fpath)
+    rom_dir = os.path.dirname(app_state.target_rom.fpath)
     save_path = filedialog.asksaveasfilename(
         title="Save ROM",
         defaultextension=".nds",
