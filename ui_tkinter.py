@@ -13,6 +13,7 @@ import random
 import numpy as np
 import logging
 from io import StringIO
+from ui.LabelledSlider import LabelledSlider
 
 
 
@@ -465,6 +466,9 @@ change_wild_encounter_rate_var = tk.BooleanVar(value=True)
 decreaseWildEncounterCheckbox = tk.Checkbutton(qol_frame, text="Reduce Wild Encounter Rate", variable=change_wild_encounter_rate_var, state="disabled")
 decreaseWildEncounterCheckbox.pack(anchor='w')
 decreaseWildEncounterTooltip = CreateToolTip(decreaseWildEncounterCheckbox, "Reduces the wild encounter rate in all areas by 0.5x.")
+
+encounter_slider_widget = LabelledSlider(qol_frame)
+encounter_slider_widget.pack(anchor="w", padx=10)
 
 #increase_exp_yield_var = tk.BooleanVar(value=True)
 #increaseExpYieldCheckbox = tk.Checkbutton(qol_frame, text="Increase Exp Yield for Wild Digimon", variable=increase_exp_yield_var, state="disabled")
