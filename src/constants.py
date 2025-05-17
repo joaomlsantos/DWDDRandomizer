@@ -15,14 +15,6 @@ BASE_SCAN_RATE_OFFSET = {
     "DAWN": 0x17F874
 }
 
-# these are (offset_start, offset_end); offset_end corresponds to the last area, content that follows it should still be analyzed
-AREA_ENCOUNTER_OFFSETS = {
-    "DUSK": (0x01F6D800, 0x01F76A00),
-    "DAWN": (0X01F6D600, 0x01F76800)
-}
-
-
-
 STAT_CAPS_OFFSET = {
     "DUSK": 0x00059B30,
     "DAWN": 0x00059B14
@@ -36,6 +28,12 @@ STARTER_PACK_OFFSET = {
 BASE_DIGIMON_OFFSETS = {
     "DUSK": (0x01F55200, 0x01F6D600),
     "DAWN": (0x01F55000, 0x01F6D400)
+}
+
+# these are (offset_start, offset_end); offset_end corresponds to the last area, content that follows it should still be analyzed
+AREA_ENCOUNTER_OFFSETS = {
+    "DUSK": (0x01F6D800, 0x01F76A00),
+    "DAWN": (0X01F6D600, 0x01F76800)
 }
 
 ENEMY_DIGIMON_OFFSETS = {
@@ -81,6 +79,16 @@ VERSION_EXCLUSIVE_AREA_UNLOCKS = {
         (0x0011FF0E, 0XCBD, "Magnet Mine unlocked alongside Task Canyon"),
         (0x0011FF9E, 0xCBE, "Process Factory unlocked alongside Pallette Amazon")
     ]
+}
+
+ARMOR_DIGIVOLUTIONS_OFFSETS = {
+    "DUSK": (0x0024EBC0, 0x0024EE80),
+    "DAWN": (0x0024E9C0, 0x0024EC80)
+}
+
+DNA_DIGIVOLUTIONS_OFFSETS = {
+    "DUSK": (0x0024EE80, 0x00258BDC),
+    "DAWN": (0x0024EC80, 0x002589DC)
 }
 
 

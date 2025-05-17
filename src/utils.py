@@ -109,6 +109,96 @@ def loadEnemyDigimonInfo(version: str,
     return enemy_digimon_dict
 
 
+# this will not be used as the main loader for standard digievos yet; need to adapt previous code from loadDigivolutionInformation()
+# atm this loads each digimon as a single entry without taking evo logic propagation into account
+
+def loadStandardDigivolutions(version: str,
+                              rom_data: bytearray):
+    
+    std_digivolution_dict = {}
+    for i, cur_digimon_id in enumerate(constants.DIGIVOLUTION_ADDRESSES[version].keys()):
+        hex_addr = constants.DIGIVOLUTION_ADDRESSES[version][cur_digimon_id]
+        digivolution_hex_info = rom_data[hex_addr:hex_addr+0x70]
+        digivolution_entry = model.StandardDigivolution(digivolution_hex_info, hex_addr, cur_digimon_id)
+        std_digivolution_dict[cur_digimon_id] = digivolution_entry
+
+    return std_digivolution_dict
+
+
+# armor digivolutions are returned as an array, not bound to a specific digimon_id
+def loadArmorDigivolutions(version: str,
+                           rom_data: bytearray):
+    
+    offset_start = constants.ARMOR_DIGIVOLUTIONS_OFFSETS[version][0]
+    offset_end = constants.ARMOR_DIGIVOLUTIONS_OFFSETS[version][1]
+
+    seek_offset = offset_start
+
+    armor_digivolution_array = []
+
+    while(seek_offset <= offset_end):
+        cur_digivolution_data = rom_data[seek_offset:seek_offset+0x2c]
+
+        cur_armor_digivolution = model.ArmorDigivolution(cur_digivolution_data, seek_offset)
+        armor_digivolution_array.append(cur_armor_digivolution)
+
+        seek_offset += 0x2c
+
+    return armor_digivolution_array
+
+
+# dna digivolutions are returned as an array, not bound to a specific digimon_id
+# very similar loading to armor digivolutions, might be able to generalize?
+# - would have to pass offset pairs, offset interval, target class
+# - could also do both loads in the same method (not a fan tbh)
+def loadDnaDigivolutions(version: str,
+                           rom_data: bytearray):
+    
+    offset_start = constants.DNA_DIGIVOLUTIONS_OFFSETS[version][0]
+    offset_end = constants.DNA_DIGIVOLUTIONS_OFFSETS[version][1]
+
+    seek_offset = offset_start
+
+    dna_digivolution_array = []
+
+    while(seek_offset <= offset_end):
+        cur_digivolution_data = rom_data[seek_offset:seek_offset+0x24]
+
+        cur_dna_digivolution = model.ArmorDigivolution(cur_digivolution_data, seek_offset)
+        dna_digivolution_array.append(cur_dna_digivolution)
+
+        seek_offset += 0x24
+
+    return dna_digivolution_array
+
+
+
+
+'''
+
+    while(seek_offset <= offset_end):
+        cur_offset = seek_offset
+        header_skip = int.from_bytes(rom_data[cur_offset:cur_offset+4], byteorder="little")
+        cur_offset += header_skip   # skip header
+        
+        cur_digimon_data = rom_data[cur_offset:cur_offset+0x6c]
+        cur_digimon_id = int.from_bytes(cur_digimon_data[0:2], byteorder="little")
+        
+        while(cur_digimon_id != 0xffff and cur_offset < seek_offset + 0x400):
+            cur_enemy_digimon = model.EnemyDataDigimon(cur_digimon_data, cur_offset)
+            enemy_digimon_dict[cur_digimon_id] = cur_enemy_digimon
+
+            cur_offset += 0x6c
+            cur_digimon_data = rom_data[cur_offset:cur_offset+0x6c]
+            cur_digimon_id = int.from_bytes(cur_digimon_data[0:2], byteorder="little")
+
+        seek_offset += 0x400    # skip 400 (hex) to reach the next base digimon address
+
+    return enemy_digimon_dict
+
+'''
+
+
 
 def loadSpriteMapTable(version: str,
                        rom_data: bytearray):

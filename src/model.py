@@ -355,3 +355,144 @@ class FarmTerrain:
         except:
             print("Exception on FarmTerrain call")
             return None
+
+
+
+class StandardDigivolution:
+    offset: int
+    digimon_id: int
+
+    # declare any other local properties before the ROM properties, otherwise this will mess up the load w/ __annotations__
+    degen_evo_id: int
+    evolution_1_id: int
+    evolution_2_id: int
+    evolution_3_id: int
+    degen_condition_id_1: int
+    degen_condition_value_1: int
+    degen_condition_id_2: int
+    degen_condition_value_2: int
+    degen_condition_id_3: int
+    degen_condition_value_3: int
+    evo_1_condition_id_1: int
+    evo_1_condition_value_1: int
+    evo_1_condition_id_2: int
+    evo_1_condition_value_2: int
+    evo_1_condition_id_3: int
+    evo_1_condition_value_3: int
+    evo_2_condition_id_1: int
+    evo_2_condition_value_1: int
+    evo_2_condition_id_2: int
+    evo_2_condition_value_2: int
+    evo_2_condition_id_3: int
+    evo_2_condition_value_3: int
+    evo_3_condition_id_1: int
+    evo_3_condition_value_1: int
+    evo_3_condition_id_2: int
+    evo_3_condition_value_2: int
+    evo_3_condition_id_3: int
+    evo_3_condition_value_3: int
+    
+    def __init__(self, digivolution_data: bytearray, offset: int, digimon_id: int):
+        self.offset = offset
+        self.digimon_id = digimon_id
+
+    	# have this in order to skip offset
+        local_properties = ["offset"]
+
+        # we can do this since self.__annotations__ maintains the order of the properties
+        property_names = [x for x in self.__annotations__ if x not in local_properties]
+
+
+        # every attr from digivolution_data corresponds to 4 bytes
+        for i, prop_name in enumerate(property_names):
+            setattr(self, prop_name, int.from_bytes(digivolution_data[i*4:(i*4)+4], byteorder="little"))
+
+        '''
+        # keeping this for clarity, might replace the setattr iterator if it makes sense
+        # old load was done like this:
+
+        self.degen_evo_id = int.from_bytes(digivolution_data[0:4], byteorder="little")
+        self.evolution_1_id = int.from_bytes(digivolution_data[4:8], byteorder="little")
+        self.evolution_2_id = int.from_bytes(digivolution_data[8:0xc], byteorder="little")
+        self.evolution_3_id = int.from_bytes(digivolution_data[0xc:0x10], byteorder="little")
+        self.degen_condition_id_1 = int.from_bytes(digivolution_data[0x10:0x14], byteorder="little")
+        self.degen_condition_value_1 = int.from_bytes(digivolution_data[0x14:0x18], byteorder="little")
+        self.degen_condition_id_2 = int.from_bytes(digivolution_data[0x18:0x1c], byteorder="little")
+        self.degen_condition_value_2 = int.from_bytes(digivolution_data[0x1c:0x20], byteorder="little")
+        self.degen_condition_id_3 = int.from_bytes(digivolution_data[0x20:0x24], byteorder="little")
+        self.degen_condition_value_3 = int.from_bytes(digivolution_data[0x24:0x28], byteorder="little")
+        self.evo_1_condition_id_1 = int.from_bytes(digivolution_data[0x28:0x2c], byteorder="little")
+        self.evo_1_condition_value_1 = int.from_bytes(digivolution_data[0x2c:0x30], byteorder="little")
+        self.evo_1_condition_id_2 = int.from_bytes(digivolution_data[0x30:0x34], byteorder="little")
+        self.evo_1_condition_value_2 = int.from_bytes(digivolution_data[0x34:0x38], byteorder="little")
+        self.evo_1_condition_id_3 = int.from_bytes(digivolution_data[0x38:0x3c], byteorder="little")
+        self.evo_1_condition_value_3 = int.from_bytes(digivolution_data[0x3c:0x40], byteorder="little")
+        self.evo_2_condition_id_1 = int.from_bytes(digivolution_data[0x40:0x44], byteorder="little")
+        self.evo_2_condition_value_1 = int.from_bytes(digivolution_data[0x44:0x48], byteorder="little")
+        self.evo_2_condition_id_2 = int.from_bytes(digivolution_data[0x48:0x4c], byteorder="little")
+        self.evo_2_condition_value_2 = int.from_bytes(digivolution_data[0x4c:0x50], byteorder="little")
+        self.evo_2_condition_id_3 = int.from_bytes(digivolution_data[0x50:0x54], byteorder="little")
+        self.evo_2_condition_value_3 = int.from_bytes(digivolution_data[0x54:0x58], byteorder="little")
+        self.evo_3_condition_id_1 = int.from_bytes(digivolution_data[0x58:0x5c], byteorder="little")
+        self.evo_3_condition_value_1 = int.from_bytes(digivolution_data[0x5c:0x60], byteorder="little")
+        self.evo_3_condition_id_2 = int.from_bytes(digivolution_data[0x60:0x64], byteorder="little")
+        self.evo_3_condition_value_2 = int.from_bytes(digivolution_data[0x64:0x68], byteorder="little")
+        self.evo_3_condition_id_3 = int.from_bytes(digivolution_data[0x68:0x6c], byteorder="little")
+        self.evo_3_condition_value_3 = int.from_bytes(digivolution_data[0x6c:0x70], byteorder="little")
+        '''
+
+
+
+class ArmorDigivolution:
+    offset: int
+    digimon_id: int
+    item_id: int
+    evolution_id: int
+    condition_id_1: int
+    condition_value_1: int
+    condition_id_2: int
+    condition_value_2: int
+    condition_id_3: int
+    condition_value_3: int
+    degen_condition_id: int
+    degen_condition_value: int
+    
+    def __init__(self, digivolution_data: bytearray, offset: int):
+        self.offset = offset
+        self.digimon_id = int.from_bytes(digivolution_data[0:4], byteorder="little")
+        self.item_id = int.from_bytes(digivolution_data[4:8], byteorder="little")
+        self.evolution_id = int.from_bytes(digivolution_data[8:0xc], byteorder="little")
+        self.condition_id_1 = int.from_bytes(digivolution_data[0xc:0x10], byteorder="little")
+        self.condition_value_1 = int.from_bytes(digivolution_data[0x10:0x14], byteorder="little")
+        self.condition_id_2 = int.from_bytes(digivolution_data[0x14:0x18], byteorder="little")
+        self.condition_value_2 = int.from_bytes(digivolution_data[0x18:0x1c], byteorder="little")
+        self.condition_id_3 = int.from_bytes(digivolution_data[0x1c:0x20], byteorder="little")
+        self.condition_value_3 = int.from_bytes(digivolution_data[0x20:0x24], byteorder="little")
+        self.degen_condition_id = int.from_bytes(digivolution_data[0x24:0x28], byteorder="little")
+        self.degen_condition_value = int.from_bytes(digivolution_data[0x28:0x2c], byteorder="little")
+
+
+class DNADigivolution:
+    offset: int
+    digimon_1_id: int
+    digimon_2_id: int
+    dna_evolution_id: int
+    condition_id_1: int
+    condition_value_1: int
+    condition_id_2: int
+    condition_value_2: int
+    condition_id_3: int
+    condition_value_3: int
+    
+
+    def __init__(self, digivolution_data: bytearray, offset: int):
+        self.offset = offset
+        self.digimon_1_id = int.from_bytes(digivolution_data[0:4], byteorder="little")
+        self.digimon_2_id = int.from_bytes(digivolution_data[4:8], byteorder="little")
+        self.dna_evolution_id = int.from_bytes(digivolution_data[8:0xc], byteorder="little")
+        self.condition_id_1 = int.from_bytes(digivolution_data[0xc:0x10], byteorder="little")
+        self.condition_value_1 = int.from_bytes(digivolution_data[0x10:0x14], byteorder="little")
+        self.condition_id_2 = int.from_bytes(digivolution_data[0x14:0x18], byteorder="little")
+        self.condition_value_2 = int.from_bytes(digivolution_data[0x18:0x1c], byteorder="little")
+        self.condition_id_3 = int.from_bytes(digivolution_data[0x1c:0x20], byteorder="little")
+        self.condition_value_3 = int.from_bytes(digivolution_data[0x20:0x24], byteorder="little")

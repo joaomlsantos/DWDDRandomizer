@@ -2,6 +2,7 @@ import os
 import binascii
 import logging
 import random
+from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
 import copy
@@ -148,8 +149,10 @@ class DigimonROM:
 
 class Randomizer:
     version: str
-    baseDigimonInfo: dict[int, model.BaseDataDigimon]
-    enemyDigimonInfo: dict[int, model.EnemyDataDigimon]
+    baseDigimonInfo: Dict[int, model.BaseDataDigimon]
+    enemyDigimonInfo: Dict[int, model.EnemyDataDigimon]
+    armorDigivolutions: List[model.ArmorDigivolution]
+    dnaDigivolutions: List[model.DNADigivolution]
 
     def __init__(self, 
                  version: str, 
@@ -162,6 +165,8 @@ class Randomizer:
         self.rom_data = rom_data
         self.baseDigimonInfo = utils.loadBaseDigimonInfo(version, rom_data)
         self.enemyDigimonInfo = utils.loadEnemyDigimonInfo(version, rom_data)
+        self.armorDigivolutions = utils.loadArmorDigivolutions(version, rom_data)
+        self.dnaDigivolutions = utils.loadDnaDigivolutions(version, rom_data)
         self.lvlupTypeTable = utils.loadLvlupTypeTable(version, rom_data)
         self.spriteMapTable = utils.loadSpriteMapTable(version, rom_data)
         self.battleStrTable = utils.loadBattleStringTable(version, rom_data)
