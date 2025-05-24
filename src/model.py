@@ -1,5 +1,7 @@
 from enum import Enum
 
+from .constants import DIGIVOLUTION_CONDITIONS
+
 class Species(Enum):
     HOLY = 0
     DARK = 1
@@ -496,3 +498,16 @@ class DNADigivolution:
         self.condition_value_2 = int.from_bytes(digivolution_data[0x18:0x1c], byteorder="little")
         self.condition_id_3 = int.from_bytes(digivolution_data[0x1c:0x20], byteorder="little")
         self.condition_value_3 = int.from_bytes(digivolution_data[0x20:0x24], byteorder="little")
+
+
+    # this removes the requirements for the given DNA digivolution -> to DNA digivolve, you will only need to select the two required digimon
+    def removeRequirements(self):
+        self.condition_id_1 = 0x1       # digivolution condition -> level
+        self.condition_value_1 = 0x1      # condition value -> level 1
+        self.condition_id_2 = 0x0
+        self.condition_value_2 = 0x0
+        self.condition_id_3 = 0x0
+        self.condition_value_3 = 0x0
+
+    def getConditionsArray(self):
+        return [[self.condition_id_1, self.condition_value_1], [self.condition_id_2, self.condition_value_2], [self.condition_id_3, self.condition_value_3]]

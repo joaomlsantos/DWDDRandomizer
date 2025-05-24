@@ -4,7 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
+from configs import ExpYieldConfig, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -389,6 +389,12 @@ def toggle_digivolution_randomization_options():
     else:
         digivolutionSimilarSpeciesCheckbox.configure(state="disabled")
 
+def toggle_dna_digivolution_rand_options():
+    if dna_digivolutions_option_var.get() != RandomizeDnaDigivolutions.UNCHANGED.value:
+        dnaDigivolutionForceRareCheckbox.configure(state="normal")
+    else:
+        dnaDigivolutionForceRareCheckbox.configure(state="disabled")
+
 
 
 # Initialize main window
@@ -678,13 +684,46 @@ toggle_stat_generation()
 
 
 
+
+
+
+# Overworld Items Frame
+overworld_items_frame = ttk.LabelFrame(randomizer_tab, text="Overworld Items", padding=10)
+overworld_items_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+
+overworld_items_radio_frame = ttk.Frame(overworld_items_frame)
+overworld_items_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+overworld_items_option_var = tk.IntVar(value=RandomizeOverworldItems.UNCHANGED.value)
+
+overworld_items_unchanged_rb = tk.Radiobutton(overworld_items_radio_frame, text="Unchanged", variable=overworld_items_option_var, value=RandomizeOverworldItems.UNCHANGED.value, state="disabled")
+overworld_items_unchanged_rb.pack(anchor="w")
+
+overworld_items_same_category_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (same category)", variable=overworld_items_option_var, value=RandomizeOverworldItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
+overworld_items_same_category_rb_tooltip = CreateToolTip(overworld_items_same_category_rb, "Randomizes each overworld item chest while keeping the original category of the item (for example, a consumable like a GateDisk will be replaced by another consumable, farm items will be replaced by other farm items, etc).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
+overworld_items_same_category_rb.pack(anchor="w")
+
+overworld_items_completely_random_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (completely)", variable=overworld_items_option_var, value=RandomizeOverworldItems.RANDOMIZE_COMPLETELY.value, state="disabled")
+overworld_items_completely_random_tooltip = CreateToolTip(overworld_items_completely_random_rb, "Randomizes each overworld item chest completely (a chest can have any item, regardless of its original item).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
+overworld_items_completely_random_rb.pack(anchor="w")
+
+
+
+
+# Digivolutions Tab
+digivolutions_tab = ttk.Frame(notebook, padding=10)
+digivolutions_tab.pack(fill="both", expand=True)  # Ensure frame fills space
+notebook.add(digivolutions_tab, text="Digivolutions")
+
+
 # Digivolutions frame
 
-general_digivolution_settings_frame = ttk.Frame(randomizer_tab)
+general_digivolution_settings_frame = ttk.Frame(digivolutions_tab)
 general_digivolution_settings_frame.pack(side="top", fill="x")
 
 digivolutions_frame = ttk.LabelFrame(general_digivolution_settings_frame, text="Digivolutions", padding=10)
-digivolutions_frame.pack(side="left", fill="both", expand=True, padx=10, pady=5)
+digivolutions_frame.pack(side="top", fill="both", expand=True, padx=10, pady=5)
 
 digivolutions_inner_container = ttk.Frame(digivolutions_frame)
 digivolutions_inner_container.pack(side="top", fill="x")
@@ -711,13 +750,14 @@ digivolutions_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 digivolution_similar_species_var = tk.BooleanVar(value=False)
 digivolutionSimilarSpeciesCheckbox = tk.Checkbutton(digivolutions_sub_frame, text="Similar Species", variable=digivolution_similar_species_var, state="disabled")
-digivolutionSimilarSpeciesCheckbox.pack(anchor='w')
+#digivolutionSimilarSpeciesCheckbox.pack(anchor="w")
+digivolutionSimilarSpeciesCheckbox.grid(row=0, column=0, sticky="w")
 digivolutionSimilarSpeciesTootip = CreateToolTip(digivolutionSimilarSpeciesCheckbox, "Digivolutions will be more likely to follow the digimon's original species.\nExample: a holy digimon will be more likely to evolve into other holy digimon.")
 
 
 # Digivolution conditions randomization
 
-digivolution_conditions_frame = ttk.LabelFrame(general_digivolution_settings_frame, text="Digivolution Conditions", padding=10)
+digivolution_conditions_frame = ttk.LabelFrame(digivolutions_inner_container, text="Digivolution Conditions", padding=10)
 digivolution_conditions_frame.pack(side="right", fill="both", expand=True, padx=10, pady=5)
 
 digivolution_conditions_inner_container = ttk.Frame(digivolution_conditions_frame)
@@ -749,26 +789,90 @@ digivolutionConditionsSpeciesExpTootip = CreateToolTip(digivolutionConditionsSpe
 
 
 
-# Overworld Items Frame
-overworld_items_frame = ttk.LabelFrame(randomizer_tab, text="Overworld Items", padding=10)
-overworld_items_frame.pack(side="top", fill="x", padx=10, pady=5)
 
 
-overworld_items_radio_frame = ttk.Frame(overworld_items_frame)
-overworld_items_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
 
-overworld_items_option_var = tk.IntVar(value=RandomizeOverworldItems.UNCHANGED.value)
+# DNA Digivolutions frame
 
-overworld_items_unchanged_rb = tk.Radiobutton(overworld_items_radio_frame, text="Unchanged", variable=overworld_items_option_var, value=RandomizeOverworldItems.UNCHANGED.value, state="disabled")
-overworld_items_unchanged_rb.pack(anchor="w")
 
-overworld_items_same_category_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (same category)", variable=overworld_items_option_var, value=RandomizeOverworldItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
-overworld_items_same_category_rb_tooltip = CreateToolTip(overworld_items_same_category_rb, "Randomizes each overworld item chest while keeping the original category of the item (for example, a consumable like a GateDisk will be replaced by another consumable, farm items will be replaced by other farm items, etc).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
-overworld_items_same_category_rb.pack(anchor="w")
+dna_digivolutions_frame = ttk.LabelFrame(general_digivolution_settings_frame, text="DNA Digivolutions", padding=10)
+dna_digivolutions_frame.pack(side="top", fill="both", expand=True, padx=10, pady=5)
 
-overworld_items_completely_random_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (completely)", variable=overworld_items_option_var, value=RandomizeOverworldItems.RANDOMIZE_COMPLETELY.value, state="disabled")
-overworld_items_completely_random_tooltip = CreateToolTip(overworld_items_completely_random_rb, "Randomizes each overworld item chest completely (a chest can have any item, regardless of its original item).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
-overworld_items_completely_random_rb.pack(anchor="w")
+dna_digivolutions_inner_container = ttk.Frame(dna_digivolutions_frame)
+dna_digivolutions_inner_container.pack(side="top", fill="x")
+
+dna_digivolutions_option_var = tk.IntVar(value=RandomizeDnaDigivolutions.UNCHANGED.value)
+
+
+
+
+
+# DNA Digivolution radio buttons frame
+dna_digivolutions_radio_frame = ttk.Frame(dna_digivolutions_inner_container)
+dna_digivolutions_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+dna_digivolutions_unchanged_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Unchanged", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.UNCHANGED.value, state="disabled")
+dna_digivolutions_unchanged_rb.pack(anchor="w")
+
+dna_digivolutions_randomize_same_stage_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (same stages)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE.value, state="disabled", command=toggle_dna_digivolution_rand_options)
+dna_digivolutions_randomize_same_stage_rb_tooltip = CreateToolTip(dna_digivolutions_randomize_same_stage_rb, "Randomizes each DNA digivolution, keeping the original stages for each DNA digivolution.\nE.g. for Patamon + SnowAgumon = Airdramon, Patamon and SnowAgumon will be replaced by two other rookie digimon and Airdramon will be replaced by another champion digimon.")
+dna_digivolutions_randomize_same_stage_rb.pack(anchor="w")
+
+dna_digivolutions_randomize_completely_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (completely)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_COMPLETELY.value, state="disabled", command=toggle_dna_digivolution_rand_options)
+dna_digivolutions_randomize_completely_rb_tooltip = CreateToolTip(dna_digivolutions_randomize_completely_rb, "Randomizes each DNA digivolution, creating new combinations regardless of stage.\nThis may result in scenarios where, for example, joining two In-Training digimon generates an Ultimate digimon, or joining two Mega digimon results in a Rookie digimon.")
+dna_digivolutions_randomize_completely_rb.pack(anchor="w")
+
+
+# Specific options for digivolution randomization
+
+dna_digivolutions_sub_frame = ttk.Frame(dna_digivolutions_inner_container)
+dna_digivolutions_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+dna_digivolution_force_rare_var = tk.BooleanVar(value=False)
+dnaDigivolutionForceRareCheckbox = tk.Checkbutton(dna_digivolutions_sub_frame, text="Prioritize Rare Digimon", variable=dna_digivolution_force_rare_var, state="disabled")
+#dnaDigivolutionForceRareCheckbox.pack(anchor='w')
+dnaDigivolutionForceRareCheckbox.grid(row=0, column=0, sticky="w")
+dnaDigivolutionForceRareTooltip = CreateToolTip(dnaDigivolutionForceRareCheckbox, "If randomized, DNA Digivolutions will prioritize digimon that are not obtainable in the wild or through any standard evolution line of the current seed.\nE.g. if Gallantmon is not obtainable in the wild or through any digivolution line of an obtainable digimon, then it will have priority over other Mega digimon that are obtainable.")
+
+
+# DNA Digivolution conditions randomization
+
+dna_digivolution_conditions_frame = ttk.LabelFrame(dna_digivolutions_inner_container, text="DNA Digivolution Conditions", padding=10)
+dna_digivolution_conditions_frame.pack(side="right", fill="both", expand=True, padx=10, pady=5)
+
+dna_digivolution_conditions_inner_container = ttk.Frame(dna_digivolution_conditions_frame)
+dna_digivolution_conditions_inner_container.pack(side="top", fill="x")
+
+# DNA Digivolution conditions radio buttons frame
+dna_digivolution_conditions_radio_frame = ttk.Frame(dna_digivolution_conditions_inner_container)
+dna_digivolution_conditions_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+dna_digivolution_conditions_option_var = tk.IntVar(value=RandomizeDigivolutionConditions.UNCHANGED.value)
+
+dna_digivolution_conditions_unchanged_rb = tk.Radiobutton(dna_digivolution_conditions_radio_frame, text="Unchanged", variable=dna_digivolution_conditions_option_var, value=RandomizeDigivolutionConditions.UNCHANGED.value, state="disabled")
+dna_digivolution_conditions_unchanged_rb_tooltip = CreateToolTip(dna_digivolution_conditions_unchanged_rb, "Keeps the original DNA digivolution's conditions unchanged.\n If a given digimon did not have a DNA digivolution before, then it will default to its standard digivolution condition (e.g. Gummymon + Chicchimon = Patamon would require lvl 8 and friendship 50%).\nIf the digimon did not have a standard digivolution as well (e.g. Calumon), then a set of DNA digivolution conditions will be generated for that digimon.")
+dna_digivolution_conditions_unchanged_rb.pack(anchor="w")
+
+dna_digivolution_conditions_randomize_rb = tk.Radiobutton(dna_digivolution_conditions_radio_frame, text="Random", variable=dna_digivolution_conditions_option_var, value=RandomizeDigivolutionConditions.RANDOMIZE.value, state="disabled")
+dna_digivolution_conditions_randomize_rb_tooltip = CreateToolTip(dna_digivolution_conditions_randomize_rb, "Randomizes each DNA digivolution's conditions, creating up to three different conditions for each DNA digivolution.\nLvl will always be the first condition.")
+dna_digivolution_conditions_randomize_rb.pack(anchor="w")
+
+dna_digivolution_conditions_remove_rb = tk.Radiobutton(dna_digivolution_conditions_radio_frame, text="Removed", variable=dna_digivolution_conditions_option_var, value=RandomizeDigivolutionConditions.RANDOMIZE.value, state="disabled")
+dna_digivolution_conditions_remove_rb_tooltip = CreateToolTip(dna_digivolution_conditions_remove_rb, "Removes all conditions to DNA digivolve two digimon.\nE.g. to digivolve WarGreymon and MetalGarurumon into Omnimon, the requirements of lvl 65, speed 415, friendship 100% will no longer be required.")
+dna_digivolution_conditions_remove_rb.pack(anchor="w")
+
+# Specific options for digivolution conditions randomization
+
+dna_digivolution_conditions_sub_frame = ttk.Frame(dna_digivolution_conditions_inner_container)
+dna_digivolution_conditions_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+dna_digivolution_conditions_species_exp_var = tk.BooleanVar(value=False)
+dnaDigivolutionConditionsSpeciesExpCheckbox = tk.Checkbutton(dna_digivolution_conditions_sub_frame, text="Follow Species EXP", variable=digivolution_conditions_species_exp_var, state="disabled")
+dnaDigivolutionConditionsSpeciesExpCheckbox.pack(anchor='w')
+dnaDigivolutionConditionsSpeciesExpTootip = CreateToolTip(dnaDigivolutionConditionsSpeciesExpCheckbox, "DNA Digivolutions will be less likely to need EXP from species that are not part of the three digimon involved in each DNA digivolution.\nE.g. for the hypothetical DNA digivolution composed of Agumon + Gaomon = Devimon, it will be less likely to have any EXP that is not DRAGON, BEAST or DARK as a requirement.")
+
+
+
 
 
 

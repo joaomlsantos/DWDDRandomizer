@@ -166,7 +166,7 @@ class Randomizer:
         self.baseDigimonInfo = utils.loadBaseDigimonInfo(version, rom_data)
         self.enemyDigimonInfo = utils.loadEnemyDigimonInfo(version, rom_data)
         self.armorDigivolutions = utils.loadArmorDigivolutions(version, rom_data)
-        self.dnaDigivolutions = utils.loadDnaDigivolutions(version, rom_data)
+        self.dnaDigivolutions, self.dnaConditionsByDigimonId = utils.loadDnaDigivolutions(version, rom_data)
         self.lvlupTypeTable = utils.loadLvlupTypeTable(version, rom_data)
         self.spriteMapTable = utils.loadSpriteMapTable(version, rom_data)
         self.battleStrTable = utils.loadBattleStringTable(version, rom_data)

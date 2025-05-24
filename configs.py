@@ -30,6 +30,11 @@ class RandomizeDigivolutionConditions(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE = 1                       # randomize (specific randomization options are outside of this enum)
 
+class RandomizeDnaDigivolutions(Enum):
+    UNCHANGED = 0                       # do not randomize
+    RANDOMIZE_SAME_STAGE = 1            # randomize keeping original DNA digimon stages
+    RANDOMIZE_COMPLETELY = 2            # generate completely random DNA digivolutions regardless of digimon stages
+
 
 class RandomizeOverworldItems(Enum):
     UNCHANGED = 0                       # do not randomize

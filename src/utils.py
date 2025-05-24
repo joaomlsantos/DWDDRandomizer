@@ -161,15 +161,19 @@ def loadDnaDigivolutions(version: str,
 
     dna_digivolution_array = []
 
+    dna_conditions_by_digimon_id = {}
+
     while(seek_offset <= offset_end):
         cur_digivolution_data = rom_data[seek_offset:seek_offset+0x24]
 
-        cur_dna_digivolution = model.ArmorDigivolution(cur_digivolution_data, seek_offset)
+        cur_dna_digivolution = model.DNADigivolution(cur_digivolution_data, seek_offset)
         dna_digivolution_array.append(cur_dna_digivolution)
+
+        dna_conditions_by_digimon_id[cur_dna_digivolution.dna_evolution_id] = cur_dna_digivolution.getConditionsArray()
 
         seek_offset += 0x24
 
-    return dna_digivolution_array
+    return dna_digivolution_array, dna_conditions_by_digimon_id
 
 
 
