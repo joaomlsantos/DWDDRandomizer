@@ -4,7 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
+from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -81,6 +81,11 @@ def execute_rom_changes(save_path):
 
         "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions(digivolution_conditions_option_var.get()),
         "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": digivolution_conditions_species_exp_var,
+
+        "RANDOMIZE_DNADIGIVOLUTIONS": RandomizeDnaDigivolutions(dna_digivolutions_option_var.get()),
+        "FORCE_RARE_DNADIGIVOLUTIONS": dna_digivolution_force_rare_var,
+        "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions(dna_digivolution_conditions_option_var.get()),
+        "DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": dna_digivolution_conditions_species_exp_var,
 
         "RANDOMIZE_OVERWORLD_ITEMS": RandomizeOverworldItems(overworld_items_option_var.get())
     }

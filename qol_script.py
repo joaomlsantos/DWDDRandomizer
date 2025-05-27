@@ -6,7 +6,7 @@ from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 
 
@@ -165,6 +165,7 @@ class Randomizer:
         self.rom_data = rom_data
         self.baseDigimonInfo = utils.loadBaseDigimonInfo(version, rom_data)
         self.enemyDigimonInfo = utils.loadEnemyDigimonInfo(version, rom_data)
+        self.standardDigivolutions = utils.loadStandardDigivolutions(version, rom_data)
         self.armorDigivolutions = utils.loadArmorDigivolutions(version, rom_data)
         self.dnaDigivolutions, self.dnaConditionsByDigimonId = utils.loadDnaDigivolutions(version, rom_data)
         self.lvlupTypeTable = utils.loadLvlupTypeTable(version, rom_data)
@@ -181,10 +182,21 @@ class Randomizer:
         curEnemyDigimonInfo = self.randomizeAreaEncounters(self.rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
         self.nerfFirstBoss(self.rom_data)
         self.randomizeOverworldItems(self.rom_data)
+
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
-            self.randomizeDigivolutions(self.rom_data)
+            curUpdatedPreEvos, curStandardEvos = self.randomizeDigivolutions(self.rom_data)
         elif(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") not in [None, RandomizeDigivolutionConditions.UNCHANGED]):
             self.randomizeDigivolutionConditionsOnly(self.rom_data)   # this only triggers if randomize digivolutions is not applied
+
+        self.manageDnaDigivolutions(self.rom_data)
+
+        '''
+        if(self.config_manager.get("RANDOMIZE_DNADIGIVOLUTIONS") not in [None, RandomizeDnaDigivolutions.UNCHANGED]):
+            self.randomizeDnaDigivolutions(self.rom_data)
+        elif(self.config_manager.get("RANDOMIZE_DNADIGIVOLUTION_CONDITIONS") in [RandomizeDnaDigivolutionConditions.RANDOMIZE]):
+            self.randomizeDnaDigivolutionConditionsOnly(self.rom_data)  # similar to above, only triggers if randomize dna evos not applied
+        '''
+
         self.expPatchFlat(self.rom_data, curEnemyDigimonInfo)
 
     
@@ -489,6 +501,7 @@ class Randomizer:
         digimon_pool_selection = copy.deepcopy(constants.DIGIMON_IDS)   # this will be used to define if a given digimon is available or not
         generated_conditions = {}
         pre_evos = {}
+        generated_evolutions = {}
 
         if(not self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS")):
             # do initial scan to add base digivolution conditions to generated_conditions
@@ -635,8 +648,10 @@ class Randomizer:
                             utils.writeRomBytes(rom_data, 0x0, hex_addr+0x10 + (0x8*j) + (0x18*(i+1)), 4)
                             utils.writeRomBytes(rom_data, 0x0, hex_addr+0x14 + (0x8*j) + (0x18*(i+1)), 4)
 
+                generated_evolutions[digimon_id] = evo_ids
                 #self.logger.info(log_digimon_name + " -> " + str(log_evo_names))
 
+        return pre_evos, generated_evolutions
 
     def randomizeDigivolutionConditionsOnly(self,
                                             rom_data: bytearray):
@@ -725,6 +740,20 @@ class Randomizer:
                     utils.writeRomBytes(rom_data, condition["condition_id"], condition["base_addr"], 4)
                     utils.writeRomBytes(rom_data, condition["condition_value"], condition["base_addr"] + 4, 4)
 
+    def manageDnaDigivolutions(self,
+                               rom_data: bytearray):
+        
+        dna_digivolutions_var = self.config_manager.get("RANDOMIZE_DNADIGIVOLUTIONS")
+        dna_digivolution_conditions_var = self.config_manager.get("RANDOMIZE_DNADIGIVOLUTION_CONDITIONS")
+
+
+        '''
+        if(self.config_manager.get("RANDOMIZE_DNADIGIVOLUTIONS") not in [None, RandomizeDnaDigivolutions.UNCHANGED]):
+            self.randomizeDnaDigivolutions(self.rom_data)
+        elif(self.config_manager.get("RANDOMIZE_DNADIGIVOLUTION_CONDITIONS") in [RandomizeDnaDigivolutionConditions.RANDOMIZE]):
+            self.randomizeDnaDigivolutionConditionsOnly(self.rom_data)  # similar to above, only triggers if randomize dna evos not applied
+        '''
+        
 
 
 if __name__ == '__main__':
