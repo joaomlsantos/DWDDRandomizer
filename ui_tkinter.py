@@ -96,12 +96,16 @@ def execute_rom_changes(save_path):
         
     app_state.apply_seed()
     app_state.config_manager.update_from_ui(patcher_config_options)
+    
     app_state.target_rom.executeQolChanges()
     app_state.randomizer.executeRandomizerFunctions()
     app_state.target_rom.writeRom(save_path)
     app_state.writeLog(save_path)
     app_state.seed = -1
     app_state.target_rom = copy.deepcopy(app_state.current_rom)     # next randomization will be applied to base rom instead of previously randomized rom again
+    app_state.target_rom.config_manager = app_state.config_manager
+    app_state.log_stream.truncate(0)    # reset logger
+    app_state.log_stream.seek(0)        # reset logger
 
 
 
@@ -160,6 +164,16 @@ def enable_buttons():
     overworld_items_same_category_rb.configure(state="normal")
     overworld_items_completely_random_rb.configure(state="normal")
 
+    # Randomize DNA digivolutions and conditions
+    dna_digivolutions_unchanged_rb.configure(state="normal")
+    dna_digivolutions_randomize_same_stage_rb.configure(state="normal")
+    dna_digivolutions_randomize_completely_rb.configure(state="normal")
+    dna_digivolution_conditions_unchanged_rb.configure(state="normal")
+    dna_digivolution_conditions_randomize_rb.configure(state="normal")
+    dna_digivolution_conditions_remove_rb.configure(state="normal")
+    dnaDigivolutionConditionsSpeciesExpCheckbox.configure(state="normal")
+
+
 
 
 def open_rom():
@@ -172,6 +186,7 @@ def open_rom():
             app_state.current_rom = DigimonROM(file_path, app_state.config_manager, app_state.logger)
             app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager, app_state.logger)
             app_state.target_rom = copy.deepcopy(app_state.current_rom)
+            app_state.target_rom.config_manager = app_state.config_manager
         except ValueError:
             messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
             return
@@ -829,16 +844,17 @@ dna_digivolutions_randomize_completely_rb.pack(anchor="w")
 
 
 # Specific options for digivolution randomization
-
+# disabling for now
 dna_digivolutions_sub_frame = ttk.Frame(dna_digivolutions_inner_container)
 dna_digivolutions_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
 
+'''
 dna_digivolution_force_rare_var = tk.BooleanVar(value=False)
 dnaDigivolutionForceRareCheckbox = tk.Checkbutton(dna_digivolutions_sub_frame, text="Prioritize Rare Digimon", variable=dna_digivolution_force_rare_var, state="disabled")
 #dnaDigivolutionForceRareCheckbox.pack(anchor='w')
 dnaDigivolutionForceRareCheckbox.grid(row=0, column=0, sticky="w")
 dnaDigivolutionForceRareTooltip = CreateToolTip(dnaDigivolutionForceRareCheckbox, "If randomized, DNA Digivolutions will prioritize digimon that are not obtainable in the wild or through any standard evolution line of the current seed.\nE.g. if Gallantmon is not obtainable in the wild or through any digivolution line of an obtainable digimon, then it will have priority over other Mega digimon that are obtainable.")
-
+'''
 
 # DNA Digivolution conditions randomization
 
@@ -852,17 +868,17 @@ dna_digivolution_conditions_inner_container.pack(side="top", fill="x")
 dna_digivolution_conditions_radio_frame = ttk.Frame(dna_digivolution_conditions_inner_container)
 dna_digivolution_conditions_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
 
-dna_digivolution_conditions_option_var = tk.IntVar(value=RandomizeDigivolutionConditions.UNCHANGED.value)
+dna_digivolution_conditions_option_var = tk.IntVar(value=RandomizeDnaDigivolutionConditions.UNCHANGED.value)
 
-dna_digivolution_conditions_unchanged_rb = tk.Radiobutton(dna_digivolution_conditions_radio_frame, text="Unchanged", variable=dna_digivolution_conditions_option_var, value=RandomizeDigivolutionConditions.UNCHANGED.value, state="disabled")
-dna_digivolution_conditions_unchanged_rb_tooltip = CreateToolTip(dna_digivolution_conditions_unchanged_rb, "Keeps the original DNA digivolution's conditions unchanged.\n If a given digimon did not have a DNA digivolution before, then it will default to its standard digivolution condition (e.g. Gummymon + Chicchimon = Patamon would require lvl 8 and friendship 50%).\nIf the digimon did not have a standard digivolution as well (e.g. Calumon), then a set of DNA digivolution conditions will be generated for that digimon.")
+dna_digivolution_conditions_unchanged_rb = tk.Radiobutton(dna_digivolution_conditions_radio_frame, text="Unchanged", variable=dna_digivolution_conditions_option_var, value=RandomizeDnaDigivolutionConditions.UNCHANGED.value, state="disabled")
+dna_digivolution_conditions_unchanged_rb_tooltip = CreateToolTip(dna_digivolution_conditions_unchanged_rb, "Keeps the original DNA digivolution's conditions unchanged.\n If a given digimon did not have a DNA digivolution before, then a set of DNA digivolution conditions will be generated for that digimon.")
 dna_digivolution_conditions_unchanged_rb.pack(anchor="w")
 
-dna_digivolution_conditions_randomize_rb = tk.Radiobutton(dna_digivolution_conditions_radio_frame, text="Random", variable=dna_digivolution_conditions_option_var, value=RandomizeDigivolutionConditions.RANDOMIZE.value, state="disabled")
+dna_digivolution_conditions_randomize_rb = tk.Radiobutton(dna_digivolution_conditions_radio_frame, text="Random", variable=dna_digivolution_conditions_option_var, value=RandomizeDnaDigivolutionConditions.RANDOMIZE.value, state="disabled")
 dna_digivolution_conditions_randomize_rb_tooltip = CreateToolTip(dna_digivolution_conditions_randomize_rb, "Randomizes each DNA digivolution's conditions, creating up to three different conditions for each DNA digivolution.\nLvl will always be the first condition.")
 dna_digivolution_conditions_randomize_rb.pack(anchor="w")
 
-dna_digivolution_conditions_remove_rb = tk.Radiobutton(dna_digivolution_conditions_radio_frame, text="Removed", variable=dna_digivolution_conditions_option_var, value=RandomizeDigivolutionConditions.RANDOMIZE.value, state="disabled")
+dna_digivolution_conditions_remove_rb = tk.Radiobutton(dna_digivolution_conditions_radio_frame, text="Removed", variable=dna_digivolution_conditions_option_var, value=RandomizeDnaDigivolutionConditions.REMOVED.value, state="disabled")
 dna_digivolution_conditions_remove_rb_tooltip = CreateToolTip(dna_digivolution_conditions_remove_rb, "Removes all conditions to DNA digivolve two digimon.\nE.g. to digivolve WarGreymon and MetalGarurumon into Omnimon, the requirements of lvl 65, speed 415, friendship 100% will no longer be required.")
 dna_digivolution_conditions_remove_rb.pack(anchor="w")
 
@@ -872,7 +888,7 @@ dna_digivolution_conditions_sub_frame = ttk.Frame(dna_digivolution_conditions_in
 dna_digivolution_conditions_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 dna_digivolution_conditions_species_exp_var = tk.BooleanVar(value=False)
-dnaDigivolutionConditionsSpeciesExpCheckbox = tk.Checkbutton(dna_digivolution_conditions_sub_frame, text="Follow Species EXP", variable=digivolution_conditions_species_exp_var, state="disabled")
+dnaDigivolutionConditionsSpeciesExpCheckbox = tk.Checkbutton(dna_digivolution_conditions_sub_frame, text="Follow Species EXP", variable=dna_digivolution_conditions_species_exp_var, state="disabled")
 dnaDigivolutionConditionsSpeciesExpCheckbox.pack(anchor='w')
 dnaDigivolutionConditionsSpeciesExpTootip = CreateToolTip(dnaDigivolutionConditionsSpeciesExpCheckbox, "DNA Digivolutions will be less likely to need EXP from species that are not part of the three digimon involved in each DNA digivolution.\nE.g. for the hypothetical DNA digivolution composed of Agumon + Gaomon = Devimon, it will be less likely to have any EXP that is not DRAGON, BEAST or DARK as a requirement.")
 

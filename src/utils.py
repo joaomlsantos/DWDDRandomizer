@@ -163,7 +163,7 @@ def loadDnaDigivolutions(version: str,
 
     dna_conditions_by_digimon_id = {}
 
-    while(seek_offset <= offset_end):
+    while(seek_offset < offset_end):
         cur_digivolution_data = rom_data[seek_offset:seek_offset+0x24]
 
         cur_dna_digivolution = model.DNADigivolution(cur_digivolution_data, seek_offset)
@@ -354,7 +354,7 @@ def generateConditions(s: int, max_conditions: int = 3):
 
 
 
-def generateBiasedConditions(stage_id: int, bias: float, species: int, max_conditions: int = 3):
+def generateBiasedConditions(stage_id: int, bias: float, species: List[int], max_conditions: int = 3):
     '''
     0x2: "DRAGON EXP",                      HOLY = 0
     0x3: "BEAST EXP",                       DARK = 1
@@ -369,8 +369,8 @@ def generateBiasedConditions(stage_id: int, bias: float, species: int, max_condi
     stage = constants.STAGE_NAMES[stage_id]
     digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x12]    # this should be a constant/setting i think
     species_condition_mapping = {0: 0x9, 1: 0x8, 2: 0x2, 3: 0x3, 4: 0x5, 5: 0x7, 6: 0x4, 7: 0x6}
-    species_exp = species_condition_mapping[species]
-    other_species_total = 7
+    species_exp = [species_condition_mapping[x] for x in species]
+    other_species_total = len(species_condition_mapping) - len(species)
     non_species_exp_conditions_count = len(digivolution_conditions_pool) - other_species_total      # assuming 7 can be a fixed number since 8 species minus the target one
 
     #prob_distribution_conditions = np.array([(1-bias) / non_species_exp_conditions_count if (x == species_exp or x > 0x9) else (bias) / other_species_total for x in digivolution_conditions_pool])
@@ -385,7 +385,7 @@ def generateBiasedConditions(stage_id: int, bias: float, species: int, max_condi
 
         prob_distribution_conditions = []
         for x in digivolution_conditions_pool:
-            if(x == species_exp):       # prob for own species exp
+            if(x in species_exp):       # prob for own species exp
                 prob_distribution_conditions.append((1-bias)/2)         
             elif(x > 0x9):              # prob for non-species-exp conditions
                 prob_distribution_conditions.append(((1-bias)/2)/(len(digivolution_conditions_pool) - len(species_condition_mapping)))

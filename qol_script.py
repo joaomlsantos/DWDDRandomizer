@@ -140,7 +140,7 @@ class DigimonROM:
             cur_value = area_el[1]
             cur_description = area_el[2]
             utils.writeRomBytes(self.rom_data, cur_value, cur_address, 2)
-            self.logger.info("VERSION-EXCLUSIVE AREA UNLOCK:", cur_description)
+            self.logger.info("VERSION-EXCLUSIVE AREA UNLOCK: " + cur_description)
 
             
 
@@ -553,7 +553,7 @@ class Randomizer:
                             # generate conditions for evo digimon
                             # no need to override w/ hasPreDigivolution here
                             if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
-                                conditions_evo = utils.generateBiasedConditions(s+1, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), self.baseDigimonInfo[evo_digi_id].species)
+                                conditions_evo = utils.generateBiasedConditions(s+1, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [self.baseDigimonInfo[evo_digi_id].species])
                             else:
                                 conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
                             generated_conditions[evo_digi_id] = conditions_evo
@@ -578,7 +578,7 @@ class Randomizer:
                 # NOTE: right now this is inefficient, will randomize up to three times unecessarily in order to account for generatedConditions already being filled at the start if Digimon Conditions is left unchanged
                 if(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") or digimon_id not in generated_conditions.keys()):
                     if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
-                        conditions_cur = utils.generateBiasedConditions(s, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), self.baseDigimonInfo[digimon_id].species)
+                        conditions_cur = utils.generateBiasedConditions(s, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [self.baseDigimonInfo[digimon_id].species])
                     else:
                         conditions_cur = utils.generateConditions(s)
 
@@ -705,7 +705,7 @@ class Randomizer:
                         if(evo_digimon_id in generated_conditions.keys()):
                             conditions_evo = generated_conditions[evo_digimon_id]
                         elif(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
-                            conditions_evo = utils.generateBiasedConditions(evo_stage_int, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), digivolution_baseinfo.species, max_conditions=len(base_conditions))
+                            conditions_evo = utils.generateBiasedConditions(evo_stage_int, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [digivolution_baseinfo.species], max_conditions=len(base_conditions))
                             generated_conditions[evo_digimon_id] = conditions_evo
                         else:
                             conditions_evo = utils.generateConditions(evo_stage_int, max_conditions=len(base_conditions))
@@ -740,20 +740,111 @@ class Randomizer:
                     utils.writeRomBytes(rom_data, condition["condition_id"], condition["base_addr"], 4)
                     utils.writeRomBytes(rom_data, condition["condition_value"], condition["base_addr"] + 4, 4)
 
+        return generated_conditions
+
+
     def manageDnaDigivolutions(self,
                                rom_data: bytearray):
         
         dna_digivolutions_var = self.config_manager.get("RANDOMIZE_DNADIGIVOLUTIONS")
         dna_digivolution_conditions_var = self.config_manager.get("RANDOMIZE_DNADIGIVOLUTION_CONDITIONS")
 
+        # define mapping between original digimon id and target digimon id
+        # this is essentially the only way to ensure that dna digivolutions remain structured
 
-        '''
-        if(self.config_manager.get("RANDOMIZE_DNADIGIVOLUTIONS") not in [None, RandomizeDnaDigivolutions.UNCHANGED]):
-            self.randomizeDnaDigivolutions(self.rom_data)
-        elif(self.config_manager.get("RANDOMIZE_DNADIGIVOLUTION_CONDITIONS") in [RandomizeDnaDigivolutionConditions.RANDOMIZE]):
-            self.randomizeDnaDigivolutionConditionsOnly(self.rom_data)  # similar to above, only triggers if randomize dna evos not applied
-        '''
+        mapping_digimon_ids = {}
+
+        # map digimon ids between same stage
+        if(dna_digivolutions_var == RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE):
+            self.logger.info("\n==================== DNA DIGIMON MAPPING ====================")
+            for stage in constants.DIGIMON_IDS:
+                cur_digimon_sorted = list(copy.deepcopy(constants.DIGIMON_IDS[stage]).items())
+                random.shuffle(cur_digimon_sorted)
+                ix = 0
+                for d_name, d_id in constants.DIGIMON_IDS[stage].items():
+                    mapping_digimon_ids[d_id] = cur_digimon_sorted[ix][1]
+                    self.logger.info(f"{d_name} -> {cur_digimon_sorted[ix][0]}")
+                    ix += 1
+
+        # map digimon ids between any stage
+        if(dna_digivolutions_var == RandomizeDnaDigivolutions.RANDOMIZE_COMPLETELY):
+            self.logger.info("\n==================== DNA DIGIMON MAPPING ====================")
+            cur_digimon_sorted = list(copy.deepcopy(constants.DIGIMON_ID_TO_STR).items())
+            random.shuffle(cur_digimon_sorted)
+            ix = 0
+            for d_id, d_name in constants.DIGIMON_ID_TO_STR.items():
+                mapping_digimon_ids[d_id] = cur_digimon_sorted[ix][0]
+                self.logger.info(f"{d_name} -> {cur_digimon_sorted[ix][1]}")
+                ix += 1
+
+
+        # replace digimon ids for all dna digivolution objects
+        for dnaDigivolutionObj in self.dnaDigivolutions:
+            # skip if no randomization to perform
+            if(dna_digivolutions_var == RandomizeDnaDigivolutions.UNCHANGED):
+                break
+            dnaDigivolutionObj.digimon_1_id = mapping_digimon_ids.get(dnaDigivolutionObj.digimon_1_id, dnaDigivolutionObj.digimon_1_id)
+            dnaDigivolutionObj.digimon_2_id = mapping_digimon_ids.get(dnaDigivolutionObj.digimon_2_id, dnaDigivolutionObj.digimon_2_id)
+            dnaDigivolutionObj.dna_evolution_id = mapping_digimon_ids.get(dnaDigivolutionObj.dna_evolution_id, dnaDigivolutionObj.dna_evolution_id)
+
+
+        # replace/generate dna digivolution conditions
+        if(dna_digivolution_conditions_var == RandomizeDnaDigivolutionConditions.UNCHANGED):
+            if(dna_digivolutions_var == RandomizeDnaDigivolutions.UNCHANGED):
+                # no changes to be made
+                return
+            
+            for dnaDigivolutionObj in self.dnaDigivolutions:
+                if(dnaDigivolutionObj.dna_evolution_id in self.dnaConditionsByDigimonId.keys()):
+                    # maintain original dna digivolution conditions
+                    cur_dnadigivolution_conditions = self.dnaConditionsByDigimonId[dnaDigivolutionObj.dna_evolution_id]
+                    dnaDigivolutionObj.setConditionsFromArray(cur_dnadigivolution_conditions)
+                else:
+                    # generate conditions for dna digivolutions that did not exist
+                    cur_dnadigivolution_stage = constants.STAGE_NAMES.index(utils.getDigimonStage(dnaDigivolutionObj.dna_evolution_id))
+                    species_array = [self.baseDigimonInfo[dnaDigivolutionObj.digimon_1_id].species,
+                                     self.baseDigimonInfo[dnaDigivolutionObj.digimon_2_id].species,
+                                     self.baseDigimonInfo[dnaDigivolutionObj.dna_evolution_id].species]
+
+                    conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage)
+                    conditions_evo += [[0, 0]] * (3 - len(conditions_evo))  # pad w/ empty conditions/values if result does not have 3 conditions
+
+                    # set conditions
+                    dnaDigivolutionObj.setConditionsFromArray(conditions_evo)
+
+
+        if(dna_digivolution_conditions_var == RandomizeDnaDigivolutionConditions.RANDOMIZE):
+            
+            for dnaDigivolutionObj in self.dnaDigivolutions:
+                cur_dnadigivolution_stage = constants.STAGE_NAMES.index(utils.getDigimonStage(dnaDigivolutionObj.dna_evolution_id))
+                species_array = [self.baseDigimonInfo[dnaDigivolutionObj.digimon_1_id].species,
+                                 self.baseDigimonInfo[dnaDigivolutionObj.digimon_2_id].species,
+                                 self.baseDigimonInfo[dnaDigivolutionObj.dna_evolution_id].species]
+
+                conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage)
+                conditions_evo += [[0, 0]] * (3 - len(conditions_evo))  # pad w/ empty conditions/values if result does not have 3 conditions
+
+                # set conditions
+                dnaDigivolutionObj.setConditionsFromArray(conditions_evo)
+                
         
+        if(dna_digivolution_conditions_var == RandomizeDnaDigivolutionConditions.REMOVED):
+            for dnaDigivolutionObj in self.dnaDigivolutions:
+                dnaDigivolutionObj.removeRequirements()
+
+
+        # write and log dna digivolutions
+
+        self.logger.info("\n==================== DNA DIGIVOLUTIONS ====================")
+        sorted_dnaDigivolutions = sorted(self.dnaDigivolutions, key=lambda x: x.dna_evolution_id)
+        for dnaDigivolutionObj in sorted_dnaDigivolutions:
+            dnaDigivolutionObj.writeDnaDigivolutionToRom(rom_data)
+            self.logger.info(dnaDigivolutionObj.getDnaDigivolutionLog())
+        self.logger.info("\n")
+        
+
+
+
 
 
 if __name__ == '__main__':

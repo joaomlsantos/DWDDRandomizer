@@ -1,6 +1,7 @@
 from enum import Enum
+from typing import List, Tuple
 
-from .constants import DIGIVOLUTION_CONDITIONS
+from . import constants
 
 class Species(Enum):
     HOLY = 0
@@ -511,3 +512,44 @@ class DNADigivolution:
 
     def getConditionsArray(self):
         return [[self.condition_id_1, self.condition_value_1], [self.condition_id_2, self.condition_value_2], [self.condition_id_3, self.condition_value_3]]
+    
+    def setConditionsFromArray(self, conditionsArray: List[Tuple[int,int]]):
+        self.condition_id_1 = conditionsArray[0][0]
+        self.condition_value_1 = conditionsArray[0][1]
+        self.condition_id_2 = conditionsArray[1][0]
+        self.condition_value_2 = conditionsArray[1][1]
+        self.condition_id_3 = conditionsArray[2][0]
+        self.condition_value_3 = conditionsArray[2][1]
+
+    def getDnaDigivolutionLog(self):
+        digimon_1_str = constants.DIGIMON_ID_TO_STR[self.digimon_1_id]
+        digimon_2_str = constants.DIGIMON_ID_TO_STR[self.digimon_2_id]
+        dna_digivolution_str = constants.DIGIMON_ID_TO_STR[self.dna_evolution_id]
+        cur_str = f"{dna_digivolution_str} = {digimon_1_str} + {digimon_2_str} ["
+
+        condition_strs = []
+        for condition_pair in self.getConditionsArray():
+            if(condition_pair[0] != 0):
+                cur_condition_str = constants.DIGIVOLUTION_CONDITIONS[condition_pair[0]]
+                condition_strs.append(f"{cur_condition_str} {condition_pair[1]}")
+
+        cur_str += ", ".join(condition_strs) + "]"
+        return cur_str
+
+    def writeDnaDigivolutionToRom(self, rom_data: bytearray):
+        fields = [
+            ("digimon_1_id", 0x0),
+            ("digimon_2_id", 0x4),
+            ("dna_evolution_id", 0x8),
+            ("condition_id_1", 0xc),
+            ("condition_value_1", 0x10),
+            ("condition_id_2", 0x14),
+            ("condition_value_2", 0x18),
+            ("condition_id_3", 0x1c),
+            ("condition_value_3", 0x20)
+        ]
+
+        for attr, offset in fields:
+            value = getattr(self, attr)
+            rom_data[self.offset + offset : self.offset + offset + 4] = value.to_bytes(4, byteorder="little")
+        
