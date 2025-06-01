@@ -109,6 +109,11 @@ default_configmanager_settings = {
     "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions.UNCHANGED,
     "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": True,       # example: a digivolution from the holy species will be less likely to have aquan/dark/etc exp as a requirement than other conditions
 
+    "RANDOMIZE_DNADIGIVOLUTIONS": RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE,
+    #"FORCE_RARE_DNADIGIVOLUTIONS": dna_digivolution_force_rare_var,
+    "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions.REMOVED,
+    "DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP":True,
+
     "RANDOMIZE_OVERWORLD_ITEMS": RandomizeOverworldItems.RANDOMIZE_COMPLETELY
     
 }

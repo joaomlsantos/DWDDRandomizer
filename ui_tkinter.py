@@ -83,7 +83,7 @@ def execute_rom_changes(save_path):
         "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": digivolution_conditions_species_exp_var,
 
         "RANDOMIZE_DNADIGIVOLUTIONS": RandomizeDnaDigivolutions(dna_digivolutions_option_var.get()),
-        "FORCE_RARE_DNADIGIVOLUTIONS": dna_digivolution_force_rare_var,
+        #"FORCE_RARE_DNADIGIVOLUTIONS": dna_digivolution_force_rare_var,
         "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions(dna_digivolution_conditions_option_var.get()),
         "DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": dna_digivolution_conditions_species_exp_var,
 
