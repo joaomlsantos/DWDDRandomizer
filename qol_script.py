@@ -178,17 +178,20 @@ class Randomizer:
         curEnemyDigimonInfo = self.enemyDigimonInfo
 
         self.rookieResetEvent(self.rom_data)
-        self.randomizeStarters(self.rom_data)
         curEnemyDigimonInfo = self.randomizeAreaEncounters(self.rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
         self.nerfFirstBoss(self.rom_data)
         self.randomizeOverworldItems(self.rom_data)
 
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
-            curUpdatedPreEvos, curStandardEvos = self.randomizeDigivolutions(self.rom_data)
+            # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
+            self.curUpdatedPreEvos, self.curStandardEvos = self.randomizeDigivolutions(self.rom_data)
         elif(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") not in [None, RandomizeDigivolutionConditions.UNCHANGED]):
             self.randomizeDigivolutionConditionsOnly(self.rom_data)   # this only triggers if randomize digivolutions is not applied
 
         self.manageDnaDigivolutions(self.rom_data)
+
+        # starter randomization must happen after digivolution randomization
+        self.randomizeStarters(self.rom_data)
 
         '''
         if(self.config_manager.get("RANDOMIZE_DNADIGIVOLUTIONS") not in [None, RandomizeDnaDigivolutions.UNCHANGED]):
@@ -206,6 +209,18 @@ class Randomizer:
 
         if(self.config_manager.get("RANDOMIZE_STARTERS") == RandomizeStartersConfig.UNCHANGED):
             return
+
+        if(self.config_manager.get("FORCE_STARTER_W_ROOKIE")):
+            digimon_ids_w_rookie = {
+                *constants.DIGIMON_IDS["IN-TRAINING"].values(),
+                *constants.DIGIMON_IDS["ROOKIE"].values()
+            }
+            for stage in ["CHAMPION", "ULTIMATE", "MEGA"]:
+                for cur_digimon_id in constants.DIGIMON_IDS[stage].values():
+                    cur_pre_evo = self.curUpdatedPreEvos.get(cur_digimon_id, None)
+                    if(cur_pre_evo != None and cur_pre_evo in digimon_ids_w_rookie):
+                        digimon_ids_w_rookie.add(cur_digimon_id)
+
         
         self.logger.info("\n==================== STARTER PACKS ====================")
         cur_offset = constants.STARTER_PACK_OFFSET[self.version]
@@ -223,19 +238,22 @@ class Randomizer:
                     if(starter_stage == ""):
                         self.logger.debug("Original starter digimon not recognized, randomizing between rookie and ultimate")
                         starter_stage = random.choice(["ROOKIE","CHAMPION","ULTIMATE"])
-
-                    randomized_digimon = random.choice(list(constants.DIGIMON_IDS[starter_stage].items()))
-                    randomized_digimon_id = randomized_digimon[1]
-                    new_starter_pack.append(randomized_digimon[0])
-
-
+                    cur_digimon_pool = constants.DIGIMON_IDS[starter_stage].items()
+                
                 elif(self.config_manager.get("RANDOMIZE_STARTERS") == RandomizeStartersConfig.RAND_FULL):
-                    possibleDigimonIds = utils.getAllDigimonPairs()
-                    randomized_digimon = random.choice(possibleDigimonIds)
-                    randomized_digimon_id = randomized_digimon[1]
-                    new_starter_pack.append(randomized_digimon[0])
+                    cur_digimon_pool = utils.getAllDigimonPairs()
 
-                    
+                else:       # default escape case
+                    self.logger.error("No RANDOMIZE_STARTERS compatible option, escaping to full randomization")
+                    cur_digimon_pool = utils.getAllDigimonPairs()
+
+                if self.config_manager.get("FORCE_STARTER_W_ROOKIE"):
+                    cur_digimon_pool = [(name, id_) for name, id_ in cur_digimon_pool if id_ in digimon_ids_w_rookie]
+
+                randomized_digimon = random.choice(list(cur_digimon_pool))
+                new_starter_pack.append(randomized_digimon[0])
+                randomized_digimon_id = randomized_digimon[1]
+
                 rom_data[cur_offset:cur_offset+2] = (randomized_digimon_id).to_bytes(2, byteorder="little")    # write new digimon id
 
                 target_digimon_lvl = self.baseDigimonInfo[randomized_digimon_id].aptitude

@@ -71,6 +71,7 @@ def execute_rom_changes(save_path):
         "RANDOMIZE_STARTERS": RandomizeStartersConfig(starters_option_var.get()),  # RandomizeStartersConfig(starters_option_var) might have to be initialized like this
         "ROOKIE_RESET_EVENT": RookieResetConfig(rookie_reset_option_var.get()),
         "NERF_FIRST_BOSS": nerf_first_boss_var,
+        "FORCE_STARTER_W_ROOKIE": force_starter_w_rookie_var,
         
         "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters(wild_digimon_option_var.get()),
         "WILD_DIGIMON_EXCLUDE_CALUMON": wild_digimon_exclude_calumon_var,
@@ -143,6 +144,7 @@ def enable_buttons():
     rookie_reset_same_stage_rb.configure(state="normal")
     rookie_reset_cancel_rb.configure(state="normal")
     nerfFirstBossCheckbox.configure(state="normal")
+    forceStarterWRookieCheckbox.configure(state="normal")
 
     # Randomize wild digimon
     wild_digimon_unchanged_rb.configure(state="normal")
@@ -600,6 +602,12 @@ nerf_first_boss_var = tk.BooleanVar(value=False)
 nerfFirstBossCheckbox = tk.Checkbutton(starters_misc_frame, text="Nerf First Boss", variable=nerf_first_boss_var, state="disabled")
 nerfFirstBossCheckbox.pack(anchor='w')
 nerfFirstBossTootip = CreateToolTip(nerfFirstBossCheckbox, "Enabling this option reduces the total HP of the first boss (virus that attacks the city) by half.\nThis fight usually relies on the lvl 20 Coronamon / Lunamon to be cleared. \nThis option is recommended if randomizing the starter packs, as any other digimon will be set to rookies at lvl 1 (even the digimon that are already rookies).")
+
+force_starter_w_rookie_var = tk.BooleanVar(value=False)
+forceStarterWRookieCheckbox = tk.Checkbutton(starters_misc_frame, text="Force Starter w/ Rookie Stage", variable=force_starter_w_rookie_var, state="disabled")
+forceStarterWRookieCheckbox.pack(anchor='w')
+forceStarterWRookieTootip = CreateToolTip(forceStarterWRookieCheckbox, "Guarantees that the randomized starters can degenerate to rookie stage: after the rookie reset, this option ensures that your party will be composed of three rookie (or lower, if the starter was originally an in-training) digimon.")
+
 
 
 # Right side: Rookie Reset Event
