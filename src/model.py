@@ -13,6 +13,15 @@ class Species(Enum):
     AQUAN = 6
     INSECTPLANT = 7
 
+class Element(Enum):
+    LIGHT = 0
+    DARK = 1
+    FIRE = 2
+    EARTH = 3
+    WIND = 4
+    STEEL = 5
+    WATER = 6
+    THUNDER = 7
 
 class DigimonType(Enum):
     BALANCE = 0
@@ -38,7 +47,6 @@ class ItemType(Enum):
     EQUIPMENT = 3
     DIGIEGG = 4
     KEY_ITEM = 5
-
 
 
 class SpriteMapEntry:

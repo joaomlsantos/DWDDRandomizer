@@ -4,7 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
+from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -735,6 +735,37 @@ overworld_items_same_category_rb.pack(anchor="w")
 overworld_items_completely_random_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (completely)", variable=overworld_items_option_var, value=RandomizeOverworldItems.RANDOMIZE_COMPLETELY.value, state="disabled")
 overworld_items_completely_random_tooltip = CreateToolTip(overworld_items_completely_random_rb, "Randomizes each overworld item chest completely (a chest can have any item, regardless of its original item).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
 overworld_items_completely_random_rb.pack(anchor="w")
+
+
+
+
+# Base Information Tab
+base_information_tab = ttk.Frame(notebook, padding=10)
+base_information_tab.pack(fill="both", expand=True)  # Ensure frame fills space
+notebook.add(base_information_tab, text="Base Information")
+
+
+# Species frame
+species_frame = ttk.LabelFrame(base_information_tab, text="Digimon Species", padding=10)
+species_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+
+species_radio_frame = ttk.Frame(species_frame)
+species_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+species_option_var = tk.IntVar(value=RandomizeSpeciesConfig.UNCHANGED.value)
+
+species_unchanged_rb = tk.Radiobutton(species_radio_frame, text="Unchanged", variable=species_option_var, value=RandomizeSpeciesConfig.UNCHANGED.value, state="disabled")
+species_unchanged_rb.pack(anchor="w")
+
+
+species_random_rb = tk.Radiobutton(species_radio_frame, text="Random", variable=species_option_var, value=RandomizeSpeciesConfig.RANDOM.value, state="disabled")
+species_random_tooltip = CreateToolTip(species_random_rb, "Randomizes each digimon's species (HOLY, DARK, DRAGON, etc).")
+species_random_rb.pack(anchor="w")
+
+
+
+
 
 
 

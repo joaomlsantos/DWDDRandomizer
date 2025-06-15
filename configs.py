@@ -16,6 +16,11 @@ class RandomizeStartersConfig(Enum):
     RAND_FULL = 2                       # fully randomize
 
 
+class RandomizeSpeciesConfig(Enum):
+    UNCHANGED = 0                       # do not randomize
+    RANDOM = 1                          # randomize digimon species
+
+
 class RandomizeWildEncounters(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE_1_TO_1_SAME_STAGE = 1     # randomize 1-to-1, same stage digimon
