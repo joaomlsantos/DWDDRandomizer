@@ -4,7 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig
+from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonType
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -760,13 +760,87 @@ species_unchanged_rb.pack(anchor="w")
 
 
 species_random_rb = tk.Radiobutton(species_radio_frame, text="Random", variable=species_option_var, value=RandomizeSpeciesConfig.RANDOM.value, state="disabled")
-species_random_tooltip = CreateToolTip(species_random_rb, "Randomizes each digimon's species (HOLY, DARK, DRAGON, etc).")
+species_random_tooltip = CreateToolTip(species_random_rb, "Randomizes each digimon's species (HOLY, DARK, DRAGON, etc).\nBy itself, this option is an aesthetic change; if paired with related options such as Elemental Resistance randomization, or Digivolution randomization w/ Similar Species, this option will significantly influence the results of the randomization.")
 species_random_rb.pack(anchor="w")
 
 
+elemental_res_frame = ttk.LabelFrame(base_information_tab, text="Elemental Resistances", padding=10)
+elemental_res_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+
+elemental_res_main_frame = ttk.Frame(elemental_res_frame)
+elemental_res_main_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+elemental_res_option_var = tk.IntVar(value=RandomizeElementalResistances.UNCHANGED.value)
+
+elemental_res_unchanged_rb = tk.Radiobutton(elemental_res_main_frame, text="Unchanged", variable=elemental_res_option_var, value=RandomizeElementalResistances.UNCHANGED.value, state="disabled")
+elemental_res_unchanged_rb.pack(anchor="w")
+
+elemental_res_shuffle_rb = tk.Radiobutton(elemental_res_main_frame, text="Shuffle", variable=elemental_res_option_var, value=RandomizeElementalResistances.SHUFFLE.value, state="disabled")
+elemental_res_shuffle_tooltip = CreateToolTip(elemental_res_shuffle_rb, "Shuffles the resistance values of a given digimon.\nFor example, if Greymon has a WATER resistance of 700, if shuffled, another elemental resistance (e.g. WIND) will be set with the value 700, and Greymon's WATER resistance will be set to the original value of one of its other elements.")
+elemental_res_shuffle_rb.pack(anchor="w")
+
+elemental_res_randomize_rb = tk.Radiobutton(elemental_res_main_frame, text="Randomize", variable=elemental_res_option_var, value=RandomizeElementalResistances.RANDOM.value, state="disabled")
+elemental_res_randomize_tooltip = CreateToolTip(elemental_res_randomize_rb, "Randomizes the resistance values of a given digimon.\nThe total sum of the generated resistance values will always equal the total sum of the original resistance values (e.g: if Greymon originally had the resistance values [700, 500, 1000, 100, 200, 500, 700, 500] with a total of 4200, the sum of the newly-generated values would also be 4200).")
+elemental_res_randomize_rb.pack(anchor="w")
+
+
+elemental_res_sub_frame = ttk.Frame(elemental_res_frame)
+elemental_res_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+elemental_res_keep_coherence_var = tk.BooleanVar(value=False)
+elementalResKeepCoherenceCheckbox = tk.Checkbutton(elemental_res_sub_frame, text="Keep Species-Resistance Coherence", variable=elemental_res_keep_coherence_var, state="disabled")
+#digivolutionSimilarSpeciesCheckbox.pack(anchor="w")
+elementalResKeepCoherenceCheckbox.pack(anchor="w")
+elementalResKeepCoherenceTooltip = CreateToolTip(elementalResKeepCoherenceCheckbox, "Ensures that the main resistance and main weakness of each digimon is coherent with their species.\nFor example, a digimon of the HOLY species will guaranteedly have its highest resistance be LIGHT, and its lowest resistance be DARK.")
 
 
 
+# Base Stats frame
+base_stats_frame = ttk.LabelFrame(base_information_tab, text="Base Stats", padding=10)
+base_stats_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+
+base_stats_main_frame = ttk.Frame(base_stats_frame)
+base_stats_main_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+base_stats_option_var = tk.IntVar(value=RandomizeBaseStats.UNCHANGED.value)
+base_stats_unchanged_rb = tk.Radiobutton(base_stats_main_frame, text="Unchanged", variable=base_stats_option_var, value=RandomizeBaseStats.UNCHANGED.value, state="disabled")
+base_stats_unchanged_rb.pack(anchor="w")
+
+base_stats_shuffle_rb = tk.Radiobutton(base_stats_main_frame, text="Shuffle", variable=base_stats_option_var, value=RandomizeBaseStats.SHUFFLE.value, state="disabled")
+base_stats_shuffle_tooltip = CreateToolTip(base_stats_shuffle_rb, "Shuffles the ATK, DEF, SPIRIT and SPEED values of a given digimon.\nThe values for HP, MP and APTITUDE will be unchanged.")
+base_stats_shuffle_rb.pack(anchor="w")
+
+base_stats_random_sane_rb = tk.Radiobutton(base_stats_main_frame, text="Randomize (Sanity)", variable=base_stats_option_var, value=RandomizeBaseStats.RANDOM_SANITY.value, state="disabled")
+base_stats_random_sane_tooltip = CreateToolTip(base_stats_random_sane_rb, "Randomizes base stats given the digimon's base stat total, but ensures that HP and MP are always higher than the digimon's highest stat (between ATK, DEF, SPIRIT or SPEED).\nThis does not randomize APTITUDE.")
+base_stats_random_sane_rb.pack(anchor="w")
+
+base_stats_random_full_rb = tk.Radiobutton(base_stats_main_frame, text="Randomize (Completely)", variable=base_stats_option_var, value=RandomizeBaseStats.RANDOM_COMPLETELY.value, state="disabled")
+base_stats_random_full_tooltip = CreateToolTip(base_stats_random_full_rb, "Completely randomizes base stats according to the digimon's base stat total.\nAssumes a minimum of 40 on HP and MP, and 20 on ATK, DEF, SPIRIT and SPEED. This does not randomize APTITUDE.")
+base_stats_random_full_rb.pack(anchor="w")
+
+
+base_stats_sub_frame = ttk.Frame(base_stats_frame)
+base_stats_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+base_stats_bias_type_var = tk.BooleanVar(value=False)
+base_stats_bias_type_cb = tk.Checkbutton(base_stats_sub_frame, text="Digimon Type Bias", variable=base_stats_bias_type_var, state="disabled")
+base_stats_bias_type_tooltip = CreateToolTip(base_stats_bias_type_cb, "Forces the Digimon's highest stat (not counting HP and MP) to match its Type.\nE.g. Attacker -> higher ATK stat; Tank -> higher DEF stat.")
+base_stats_bias_type_cb.pack(anchor="w")
+
+
+# Digimon Type frame
+digimon_type_frame = ttk.LabelFrame(base_information_tab, text="Digimon Type", padding=10)
+digimon_type_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+digimon_type_option_var = tk.IntVar(value=RandomizeDigimonType.UNCHANGED)
+digimon_type_unchanged_rb = tk.Radiobutton(digimon_type_frame, text="Unchanged", variable=digimon_type_option_var, value=RandomizeDigimonType.UNCHANGED, state="disabled")
+digimon_type_unchanged_rb.pack(anchor="w")
+
+digimon_type_randomize_rb = tk.Radiobutton(digimon_type_frame, text="Randomize", variable=digimon_type_option_var, value=RandomizeDigimonType.RANDOMIZE, state="disabled")
+digimon_type_randomize_tooltip = CreateToolTip(digimon_type_randomize_rb, "Randomizes Digimon's Type (Balance/Attacker/Tank/etc).\nThis affects stat growths (e.g. Attacker digimon typically have higher ATK stat gains upon levelling up).")
+digimon_type_randomize_rb.pack(anchor="w")
 
 
 
