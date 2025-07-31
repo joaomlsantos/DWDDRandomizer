@@ -34,7 +34,7 @@ class RandomizeBaseStats(Enum):
     RANDOM_COMPLETELY = 3               # randomizes completely
 
 
-class RandomizeDigimonType(Enum):
+class RandomizeDigimonStatType(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE = 1                       # randomize digimon type
 

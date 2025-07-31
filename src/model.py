@@ -12,6 +12,7 @@ class Species(Enum):
     MACHINE = 5
     AQUAN = 6
     INSECTPLANT = 7
+    UNKNOWN = 8
 
 class Element(Enum):
     LIGHT = 0
@@ -22,6 +23,29 @@ class Element(Enum):
     STEEL = 5
     WATER = 6
     THUNDER = 7
+
+# keeping these as constant dicts in model.py, setting it in constants.py would require constants.py to import model.py
+ELEMENTAL_RESISTANCES = {
+    Species.HOLY: Element.LIGHT,
+    Species.DARK: Element.DARK,
+    Species.DRAGON: Element.FIRE,
+    Species.BEAST: Element.EARTH,
+    Species.BIRD: Element.WIND,
+    Species.MACHINE: Element.STEEL,
+    Species.AQUAN: Element.WATER,
+    Species.INSECTPLANT: Element.THUNDER
+    }
+
+ELEMENTAL_WEAKNESSES = {
+    Species.HOLY: Element.DARK,
+    Species.DARK: Element.LIGHT,
+    Species.DRAGON: Element.EARTH,
+    Species.BEAST: Element.FIRE,
+    Species.BIRD: Element.THUNDER,
+    Species.MACHINE: Element.WATER,
+    Species.AQUAN: Element.STEEL,
+    Species.INSECTPLANT: Element.WIND
+    }
 
 class DigimonType(Enum):
     BALANCE = 0
@@ -150,6 +174,18 @@ class BaseDataDigimon:
         except:
             print("Exception on BaseDataDigimon call")
             return None
+        
+
+    # same order as Element class
+    def getResistanceValues(self):
+        return [self.light_res, 
+                self.dark_res, 
+                self.fire_res, 
+                self.earth_res,
+                self.wind_res, 
+                self.steel_res, 
+                self.water_res, 
+                self.thunder_res]
 
         
 

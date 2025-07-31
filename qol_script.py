@@ -6,7 +6,7 @@ from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 
 
@@ -181,6 +181,9 @@ class Randomizer:
         curEnemyDigimonInfo = self.randomizeAreaEncounters(self.rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
         self.nerfFirstBoss(self.rom_data)
         self.randomizeOverworldItems(self.rom_data)
+
+        # the following function modifies self.baseDigimonInfo; this is needed to propagate base data changes into the randomization
+        self.randomizeDigimonSpecies(self.rom_data)
 
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
@@ -508,6 +511,72 @@ class Randomizer:
         self.logger.info("Nerfed first boss (%d HP -> %d HP)", first_boss_data.hp, nerfed_hp)
 
         utils.writeRomBytes(rom_data, nerfed_hp, first_boss_data.offset+4, 2)    # write new hp
+
+
+    def randomizeDigimonSpecies(self,
+                                rom_data: bytearray):
+        randomize_digimon_species = self.config_manager.get("RANDOMIZE_DIGIMON_SPECIES", RandomizeSpeciesConfig.UNCHANGED)
+        if(randomize_digimon_species == RandomizeSpeciesConfig.UNCHANGED):
+            return
+        
+        # randomize species for all entries in baseDigimonInfo
+        if(randomize_digimon_species == RandomizeSpeciesConfig.RANDOM):
+            self.logger.info("\n==================== DIGIMON SPECIES ====================")
+            species_pool = [s for s in model.Species]
+            if(not self.config_manager.get("SPECIES_ALLOW_UNKNOWN")):
+                species_pool.remove(model.Species.UNKNOWN)
+
+            for digimon_id in self.baseDigimonInfo.keys():
+                prev_species = self.baseDigimonInfo[digimon_id].species
+                new_species = random.choice(species_pool)
+
+                digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_name, f"ID_{digimon_id}")
+
+                self.logger.info(f"{digimon_name}: {prev_species.name} -> {new_species.name}")
+
+                # overwrite species in baseDigimonInfo to propagate for other modules
+                self.baseDigimonInfo[digimon_id].species = new_species
+
+                # 0x3 corresponds to the species info in digimon data
+                cur_offset = self.baseDigimonInfo[digimon_id].offset + 3
+                utils.writeRomBytes(rom_data, new_species.value, cur_offset, 1)
+
+                # attempt to update for enemyDigimonInfo as well
+
+                corresponding_enemy_data = self.enemyDigimonInfo.get(digimon_id, None)
+                if(corresponding_enemy_data == None):
+                    # cover edge-cases where digimon_id does not have a match
+                    continue
+                corresponding_enemy_data.species = new_species
+
+                # 0x3 corresponds to the species info in enemy digimon data as well
+                cur_offset = corresponding_enemy_data.offset + 3
+                utils.writeRomBytes(rom_data, new_species.value, cur_offset, 1)
+
+
+
+    def randomizeElementalResistances(self,
+                                      rom_data: bytearray):
+        randomize_elemental_resistances = self.config_manager.get("RANDOMIZE_ELEMENTAL_RESISTANCES", RandomizeElementalResistances.UNCHANGED)
+
+        if(randomize_elemental_resistances == RandomizeElementalResistances.UNCHANGED):
+            return
+        
+        
+        # randomize resistances for all entries in baseDigimonInfo
+        for digimon_id in self.baseDigimonInfo.keys():
+            resistance_values = self.baseDigimonInfo[digimon_id].getResistanceValues()
+            
+
+
+
+        
+
+        
+
+
+
+        
 
 
     def randomizeDigivolutions(self,

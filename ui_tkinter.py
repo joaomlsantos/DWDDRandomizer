@@ -4,7 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonType
+from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -76,6 +76,16 @@ def execute_rom_changes(save_path):
         "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters(wild_digimon_option_var.get()),
         "WILD_DIGIMON_EXCLUDE_CALUMON": wild_digimon_exclude_calumon_var,
         "AREA_ENCOUNTERS_STATS": stat_gen_option_var,
+
+        "RANDOMIZE_DIGIMON_SPECIES": RandomizeSpeciesConfig(species_option_var.get()),
+        "SPECIES_ALLOW_UNKNOWN": species_allow_unknown_var,
+        "RANDOMIZE_ELEMENTAL_RESISTANCES": RandomizeElementalResistances(elemental_res_option_var.get()),
+        "KEEP_SPECIES_RESISTANCE_COHERENCE": elemental_res_keep_coherence_var,
+        "RANDOMIZE_BASE_STATS": RandomizeBaseStats(base_stats_option_var.get()),
+        "BASESTATS_STATTYPE_BIAS": base_stats_bias_type_var,
+        "RANDOMIZE_DIGIMON_STATTYPE": RandomizeDigimonStatType(digimon_type_option_var.get()),
+
+
 
         "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions(digivolutions_option_var.get()),
         "DIGIVOLUTIONS_SIMILAR_SPECIES": digivolution_similar_species_var,
@@ -152,19 +162,22 @@ def enable_buttons():
     wild_digimon_randomize_completely_rb.configure(state="normal")
     wildDigimonExcludeCalumonCheckbox.configure(state="normal")
 
-    # Randomize digivolutions and conditions
+    # Randomize overworld items
+    overworld_items_unchanged_rb.configure(state="normal")
+    overworld_items_same_category_rb.configure(state="normal")
+    overworld_items_completely_random_rb.configure(state="normal")
 
+    # Randomize digimon species
+    species_unchanged_rb.configure(state="normal")
+    species_random_rb.configure(state="normal")
+    speciesAllowUnknownCheckbox.configure(state="normal")
+
+    # Randomize digivolutions and conditions
     digivolutions_unchanged_rb.configure(state="normal")
     digivolutions_randomize_rb.configure(state="normal")
     digivolution_conditions_unchanged_rb.configure(state="normal")
     digivolution_conditions_randomize_rb.configure(state="normal")
     digivolutionConditionsSpeciesExpCheckbox.configure(state="normal")
-
-    # Randomize overworld items
-
-    overworld_items_unchanged_rb.configure(state="normal")
-    overworld_items_same_category_rb.configure(state="normal")
-    overworld_items_completely_random_rb.configure(state="normal")
 
     # Randomize DNA digivolutions and conditions
     dna_digivolutions_unchanged_rb.configure(state="normal")
@@ -764,6 +777,19 @@ species_random_tooltip = CreateToolTip(species_random_rb, "Randomizes each digim
 species_random_rb.pack(anchor="w")
 
 
+species_sub_frame = ttk.Frame(species_frame)
+species_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+
+species_allow_unknown_var = tk.BooleanVar(value=False)
+speciesAllowUnknownCheckbox = tk.Checkbutton(species_sub_frame, text="Allow [???] Species", variable=species_allow_unknown_var, state="disabled")
+speciesAllowUnknownCheckbox.pack(anchor="w")
+speciesAllowUnknownTooltip = CreateToolTip(speciesAllowUnknownCheckbox, "Allows digimon species to be randomized into [???] species.\nThis is the set species for bosses such as Grimmon.")
+
+
+
+
+
 elemental_res_frame = ttk.LabelFrame(base_information_tab, text="Elemental Resistances", padding=10)
 elemental_res_frame.pack(side="top", fill="x", padx=10, pady=5)
 
@@ -825,21 +851,25 @@ base_stats_sub_frame = ttk.Frame(base_stats_frame)
 base_stats_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 base_stats_bias_type_var = tk.BooleanVar(value=False)
-base_stats_bias_type_cb = tk.Checkbutton(base_stats_sub_frame, text="Digimon Type Bias", variable=base_stats_bias_type_var, state="disabled")
-base_stats_bias_type_tooltip = CreateToolTip(base_stats_bias_type_cb, "Forces the Digimon's highest stat (not counting HP and MP) to match its Type.\nE.g. Attacker -> higher ATK stat; Tank -> higher DEF stat.")
+base_stats_bias_type_cb = tk.Checkbutton(base_stats_sub_frame, text="Digimon StatType Bias", variable=base_stats_bias_type_var, state="disabled")
+base_stats_bias_type_tooltip = CreateToolTip(base_stats_bias_type_cb, "Forces the Digimon's highest stat (not counting HP and MP) to match its StatType.\nE.g. Attacker -> higher ATK stat; Tank -> higher DEF stat.")
 base_stats_bias_type_cb.pack(anchor="w")
 
 
 # Digimon Type frame
-digimon_type_frame = ttk.LabelFrame(base_information_tab, text="Digimon Type", padding=10)
+digimon_type_frame = ttk.LabelFrame(base_information_tab, text="Digimon StatType", padding=10)
 digimon_type_frame.pack(side="top", fill="x", padx=10, pady=5)
 
-digimon_type_option_var = tk.IntVar(value=RandomizeDigimonType.UNCHANGED)
-digimon_type_unchanged_rb = tk.Radiobutton(digimon_type_frame, text="Unchanged", variable=digimon_type_option_var, value=RandomizeDigimonType.UNCHANGED, state="disabled")
+
+digimon_type_main_frame = ttk.Frame(digimon_type_frame)
+digimon_type_main_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+digimon_type_option_var = tk.IntVar(value=RandomizeDigimonStatType.UNCHANGED)
+digimon_type_unchanged_rb = tk.Radiobutton(digimon_type_main_frame, text="Unchanged", variable=digimon_type_option_var, value=RandomizeDigimonStatType.UNCHANGED, state="disabled")
 digimon_type_unchanged_rb.pack(anchor="w")
 
-digimon_type_randomize_rb = tk.Radiobutton(digimon_type_frame, text="Randomize", variable=digimon_type_option_var, value=RandomizeDigimonType.RANDOMIZE, state="disabled")
-digimon_type_randomize_tooltip = CreateToolTip(digimon_type_randomize_rb, "Randomizes Digimon's Type (Balance/Attacker/Tank/etc).\nThis affects stat growths (e.g. Attacker digimon typically have higher ATK stat gains upon levelling up).")
+digimon_type_randomize_rb = tk.Radiobutton(digimon_type_main_frame, text="Randomize", variable=digimon_type_option_var, value=RandomizeDigimonStatType.RANDOMIZE, state="disabled")
+digimon_type_randomize_tooltip = CreateToolTip(digimon_type_randomize_rb, "Randomizes Digimon's StatType (Balance, Attacker, Tank, etc).\nThis affects stat growths (e.g. Attacker digimon typically have higher ATK stat gains upon levelling up).")
 digimon_type_randomize_rb.pack(anchor="w")
 
 
