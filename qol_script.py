@@ -6,7 +6,7 @@ from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 
 
@@ -184,6 +184,9 @@ class Randomizer:
 
         # the following function modifies self.baseDigimonInfo; this is needed to propagate base data changes into the randomization
         self.randomizeDigimonSpecies(self.rom_data)
+
+        # this function must be called AFTER randomizeDigimonSpecies()
+        self.randomizeElementalResistances(self.rom_data)
 
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
@@ -530,7 +533,7 @@ class Randomizer:
                 prev_species = self.baseDigimonInfo[digimon_id].species
                 new_species = random.choice(species_pool)
 
-                digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_name, f"ID_{digimon_id}")
+                digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"ID_{digimon_id}")
 
                 self.logger.info(f"{digimon_name}: {prev_species.name} -> {new_species.name}")
 
@@ -562,11 +565,89 @@ class Randomizer:
         if(randomize_elemental_resistances == RandomizeElementalResistances.UNCHANGED):
             return
         
+        self.logger.info("\n==================== DIGIMON ELEMENTAL RESISTANCES ====================")
         
         # randomize resistances for all entries in baseDigimonInfo
         for digimon_id in self.baseDigimonInfo.keys():
             resistance_values = self.baseDigimonInfo[digimon_id].getResistanceValues()
+            randomized_values = copy.deepcopy(resistance_values)
+            if(randomize_elemental_resistances == RandomizeElementalResistances.SHUFFLE):
+                # shuffle values
+                random.shuffle(randomized_values)
+
+            if(randomize_elemental_resistances == RandomizeElementalResistances.RANDOM):
+                resistances_total = sum(resistance_values)
+                # generate fractions
+                resistance_fractions = np.random.dirichlet(np.ones(len(resistance_values)))
+                randomized_values = np.round(resistance_fractions * resistances_total).astype(int).tolist()
+
+            if(self.config_manager.get("KEEP_SPECIES_RESISTANCE_COHERENCE")):
+                cur_digimon_species = self.baseDigimonInfo[digimon_id].species
+                main_resistance = model.ELEMENTAL_RESISTANCES.get(cur_digimon_species)
+                main_weakness = model.ELEMENTAL_WEAKNESSES.get(cur_digimon_species)
+
+                ix_max = randomized_values.index(max(randomized_values))
+
+                if(main_resistance is not None):
+                # this check is needed to cover for [???] values
+                    ix_main_res = main_resistance.value
+                    randomized_values[ix_max], randomized_values[ix_main_res] = randomized_values[ix_main_res], randomized_values[ix_max]
+                    
+                ix_min = randomized_values.index(min(randomized_values))
+                # this check is needed to cover for [???] values
+                if(main_weakness is not None):
+                    ix_main_weak = main_weakness.value
+                    randomized_values[ix_min], randomized_values[ix_main_weak] = randomized_values[ix_main_weak], randomized_values[ix_min]
+
+            # update baseDigimonInfo and enemyDigimonInfo w randomized resistances
+            self.baseDigimonInfo[digimon_id].setResistanceValues(randomized_values)
+            self.enemyDigimonInfo[digimon_id].setResistanceValues(randomized_values)
+
+            # write baseDigimonInfo and enemyDigimonInfo into rom
+            cur_base_offset = self.baseDigimonInfo[digimon_id].offset + 0x16
+            cur_enemy_offset = self.enemyDigimonInfo[digimon_id].offset + 0x14
+            cur_resistance_values = self.baseDigimonInfo[digimon_id].getResistanceValues()
+            for cur_res_val in cur_resistance_values:
+                utils.writeRomBytes(rom_data, cur_res_val, cur_base_offset, 2)
+                utils.writeRomBytes(rom_data, cur_res_val, cur_enemy_offset, 2)
+                cur_base_offset += 2
+                cur_enemy_offset += 2
+
             
+            digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"ID_{digimon_id}")
+            self.logger.info(f"{digimon_name}: {resistance_values} -> {randomized_values}")
+
+
+    def randomizeDigimonBaseStats(self,
+                                  rom_data: bytearray):
+        return
+    
+    
+    def randomizeDigimonStatType(self,
+                                 rom_data: bytearray):
+        randomize_stat_type = self.config_manager.get("RANDOMIZE_DIGIMON_STATTYPE", RandomizeDigimonStatType.UNCHANGED)
+
+        if(randomize_stat_type == RandomizeDigimonStatType.UNCHANGED):
+            return
+        
+        if(randomize_stat_type == RandomizeDigimonStatType.RANDOMIZE):
+            self.logger.info("\n==================== DIGIMON STAT TYPES ====================")
+            
+            # randomize stat type for all entries in baseDigimonInfo
+            for digimon_id in self.baseDigimonInfo.keys():
+                current_type = copy.deepcopy(self.baseDigimonInfo[digimon_id].digimon_type)
+                randomized_type_ix = random.randrange(len(model.DigimonType))
+
+                # update baseDigimonInfo with new StatType
+                self.baseDigimonInfo[digimon_id].digimon_type = model.DigimonType(randomized_type_ix)
+               
+                # write new statType into rom
+                cur_offset = self.baseDigimonInfo[digimon_id].offset + 0x2d
+                utils.writeRomBytes(rom_data, randomized_type_ix, cur_offset, 1)
+
+                digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"ID_{digimon_id}")
+                self.logger.info(f"{digimon_name}: {current_type.name} -> {self.baseDigimonInfo[digimon_id].digimon_type.name}")
+
 
 
 

@@ -186,6 +186,18 @@ class BaseDataDigimon:
                 self.steel_res, 
                 self.water_res, 
                 self.thunder_res]
+    
+    def setResistanceValues(self, resistance_array: List[int]):
+        # check if resistance_array has exactly 8 values
+        if(len(resistance_array) != 8):
+            print(f"Resistance array {resistance_array} does not have exactly 8 values; skipping operation")
+            return
+        resistance_attrs = ["light_res", "dark_res", "fire_res", "earth_res", "wind_res", "steel_res", "water_res", "thunder_res"]
+        for i, attr in enumerate(resistance_attrs):
+            # skip value if -1: this is used to skip certain resistance values that are already set
+            if(resistance_array[i] == -1):
+                continue
+            setattr(self, attr, resistance_array[i])
 
         
 
@@ -298,6 +310,19 @@ class EnemyDataDigimon:
         for exp_species in ["holy_exp", "dark_exp", "dragon_exp", "beast_exp", "bird_exp", "machine_exp", "aquan_exp", "insectplant_exp"]:
             if getattr(self, exp_species) > 0:
                 setattr(self, exp_species, exp_yield)
+
+    def setResistanceValues(self, resistance_array: List[int]):
+        # check if resistance_array has exactly 8 values
+        if(len(resistance_array) != 8):
+            print(f"Resistance array {resistance_array} does not have exactly 8 values; skipping operation")
+            return
+        resistance_attrs = ["light_res", "dark_res", "fire_res", "earth_res", "wind_res", "steel_res", "water_res", "thunder_res"]
+        for i, attr in enumerate(resistance_attrs):
+            # skip value if -1: this is used to skip certain resistance values that are already set
+            if(resistance_array[i] == -1):
+                continue
+            setattr(self, attr, resistance_array[i])
+
 
 
 class FarmTerrain:
