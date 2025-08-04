@@ -6,7 +6,7 @@ from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 
 
@@ -620,8 +620,83 @@ class Randomizer:
 
     def randomizeDigimonBaseStats(self,
                                   rom_data: bytearray):
-        return
-    
+        randomize_base_stats = self.config_manager.get("RANDOMIZE_BASE_STATS", RandomizeBaseStats.UNCHANGED)
+
+        if(randomize_base_stats == RandomizeBaseStats.UNCHANGED):
+            return
+        
+        self.logger.info("\n==================== DIGIMON BASE STATS ====================")
+
+        for digimon_id in self.baseDigimonInfo.keys():
+            previous_basestats = self.baseDigimonInfo[digimon_id].getBaseStats()
+            new_basestats = copy.deepcopy(previous_basestats)
+
+            
+            # shuffle atk, def, spirit, speed
+            if(randomize_base_stats == RandomizeBaseStats.SHUFFLE):
+                # cut array to get only the target attrs
+                stats_to_shuffle = previous_basestats[2:6]
+                random.shuffle(stats_to_shuffle)
+
+                # update current_basestats with new stats
+                new_basestats[2:6] = stats_to_shuffle
+                self.baseDigimonInfo[digimon_id].setBaseStats(new_basestats)
+
+
+            if(randomize_base_stats == RandomizeBaseStats.RANDOM_SANITY):
+
+                # exclude aptitude
+                base_stat_total = sum(new_basestats[0:6])
+
+                hp_ratio = random.uniform(0.2, 0.3)
+                mp_ratio = random.uniform(0.2, 0.3)
+                atk_ratio = random.uniform(0.1, 0.2)
+                def_ratio = random.uniform(0.1, 0.2)
+                spirit_ratio = random.uniform(0.1, 0.2)
+                speed_ratio = random.uniform(0.1, 0.2)
+
+                ratio_array = [hp_ratio, mp_ratio, atk_ratio, def_ratio, spirit_ratio, speed_ratio]
+                total_ratios = sum(ratio_array)
+                new_basestats[0:6] = [round((ratio * base_stat_total) / total_ratios) for ratio in ratio_array]
+
+                self.baseDigimonInfo[digimon_id].setBaseStats(new_basestats)
+
+                # write updated hp and mp first
+                utils.writeRomBytes(rom_data, new_basestats[0], self.baseDigimonInfo[digimon_id].offset + 0x4, 2)
+                utils.writeRomBytes(rom_data, new_basestats[1], self.baseDigimonInfo[digimon_id].offset + 0x8, 2)
+
+
+            if(randomize_base_stats == RandomizeBaseStats.RANDOM_COMPLETELY):
+                
+                # exclude aptitude, take away 160 from the stats to add later
+                base_stat_total = sum(new_basestats[0:6]) - 160
+
+                # generate fractions
+                stat_fractions = np.random.dirichlet(np.ones(6))
+                randomized_values = np.round(stat_fractions * base_stat_total).astype(int)
+                
+                # sum baseline values
+                randomized_values += np.array([40, 40, 20, 20, 20, 20], dtype=int)
+                new_basestats[0:6] = randomized_values.tolist()
+
+                self.baseDigimonInfo[digimon_id].setBaseStats(new_basestats)
+
+                # write updated hp and mp first
+                utils.writeRomBytes(rom_data, new_basestats[0], self.baseDigimonInfo[digimon_id].offset + 0x4, 2)
+                utils.writeRomBytes(rom_data, new_basestats[1], self.baseDigimonInfo[digimon_id].offset + 0x8, 2)
+
+
+
+            # write updated stats into rom
+            cur_base_offset = self.baseDigimonInfo[digimon_id].offset + 0xa
+            for cur_stat_value in new_basestats[2:6]:
+                utils.writeRomBytes(rom_data, cur_stat_value, cur_base_offset, 2)
+                cur_base_offset += 2
+
+            digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"ID_{digimon_id}")
+            self.logger.info(f"{digimon_name}: {previous_basestats} -> {new_basestats}")
+
+        
     
     def randomizeDigimonStatType(self,
                                  rom_data: bytearray):

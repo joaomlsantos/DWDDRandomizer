@@ -176,6 +176,32 @@ class BaseDataDigimon:
             return None
         
 
+    def getBaseStats(self):
+        return [self.hp,
+                self.mp,
+                self.attack,
+                self.defense,
+                self.spirit,
+                self.speed,
+                self.aptitude]
+    
+    def setBaseStats(self, stats_array: List[int]):
+        # check if stats_array has exactly 7 values
+        if(len(stats_array) != 7):
+            print(f"Resistance array {stats_array} does not have exactly 7 values; skipping operation")
+            return
+        
+        stat_attrs = ["hp", "mp", "attack", "defense", "spirit", "speed", "aptitude"]
+        for i, attr in enumerate(stat_attrs):
+            # skip value if -1: this is used to skip certain base stat values that are already set
+            if(stat_attrs[i] == -1):
+                continue
+            setattr(self, attr, stat_attrs[i])
+
+
+
+
+
     # same order as Element class
     def getResistanceValues(self):
         return [self.light_res, 
