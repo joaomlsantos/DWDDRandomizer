@@ -621,6 +621,15 @@ class Randomizer:
     def randomizeDigimonBaseStats(self,
                                   rom_data: bytearray):
         randomize_base_stats = self.config_manager.get("RANDOMIZE_BASE_STATS", RandomizeBaseStats.UNCHANGED)
+        digimon_stattype_bias = self.config_manager.get("BASESTATS_STATTYPE_BIAS", False)
+        stattype_bias_mapping = {
+            model.DigimonType.ATTACKER: 2,
+            model.DigimonType.TANK: 3,
+            model.DigimonType.TECHNICAL: 4,
+            model.DigimonType.SPEED: 5,
+            model.DigimonType.HPTYPE: 0,
+            model.DigimonType.MPTYPE: 1
+        }
 
         if(randomize_base_stats == RandomizeBaseStats.UNCHANGED):
             return
@@ -637,6 +646,14 @@ class Randomizer:
                 # cut array to get only the target attrs
                 stats_to_shuffle = previous_basestats[2:6]
                 random.shuffle(stats_to_shuffle)
+
+                if(digimon_stattype_bias):
+                    biased_stat_ix = stattype_bias_mapping.get(self.baseDigimonInfo[digimon_id].digimon_type, None)
+                    # exclude BALANCE, HPTYPE, MPTYPE
+                    if(biased_stat_ix is not None and biased_stat_ix >= 2):
+                        highest_stat_ix = stats_to_shuffle.index(max(stats_to_shuffle))
+
+                        stats_to_shuffle[highest_stat_ix], stats_to_shuffle[biased_stat_ix - 2] = stats_to_shuffle[biased_stat_ix - 2], stats_to_shuffle[highest_stat_ix]
 
                 # update current_basestats with new stats
                 new_basestats[2:6] = stats_to_shuffle
@@ -659,6 +676,26 @@ class Randomizer:
                 total_ratios = sum(ratio_array)
                 new_basestats[0:6] = [round((ratio * base_stat_total) / total_ratios) for ratio in ratio_array]
 
+
+                if(digimon_stattype_bias):
+                    biased_stat_ix = stattype_bias_mapping.get(self.baseDigimonInfo[digimon_id].digimon_type, None)
+                    # exclude BALANCE
+                    if(biased_stat_ix is not None):
+                        # do not eval APTITUDE from max()
+                        search_range = (
+                            [0, 1] if biased_stat_ix in {0, 1} else     # HP/MP
+                            range(2, 6)                                 # Atk/Def/Spirit/Speed
+                        )
+
+                        # find the highest stat IN THE RELEVANT RANGE
+                        highest_stat_ix = max(
+                            search_range,
+                            key=lambda i: new_basestats[i]
+                        )
+                     
+                        new_basestats[highest_stat_ix], new_basestats[biased_stat_ix] = new_basestats[biased_stat_ix], new_basestats[highest_stat_ix]
+
+
                 self.baseDigimonInfo[digimon_id].setBaseStats(new_basestats)
 
                 # write updated hp and mp first
@@ -678,6 +715,18 @@ class Randomizer:
                 # sum baseline values
                 randomized_values += np.array([40, 40, 20, 20, 20, 20], dtype=int)
                 new_basestats[0:6] = randomized_values.tolist()
+
+
+                if(digimon_stattype_bias):
+                    biased_stat_ix = stattype_bias_mapping.get(self.baseDigimonInfo[digimon_id].digimon_type, None)
+                    # exclude BALANCE
+                    if(biased_stat_ix is not None):
+                        # do not eval APTITUDE from max()
+
+                        highest_stat_ix = new_basestats.index(max(new_basestats[0:6]))
+                     
+                        new_basestats[highest_stat_ix], new_basestats[biased_stat_ix] = new_basestats[biased_stat_ix], new_basestats[highest_stat_ix]
+
 
                 self.baseDigimonInfo[digimon_id].setBaseStats(new_basestats)
 

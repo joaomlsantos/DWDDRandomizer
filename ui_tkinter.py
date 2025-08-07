@@ -424,12 +424,13 @@ def toggle_digivolution_randomization_options():
     else:
         digivolutionSimilarSpeciesCheckbox.configure(state="disabled")
 
+'''
 def toggle_dna_digivolution_rand_options():
     if dna_digivolutions_option_var.get() != RandomizeDnaDigivolutions.UNCHANGED.value:
         dnaDigivolutionForceRareCheckbox.configure(state="normal")
     else:
         dnaDigivolutionForceRareCheckbox.configure(state="disabled")
-
+'''
 
 
 # Initialize main window
@@ -852,7 +853,7 @@ base_stats_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 base_stats_bias_type_var = tk.BooleanVar(value=False)
 base_stats_bias_type_cb = tk.Checkbutton(base_stats_sub_frame, text="Digimon StatType Bias", variable=base_stats_bias_type_var, state="disabled")
-base_stats_bias_type_tooltip = CreateToolTip(base_stats_bias_type_cb, "Forces the Digimon's highest stat (not counting HP and MP) to match its StatType.\nE.g. Attacker -> higher ATK stat; Tank -> higher DEF stat.")
+base_stats_bias_type_tooltip = CreateToolTip(base_stats_bias_type_cb, "Forces the Digimon's highest stat to match its StatType.\nE.g. Attacker -> higher ATK stat; Tank -> higher DEF stat.\nThis does not apply to HP and MP if Shuffle, and if doing Randomize (Sanity), HP and MP are considered distinct from ATK, DEF, SPIRIT, SPEED (if the target digimon is an Attacker, then the highest stat between ATK, DEF, SPIRIT and SPEED is swapped).")
 base_stats_bias_type_cb.pack(anchor="w")
 
 
@@ -977,11 +978,13 @@ dna_digivolutions_radio_frame.pack(side="left", fill="both", expand=True, padx=1
 dna_digivolutions_unchanged_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Unchanged", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.UNCHANGED.value, state="disabled")
 dna_digivolutions_unchanged_rb.pack(anchor="w")
 
-dna_digivolutions_randomize_same_stage_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (same stages)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE.value, state="disabled", command=toggle_dna_digivolution_rand_options)
+#dna_digivolutions_randomize_same_stage_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (same stages)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE.value, state="disabled", command=toggle_dna_digivolution_rand_options)
+dna_digivolutions_randomize_same_stage_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (same stages)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE.value, state="disabled")
 dna_digivolutions_randomize_same_stage_rb_tooltip = CreateToolTip(dna_digivolutions_randomize_same_stage_rb, "Randomizes each DNA digivolution, keeping the original stages for each DNA digivolution.\nE.g. for Patamon + SnowAgumon = Airdramon, Patamon and SnowAgumon will be replaced by two other rookie digimon and Airdramon will be replaced by another champion digimon.")
 dna_digivolutions_randomize_same_stage_rb.pack(anchor="w")
 
-dna_digivolutions_randomize_completely_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (completely)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_COMPLETELY.value, state="disabled", command=toggle_dna_digivolution_rand_options)
+#dna_digivolutions_randomize_completely_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (completely)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_COMPLETELY.value, state="disabled", command=toggle_dna_digivolution_rand_options)
+dna_digivolutions_randomize_completely_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (completely)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_COMPLETELY.value, state="disabled")
 dna_digivolutions_randomize_completely_rb_tooltip = CreateToolTip(dna_digivolutions_randomize_completely_rb, "Randomizes each DNA digivolution, creating new combinations regardless of stage.\nThis may result in scenarios where, for example, joining two In-Training digimon generates an Ultimate digimon, or joining two Mega digimon results in a Rookie digimon.")
 dna_digivolutions_randomize_completely_rb.pack(anchor="w")
 
