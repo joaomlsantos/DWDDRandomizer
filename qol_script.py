@@ -168,6 +168,7 @@ class Randomizer:
         self.standardDigivolutions = utils.loadStandardDigivolutions(version, rom_data)
         self.armorDigivolutions = utils.loadArmorDigivolutions(version, rom_data)
         self.dnaDigivolutions, self.dnaConditionsByDigimonId = utils.loadDnaDigivolutions(version, rom_data)
+        self.moveDataArray = utils.loadMoveData(version, rom_data)
         self.lvlupTypeTable = utils.loadLvlupTypeTable(version, rom_data)
         self.spriteMapTable = utils.loadSpriteMapTable(version, rom_data)
         self.battleStrTable = utils.loadBattleStringTable(version, rom_data)
@@ -712,7 +713,7 @@ class Randomizer:
                 stat_fractions = np.random.dirichlet(np.ones(6))
                 randomized_values = np.round(stat_fractions * base_stat_total).astype(int)
                 
-                # sum baseline values
+                # sum baseline values; the 160 we took away are distributed here
                 randomized_values += np.array([40, 40, 20, 20, 20, 20], dtype=int)
                 new_basestats[0:6] = randomized_values.tolist()
 

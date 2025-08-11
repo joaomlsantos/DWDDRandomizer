@@ -109,6 +109,26 @@ def loadEnemyDigimonInfo(version: str,
     return enemy_digimon_dict
 
 
+
+def loadMoveData(version: str,
+                 rom_data: bytearray):
+    offset_start = constants.MOVE_DATA_OFFSETS[version][0]
+    offset_end = constants.MOVE_DATA_OFFSETS[version][1]
+
+    seek_offset = offset_start
+    
+    move_data_array = []
+
+    while(seek_offset <= offset_end):
+        cur_move_data = rom_data[seek_offset:seek_offset+0x1c]
+        cur_move_obj = model.MoveData(cur_move_data, seek_offset)
+        move_data_array.append(cur_move_obj)
+
+        seek_offset += 0x1c
+    
+    return move_data_array
+
+
 # this will not be used as the main loader for standard digievos yet; need to adapt previous code from loadDigivolutionInformation()
 # atm this loads each digimon as a single entry without taking evo logic propagation into account
 

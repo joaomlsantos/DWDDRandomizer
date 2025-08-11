@@ -97,6 +97,51 @@ class BattleStringEntry:
         self.value = value
 
 
+
+class MoveData:
+    offset: int
+    id: int
+    mp_cost: int
+    element: Element
+    special_identifier: int
+    primary_effect: int
+    primary_value: int
+    secondary_effect: int
+    secondary_value: int
+    unknown_0xe: int
+    is_consumable: int
+    num_hits: int
+    move_range: int
+    unknown_0x14: int
+    unknown_0x16: int
+    level_learned: int
+    eos_bytes: int
+
+    def __init__(self, move_data: bytearray, offset: int):
+        try:
+            self.offset = offset
+            self.id = int.from_bytes(move_data[0:2], byteorder="little")
+            self.mp_cost = int.from_bytes(move_data[2:4], byteorder="little")
+            self.element = Element(int.from_bytes(move_data[4], byteorder="little"))
+            self.special_identifier = int.from_bytes(move_data[5], byteorder="little")
+            self.primary_effect = int.from_bytes(move_data[6:8], byteorder="little")
+            self.primary_value = int.from_bytes(move_data[8:0xa], byteorder="little")
+            self.secondary_effect = int.from_bytes(move_data[0xa:0xc], byteorder="little")
+            self.secondary_value = int.from_bytes(move_data[0xc:0xe], byteorder="little")
+            self.unknown_0xe = int.from_bytes(move_data[0xe:0x10], byteorder="little")
+            self.is_consumable = int.from_bytes(move_data[0x10:0x12], byteorder="little")
+            self.num_hits = int.from_bytes(move_data[0x12], byteorder="little")
+            self.move_range = int.from_bytes(move_data[0x13], byteorder="little")
+            self.unknown_0x14 = int.from_bytes(move_data[0x14:0x16], byteorder="little")
+            self.unknown_0x16 = int.from_bytes(move_data[0x16:0x18], byteorder="little")
+            self.level_learned = int.from_bytes(move_data[0x18:0x1a], byteorder="little")
+            self.eos_bytes = int.from_bytes(move_data[0x1a:0x1c], byteorder="little")
+        except:
+            print("Exception on MoveData call")
+            return None
+
+
+
 class BaseDataDigimon:
     offset: int
     id: int
