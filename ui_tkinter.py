@@ -4,7 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType
+from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeMovesets, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -509,8 +509,8 @@ decreaseWildEncounterCheckbox = tk.Checkbutton(qol_frame, text="Reduce Wild Enco
 decreaseWildEncounterCheckbox.pack(anchor='w')
 decreaseWildEncounterTooltip = CreateToolTip(decreaseWildEncounterCheckbox, "Reduces the wild encounter rate in all areas by 0.5x.")
 
-encounter_slider_widget = LabelledSlider(qol_frame)
-encounter_slider_widget.pack(anchor="w", padx=10)
+#encounter_slider_widget = LabelledSlider(qol_frame)
+#encounter_slider_widget.pack(anchor="w", padx=10)
 
 #increase_exp_yield_var = tk.BooleanVar(value=True)
 #increaseExpYieldCheckbox = tk.Checkbutton(qol_frame, text="Increase Exp Yield for Wild Digimon", variable=increase_exp_yield_var, state="disabled")
@@ -759,9 +759,15 @@ base_information_tab.pack(fill="both", expand=True)  # Ensure frame fills space
 notebook.add(base_information_tab, text="Base Information")
 
 
+species_elemental_container = ttk.Frame(base_information_tab)
+species_elemental_container.pack(side="top", fill="x", padx=10, pady=5)
+
+
 # Species frame
-species_frame = ttk.LabelFrame(base_information_tab, text="Digimon Species", padding=10)
-species_frame.pack(side="top", fill="x", padx=10, pady=5)
+species_frame = ttk.LabelFrame(species_elemental_container, text="Digimon Species", padding=10)
+#species_frame.pack(side="top", fill="x", padx=10, pady=5)
+species_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
 
 
 species_radio_frame = ttk.Frame(species_frame)
@@ -791,8 +797,9 @@ speciesAllowUnknownTooltip = CreateToolTip(speciesAllowUnknownCheckbox, "Allows 
 
 
 
-elemental_res_frame = ttk.LabelFrame(base_information_tab, text="Elemental Resistances", padding=10)
-elemental_res_frame.pack(side="top", fill="x", padx=10, pady=5)
+elemental_res_frame = ttk.LabelFrame(species_elemental_container, text="Elemental Resistances", padding=10)
+#elemental_res_frame.pack(side="top", fill="x", padx=10, pady=5)
+elemental_res_frame.pack(side="left", fill="both", expand=True, padx=(5, 0))
 
 
 elemental_res_main_frame = ttk.Frame(elemental_res_frame)
@@ -823,9 +830,13 @@ elementalResKeepCoherenceTooltip = CreateToolTip(elementalResKeepCoherenceCheckb
 
 
 
+
+stats_stattype_container = ttk.Frame(base_information_tab)
+stats_stattype_container.pack(side="top", fill="x", padx=10, pady=5)
+
 # Base Stats frame
-base_stats_frame = ttk.LabelFrame(base_information_tab, text="Base Stats", padding=10)
-base_stats_frame.pack(side="top", fill="x", padx=10, pady=5)
+base_stats_frame = ttk.LabelFrame(stats_stattype_container, text="Base Stats", padding=10)
+base_stats_frame.pack(side="left", fill="both", expand=True, padx=(5, 0))
 
 
 base_stats_main_frame = ttk.Frame(base_stats_frame)
@@ -858,8 +869,8 @@ base_stats_bias_type_cb.pack(anchor="w")
 
 
 # Digimon Type frame
-digimon_type_frame = ttk.LabelFrame(base_information_tab, text="Digimon StatType", padding=10)
-digimon_type_frame.pack(side="top", fill="x", padx=10, pady=5)
+digimon_type_frame = ttk.LabelFrame(stats_stattype_container, text="Digimon StatType", padding=10)
+digimon_type_frame.pack(side="left", fill="both", expand=True, padx=(5, 0))
 
 
 digimon_type_main_frame = ttk.Frame(digimon_type_frame)
@@ -872,6 +883,34 @@ digimon_type_unchanged_rb.pack(anchor="w")
 digimon_type_randomize_rb = tk.Radiobutton(digimon_type_main_frame, text="Randomize", variable=digimon_type_option_var, value=RandomizeDigimonStatType.RANDOMIZE, state="disabled")
 digimon_type_randomize_tooltip = CreateToolTip(digimon_type_randomize_rb, "Randomizes Digimon's StatType (Balance, Attacker, Tank, etc).\nThis affects stat growths (e.g. Attacker digimon typically have higher ATK stat gains upon levelling up).")
 digimon_type_randomize_rb.pack(anchor="w")
+
+
+# Movesets frame
+
+movesets_frame = ttk.LabelFrame(base_information_tab, text="Digimon Movesets", padding=10)
+movesets_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+movesets_option_var = tk.IntVar(value=RandomizeMovesets.UNCHANGED.value)
+
+
+movesets_radio_frame = ttk.Frame(movesets_frame)
+movesets_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+
+movesets_unchanged_rb = tk.Radiobutton(movesets_radio_frame, text="Unchanged", variable=movesets_option_var, value=RandomizeMovesets.UNCHANGED.value, state="disabled")
+movesets_unchanged_rb.pack(anchor="w")
+
+movesets_randomize_same_species_rb = tk.Radiobutton(movesets_radio_frame, text="Random (preferring same species)", variable=movesets_option_var, value=RandomizeMovesets.RANDOM_SPECIES_BIAS.value, state="disabled")
+movesets_randomize_rb_tooltip = CreateToolTip(movesets_randomize_same_species_rb, "Randomizes each digimon's movesets, with bias for moves with the main element of the given digimon's species (e.g. HOLY digimon will be more likely to have LIGHT moves).")
+movesets_randomize_same_species_rb.pack(anchor="w")
+
+movesets_randomize_rb = tk.Radiobutton(movesets_radio_frame, text="Random (completely)", variable=movesets_option_var, value=RandomizeMovesets.RANDOM_COMPLETELY.value, state="disabled")
+movesets_randomize_rb_tooltip = CreateToolTip(movesets_randomize_rb, "Randomizes each digimon's movesets completely.")
+movesets_randomize_rb.pack(anchor="w")
+
+
+
+
 
 
 

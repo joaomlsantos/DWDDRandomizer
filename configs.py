@@ -38,6 +38,13 @@ class RandomizeDigimonStatType(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE = 1                       # randomize digimon type
 
+
+class RandomizeMovesets(Enum):
+    UNCHANGED = 0
+    RANDOM_SPECIES_BIAS = 1             # randomize preferring moves of the given species' main element
+    RANDOM_COMPLETELY = 2               # randomize completely
+
+
 class RandomizeWildEncounters(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE_1_TO_1_SAME_STAGE = 1     # randomize 1-to-1, same stage digimon
