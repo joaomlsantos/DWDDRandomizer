@@ -109,7 +109,7 @@ def execute_rom_changes(save_path):
     app_state.config_manager.update_from_ui(patcher_config_options)
     
     app_state.target_rom.executeQolChanges()
-    app_state.randomizer.executeRandomizerFunctions()
+    app_state.randomizer.executeRandomizerFunctions(app_state.target_rom.rom_data)
     app_state.target_rom.writeRom(save_path)
     app_state.writeLog(save_path)
     app_state.seed = -1
@@ -199,9 +199,9 @@ def open_rom():
     if file_path:
         try:
             app_state.current_rom = DigimonROM(file_path, app_state.config_manager, app_state.logger)
-            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager, app_state.logger)
             app_state.target_rom = copy.deepcopy(app_state.current_rom)
             app_state.target_rom.config_manager = app_state.config_manager
+            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager, app_state.logger)
         except ValueError:
             messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
             return
@@ -876,7 +876,7 @@ digimon_type_frame.pack(side="left", fill="both", expand=True, padx=(5, 0))
 digimon_type_main_frame = ttk.Frame(digimon_type_frame)
 digimon_type_main_frame.pack(side="left", fill="both", expand=True, padx=10)
 
-digimon_type_option_var = tk.IntVar(value=RandomizeDigimonStatType.UNCHANGED)
+digimon_type_option_var = tk.IntVar(value=RandomizeDigimonStatType.UNCHANGED.value)
 digimon_type_unchanged_rb = tk.Radiobutton(digimon_type_main_frame, text="Unchanged", variable=digimon_type_option_var, value=RandomizeDigimonStatType.UNCHANGED, state="disabled")
 digimon_type_unchanged_rb.pack(anchor="w")
 

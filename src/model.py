@@ -122,16 +122,16 @@ class MoveData:
             self.offset = offset
             self.id = int.from_bytes(move_data[0:2], byteorder="little")
             self.mp_cost = int.from_bytes(move_data[2:4], byteorder="little")
-            self.element = Element(int.from_bytes(move_data[4], byteorder="little"))
-            self.special_identifier = int.from_bytes(move_data[5], byteorder="little")
+            self.element = Element(move_data[4])
+            self.special_identifier = move_data[5]
             self.primary_effect = int.from_bytes(move_data[6:8], byteorder="little")
             self.primary_value = int.from_bytes(move_data[8:0xa], byteorder="little")
             self.secondary_effect = int.from_bytes(move_data[0xa:0xc], byteorder="little")
             self.secondary_value = int.from_bytes(move_data[0xc:0xe], byteorder="little")
             self.unknown_0xe = int.from_bytes(move_data[0xe:0x10], byteorder="little")
             self.is_consumable = int.from_bytes(move_data[0x10:0x12], byteorder="little")
-            self.num_hits = int.from_bytes(move_data[0x12], byteorder="little")
-            self.move_range = int.from_bytes(move_data[0x13], byteorder="little")
+            self.num_hits = move_data[0x12]
+            self.move_range = move_data[0x13]
             self.unknown_0x14 = int.from_bytes(move_data[0x14:0x16], byteorder="little")
             self.unknown_0x16 = int.from_bytes(move_data[0x16:0x18], byteorder="little")
             self.level_learned = int.from_bytes(move_data[0x18:0x1a], byteorder="little")

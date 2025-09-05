@@ -119,7 +119,7 @@ def loadMoveData(version: str,
     
     move_data_array = []
 
-    while(seek_offset <= offset_end):
+    while(seek_offset < offset_end):
         cur_move_data = rom_data[seek_offset:seek_offset+0x1c]
         cur_move_obj = model.MoveData(cur_move_data, seek_offset)
         move_data_array.append(cur_move_obj)
