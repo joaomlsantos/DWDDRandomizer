@@ -99,7 +99,7 @@ def execute_rom_changes(save_path):
     app_state.config_manager.update_from_ui(patcher_config_options)
     
     app_state.target_rom.executeQolChanges()
-    app_state.randomizer.executeRandomizerFunctions()
+    app_state.randomizer.executeRandomizerFunctions(app_state.target_rom.rom_data)
     app_state.target_rom.writeRom(save_path)
     app_state.writeLog(save_path)
     app_state.seed = -1
@@ -186,9 +186,9 @@ def open_rom():
     if file_path:
         try:
             app_state.current_rom = DigimonROM(file_path, app_state.config_manager, app_state.logger)
-            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager, app_state.logger)
             app_state.target_rom = copy.deepcopy(app_state.current_rom)
             app_state.target_rom.config_manager = app_state.config_manager
+            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager, app_state.logger)
         except ValueError:
             messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
             return
@@ -411,11 +411,11 @@ def toggle_digivolution_randomization_options():
     else:
         digivolutionSimilarSpeciesCheckbox.configure(state="disabled")
 
-def toggle_dna_digivolution_rand_options():
-    if dna_digivolutions_option_var.get() != RandomizeDnaDigivolutions.UNCHANGED.value:
-        dnaDigivolutionForceRareCheckbox.configure(state="normal")
-    else:
-        dnaDigivolutionForceRareCheckbox.configure(state="disabled")
+#def toggle_dna_digivolution_rand_options():
+#    if dna_digivolutions_option_var.get() != RandomizeDnaDigivolutions.UNCHANGED.value:
+#        dnaDigivolutionForceRareCheckbox.configure(state="normal")
+#    else:
+#        dnaDigivolutionForceRareCheckbox.configure(state="disabled")
 
 
 
@@ -842,11 +842,11 @@ dna_digivolutions_radio_frame.pack(side="left", fill="both", expand=True, padx=1
 dna_digivolutions_unchanged_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Unchanged", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.UNCHANGED.value, state="disabled")
 dna_digivolutions_unchanged_rb.pack(anchor="w")
 
-dna_digivolutions_randomize_same_stage_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (same stages)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE.value, state="disabled", command=toggle_dna_digivolution_rand_options)
+dna_digivolutions_randomize_same_stage_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (same stages)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE.value, state="disabled")
 dna_digivolutions_randomize_same_stage_rb_tooltip = CreateToolTip(dna_digivolutions_randomize_same_stage_rb, "Randomizes each DNA digivolution, keeping the original stages for each DNA digivolution.\nE.g. for Patamon + SnowAgumon = Airdramon, Patamon and SnowAgumon will be replaced by two other rookie digimon and Airdramon will be replaced by another champion digimon.")
 dna_digivolutions_randomize_same_stage_rb.pack(anchor="w")
 
-dna_digivolutions_randomize_completely_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (completely)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_COMPLETELY.value, state="disabled", command=toggle_dna_digivolution_rand_options)
+dna_digivolutions_randomize_completely_rb = tk.Radiobutton(dna_digivolutions_radio_frame, text="Random (completely)", variable=dna_digivolutions_option_var, value=RandomizeDnaDigivolutions.RANDOMIZE_COMPLETELY.value, state="disabled")
 dna_digivolutions_randomize_completely_rb_tooltip = CreateToolTip(dna_digivolutions_randomize_completely_rb, "Randomizes each DNA digivolution, creating new combinations regardless of stage.\nThis may result in scenarios where, for example, joining two In-Training digimon generates an Ultimate digimon, or joining two Mega digimon results in a Rookie digimon.")
 dna_digivolutions_randomize_completely_rb.pack(anchor="w")
 

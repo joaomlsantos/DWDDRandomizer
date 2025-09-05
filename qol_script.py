@@ -173,34 +173,37 @@ class Randomizer:
         self.battleStrTable = utils.loadBattleStringTable(version, rom_data)
 
     
-    def executeRandomizerFunctions(self):
+    def executeRandomizerFunctions(self, target_rom_data: bytearray = None):
+
+        if(target_rom_data is None):
+            target_rom_data = self.rom_data
         
         curEnemyDigimonInfo = self.enemyDigimonInfo
 
-        self.rookieResetEvent(self.rom_data)
-        curEnemyDigimonInfo = self.randomizeAreaEncounters(self.rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
-        self.nerfFirstBoss(self.rom_data)
-        self.randomizeOverworldItems(self.rom_data)
+        self.rookieResetEvent(target_rom_data)
+        curEnemyDigimonInfo = self.randomizeAreaEncounters(target_rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
+        self.nerfFirstBoss(target_rom_data)
+        self.randomizeOverworldItems(target_rom_data)
 
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
-            self.curUpdatedPreEvos, self.curStandardEvos = self.randomizeDigivolutions(self.rom_data)
+            self.curUpdatedPreEvos, self.curStandardEvos = self.randomizeDigivolutions(target_rom_data)
         elif(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") not in [None, RandomizeDigivolutionConditions.UNCHANGED]):
-            self.randomizeDigivolutionConditionsOnly(self.rom_data)   # this only triggers if randomize digivolutions is not applied
+            self.randomizeDigivolutionConditionsOnly(target_rom_data)   # this only triggers if randomize digivolutions is not applied
 
-        self.manageDnaDigivolutions(self.rom_data)
+        self.manageDnaDigivolutions(target_rom_data)
 
         # starter randomization must happen after digivolution randomization
-        self.randomizeStarters(self.rom_data)
+        self.randomizeStarters(target_rom_data)
 
         '''
         if(self.config_manager.get("RANDOMIZE_DNADIGIVOLUTIONS") not in [None, RandomizeDnaDigivolutions.UNCHANGED]):
-            self.randomizeDnaDigivolutions(self.rom_data)
+            self.randomizeDnaDigivolutions(target_rom_data)
         elif(self.config_manager.get("RANDOMIZE_DNADIGIVOLUTION_CONDITIONS") in [RandomizeDnaDigivolutionConditions.RANDOMIZE]):
-            self.randomizeDnaDigivolutionConditionsOnly(self.rom_data)  # similar to above, only triggers if randomize dna evos not applied
+            self.randomizeDnaDigivolutionConditionsOnly(target_rom_data)  # similar to above, only triggers if randomize dna evos not applied
         '''
 
-        self.expPatchFlat(self.rom_data, curEnemyDigimonInfo)
+        self.expPatchFlat(target_rom_data, curEnemyDigimonInfo)
 
     
     def randomizeStarters(self, 
