@@ -85,7 +85,10 @@ def execute_rom_changes(save_path):
         "BASESTATS_STATTYPE_BIAS": base_stats_bias_type_var,
         "RANDOMIZE_DIGIMON_STATTYPE": RandomizeDigimonStatType(digimon_type_option_var.get()),
 
-
+        "RANDOMIZE_MOVESETS": RandomizeMovesets(movesets_option_var.get()),
+        "MOVESETS_LEVEL_BIAS": movesets_level_bias_var,
+        "MOVESETS_SIGNATURE_MOVES_POOL": movesets_signature_moves_var,
+        "MOVESETS_GUARANTEE_BASIC_MOVE": movesets_guarantee_basic_move_var,
 
         "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions(digivolutions_option_var.get()),
         "DIGIVOLUTIONS_SIMILAR_SPECIES": digivolution_similar_species_var,
@@ -171,6 +174,15 @@ def enable_buttons():
     species_unchanged_rb.configure(state="normal")
     species_random_rb.configure(state="normal")
     speciesAllowUnknownCheckbox.configure(state="normal")
+
+    # Randomize movesets
+    movesets_unchanged_rb.configure(state="normal")
+    movesets_randomize_same_species_rb.configure(state="normal")
+    movesets_randomize_rb.configure(state="normal")
+    movesetsLevelBiasCheckbox.configure(state="normal")
+    movesetsSignatureMovesCheckbox.configure(state="normal")
+    movesetsGuaranteeBasicMoveCheckbox.configure(state="normal")
+
 
     # Randomize digivolutions and conditions
     digivolutions_unchanged_rb.configure(state="normal")
@@ -814,7 +826,7 @@ elemental_res_shuffle_rb = tk.Radiobutton(elemental_res_main_frame, text="Shuffl
 elemental_res_shuffle_tooltip = CreateToolTip(elemental_res_shuffle_rb, "Shuffles the resistance values of a given digimon.\nFor example, if Greymon has a WATER resistance of 700, if shuffled, another elemental resistance (e.g. WIND) will be set with the value 700, and Greymon's WATER resistance will be set to the original value of one of its other elements.")
 elemental_res_shuffle_rb.pack(anchor="w")
 
-elemental_res_randomize_rb = tk.Radiobutton(elemental_res_main_frame, text="Randomize", variable=elemental_res_option_var, value=RandomizeElementalResistances.RANDOM.value, state="disabled")
+elemental_res_randomize_rb = tk.Radiobutton(elemental_res_main_frame, text="Random", variable=elemental_res_option_var, value=RandomizeElementalResistances.RANDOM.value, state="disabled")
 elemental_res_randomize_tooltip = CreateToolTip(elemental_res_randomize_rb, "Randomizes the resistance values of a given digimon.\nThe total sum of the generated resistance values will always equal the total sum of the original resistance values (e.g: if Greymon originally had the resistance values [700, 500, 1000, 100, 200, 500, 700, 500] with a total of 4200, the sum of the newly-generated values would also be 4200).")
 elemental_res_randomize_rb.pack(anchor="w")
 
@@ -850,11 +862,11 @@ base_stats_shuffle_rb = tk.Radiobutton(base_stats_main_frame, text="Shuffle", va
 base_stats_shuffle_tooltip = CreateToolTip(base_stats_shuffle_rb, "Shuffles the ATK, DEF, SPIRIT and SPEED values of a given digimon.\nThe values for HP, MP and APTITUDE will be unchanged.")
 base_stats_shuffle_rb.pack(anchor="w")
 
-base_stats_random_sane_rb = tk.Radiobutton(base_stats_main_frame, text="Randomize (Sanity)", variable=base_stats_option_var, value=RandomizeBaseStats.RANDOM_SANITY.value, state="disabled")
+base_stats_random_sane_rb = tk.Radiobutton(base_stats_main_frame, text="Random (Sanity)", variable=base_stats_option_var, value=RandomizeBaseStats.RANDOM_SANITY.value, state="disabled")
 base_stats_random_sane_tooltip = CreateToolTip(base_stats_random_sane_rb, "Randomizes base stats given the digimon's base stat total, but ensures that HP and MP are always higher than the digimon's highest stat (between ATK, DEF, SPIRIT or SPEED).\nThis does not randomize APTITUDE.")
 base_stats_random_sane_rb.pack(anchor="w")
 
-base_stats_random_full_rb = tk.Radiobutton(base_stats_main_frame, text="Randomize (Completely)", variable=base_stats_option_var, value=RandomizeBaseStats.RANDOM_COMPLETELY.value, state="disabled")
+base_stats_random_full_rb = tk.Radiobutton(base_stats_main_frame, text="Random (Completely)", variable=base_stats_option_var, value=RandomizeBaseStats.RANDOM_COMPLETELY.value, state="disabled")
 base_stats_random_full_tooltip = CreateToolTip(base_stats_random_full_rb, "Completely randomizes base stats according to the digimon's base stat total.\nAssumes a minimum of 40 on HP and MP, and 20 on ATK, DEF, SPIRIT and SPEED. This does not randomize APTITUDE.")
 base_stats_random_full_rb.pack(anchor="w")
 
@@ -864,7 +876,7 @@ base_stats_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 base_stats_bias_type_var = tk.BooleanVar(value=False)
 base_stats_bias_type_cb = tk.Checkbutton(base_stats_sub_frame, text="Digimon StatType Bias", variable=base_stats_bias_type_var, state="disabled")
-base_stats_bias_type_tooltip = CreateToolTip(base_stats_bias_type_cb, "Forces the Digimon's highest stat to match its StatType.\nE.g. Attacker -> higher ATK stat; Tank -> higher DEF stat.\nThis does not apply to HP and MP if Shuffle, and if doing Randomize (Sanity), HP and MP are considered distinct from ATK, DEF, SPIRIT, SPEED (if the target digimon is an Attacker, then the highest stat between ATK, DEF, SPIRIT and SPEED is swapped).")
+base_stats_bias_type_tooltip = CreateToolTip(base_stats_bias_type_cb, "Forces the Digimon's highest stat to match its StatType.\nE.g. Attacker -> higher ATK stat; Tank -> higher DEF stat.\nThis does not apply to HP and MP if Shuffle, and if doing Random (Sanity), HP and MP are considered distinct from ATK, DEF, SPIRIT, SPEED (if the target digimon is an Attacker, then the highest stat between ATK, DEF, SPIRIT and SPEED is swapped).")
 base_stats_bias_type_cb.pack(anchor="w")
 
 
@@ -880,7 +892,7 @@ digimon_type_option_var = tk.IntVar(value=RandomizeDigimonStatType.UNCHANGED.val
 digimon_type_unchanged_rb = tk.Radiobutton(digimon_type_main_frame, text="Unchanged", variable=digimon_type_option_var, value=RandomizeDigimonStatType.UNCHANGED, state="disabled")
 digimon_type_unchanged_rb.pack(anchor="w")
 
-digimon_type_randomize_rb = tk.Radiobutton(digimon_type_main_frame, text="Randomize", variable=digimon_type_option_var, value=RandomizeDigimonStatType.RANDOMIZE, state="disabled")
+digimon_type_randomize_rb = tk.Radiobutton(digimon_type_main_frame, text="Random", variable=digimon_type_option_var, value=RandomizeDigimonStatType.RANDOMIZE, state="disabled")
 digimon_type_randomize_tooltip = CreateToolTip(digimon_type_randomize_rb, "Randomizes Digimon's StatType (Balance, Attacker, Tank, etc).\nThis affects stat growths (e.g. Attacker digimon typically have higher ATK stat gains upon levelling up).")
 digimon_type_randomize_rb.pack(anchor="w")
 
@@ -909,6 +921,25 @@ movesets_randomize_rb_tooltip = CreateToolTip(movesets_randomize_rb, "Randomizes
 movesets_randomize_rb.pack(anchor="w")
 
 
+movesets_sub_frame = ttk.Frame(movesets_frame)
+movesets_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+
+movesets_level_bias_var = tk.BooleanVar(value=False)
+movesetsLevelBiasCheckbox = tk.Checkbutton(movesets_sub_frame, text="Moveset Level Bias", variable=movesets_level_bias_var, state="disabled")
+movesetsLevelBiasCheckbox.pack(anchor="w")
+movesetsLevelBiasTooltip = CreateToolTip(movesetsLevelBiasCheckbox, "When randomizing Digimon movesets, each new move will be learned at a level close to the original move's level (within +- 5 levels, by default).\nE.g. a digimon that originally learned Little Blizzard (lvl 10) will have it replaced by a move learned between levels 5-15.")
+
+movesets_signature_moves_var = tk.BooleanVar(value=False)
+movesetsSignatureMovesCheckbox = tk.Checkbutton(movesets_sub_frame, text="Add Signature Moves To Random Pool", variable=movesets_signature_moves_var, state="disabled")
+movesetsSignatureMovesCheckbox.pack(anchor="w")
+movesetsSignatureMovesCheckbox = CreateToolTip(movesetsSignatureMovesCheckbox, "Adds the exclusive signature move of each digimon to the general moveset randomization pool.\nBy default, learned moves and signature moves are randomized separately, as signature moves are always learned at lvl 1.\nE.g. with this option enabled, a digimon could have up to four signature moves at lvl 1 (depending on the randomization result).")
+
+
+movesets_guarantee_basic_move_var = tk.BooleanVar(value=False)
+movesetsGuaranteeBasicMoveCheckbox = tk.Checkbutton(movesets_sub_frame, text="Guarantee Basic Move", variable=movesets_guarantee_basic_move_var, state="disabled")
+movesetsGuaranteeBasicMoveCheckbox.pack(anchor="w")
+movesetsGuaranteeBasicMoveCheckbox = CreateToolTip(movesetsGuaranteeBasicMoveCheckbox, "Forces the first move of each digimon to be the move Charge, which is changed to have 8 base power and cost 0 MP.\nThis ensures that all digimon have access to at least one basic move that they can use.\nIf this option is checked without randomizing the movesets, then the first move of all digimon will be replaced by Charge.")
 
 
 
