@@ -168,7 +168,7 @@ class Randomizer:
         self.standardDigivolutions = utils.loadStandardDigivolutions(version, rom_data)
         self.armorDigivolutions = utils.loadArmorDigivolutions(version, rom_data)
         self.dnaDigivolutions, self.dnaConditionsByDigimonId = utils.loadDnaDigivolutions(version, rom_data)
-        self.moveDataArray = utils.loadMoveData(version, rom_data)
+        self.moveDataArray: List[model.MoveData] = utils.loadMoveData(version, rom_data)
         self.lvlupTypeTable = utils.loadLvlupTypeTable(version, rom_data)
         self.spriteMapTable = utils.loadSpriteMapTable(version, rom_data)
         self.battleStrTable = utils.loadBattleStringTable(version, rom_data)
@@ -191,6 +191,8 @@ class Randomizer:
 
         # this function must be called AFTER randomizeDigimonSpecies()
         self.randomizeElementalResistances(target_rom_data)
+
+        self.randomizeDigimonMovesets(target_rom_data)
 
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
@@ -777,13 +779,33 @@ class Randomizer:
                 self.logger.info(f"{digimon_name}: {current_type.name} -> {self.baseDigimonInfo[digimon_id].digimon_type.name}")
 
 
+    def randomizeDigimonMovesets(self,
+                                 rom_data: bytearray):
 
-
+        return
         
 
+    def guaranteeBasicMove(self,
+                           rom_data: bytearray):
         
+        if(self.config_manager.get("MOVESETS_GUARANTEE_BASIC_MOVE", False)):
+            
+            # change Charge to have 8 base power and 0 MP
+            # Charge's move ID is 0
+            move_charge = self.moveDataArray[0]
+            move_charge.primary_value = 8
+            move_charge.mp_cost = 0
 
+            # write move Charge to rom
+            utils.writeRomBytes(rom_data, move_charge.primary_value, move_charge.offset + 8, 2)
+            utils.writeRomBytes(rom_data, move_charge.mp_cost, move_charge + 2, 2)
+            
+            # set first move of all digimon to Charge (id = 0)
+            for digimon_id in self.baseDigimonInfo.keys():
+                utils.writeRomBytes(rom_data, 0, self.baseDigimonInfo[digimon_id].offset + 0x30, 2)
 
+            self.logger.info(f"Changed Charge to 8 base power and 0 MP")
+            self.logger.info(f"Set Charge as first move for all digimon")
 
         
 
