@@ -6,7 +6,7 @@ from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeMovesets, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 
 
@@ -781,6 +781,20 @@ class Randomizer:
 
     def randomizeDigimonMovesets(self,
                                  rom_data: bytearray):
+        randomize_movesets = self.config_manager.get("RANDOMIZE_MOVESETS", RandomizeMovesets.UNCHANGED)
+
+        if(randomize_movesets == RandomizeMovesets.UNCHANGED):
+            # check for guaranteeBasicMove is done inside the function
+            self.guaranteeBasicMove(rom_data)
+            return
+        
+        learned_moves_pool = copy.deepcopy(self.moveDataArray[:196])
+        signature_moves_pool = copy.deepcopy(self.moveDataArray[196:503])
+        if(randomize_movesets == RandomizeMovesets.RANDOM_SPECIES_BIAS):
+            # placeholder
+            return
+
+
 
         return
         
@@ -802,6 +816,7 @@ class Randomizer:
             
             # set first move of all digimon to Charge (id = 0)
             for digimon_id in self.baseDigimonInfo.keys():
+                self.baseDigimonInfo[digimon_id].move_1 = 0
                 utils.writeRomBytes(rom_data, 0, self.baseDigimonInfo[digimon_id].offset + 0x30, 2)
 
             self.logger.info(f"Changed Charge to 8 base power and 0 MP")
