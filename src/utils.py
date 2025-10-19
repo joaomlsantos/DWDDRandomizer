@@ -484,6 +484,12 @@ def checkAptitudeDeadlockTuple(conditions_evo, aptitude: int):
     return log_val
 
 
+def filterMovesByLevel(move: model.MoveData,
+                       movepool: List[model.MoveData]) -> List[model.MoveData]:
+    # the level range should be configurable
+    filtered_movepool = [m for m in movepool if (m.level_learned >= move.level_learned - 5 and m.level_learned <= move.level_learned + 5)]
+
+    return filtered_movepool
     
 
 

@@ -8,6 +8,7 @@ import numpy as np
 import copy
 from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeMovesets, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
+from tabulate import tabulate
 
 
 #random.seed(1)
@@ -178,11 +179,9 @@ class Randomizer:
 
         if(target_rom_data is None):
             target_rom_data = self.rom_data
-        
-        curEnemyDigimonInfo = self.enemyDigimonInfo
 
         self.rookieResetEvent(target_rom_data)
-        curEnemyDigimonInfo = self.randomizeAreaEncounters(target_rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
+        self.randomizeAreaEncounters(target_rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
         self.nerfFirstBoss(target_rom_data)
         self.randomizeOverworldItems(target_rom_data)
 
@@ -212,7 +211,7 @@ class Randomizer:
             self.randomizeDnaDigivolutionConditionsOnly(target_rom_data)  # similar to above, only triggers if randomize dna evos not applied
         '''
 
-        self.expPatchFlat(target_rom_data, curEnemyDigimonInfo)
+        self.expPatchFlat(target_rom_data)
 
     
     def randomizeStarters(self, 
@@ -304,12 +303,12 @@ class Randomizer:
 
     
     def randomizeAreaEncounters(self, 
-                                rom_data: bytearray) -> dict[int, model.EnemyDataDigimon]:
+                                rom_data: bytearray):
         
-        updatedEnemyDigimonInfo = copy.deepcopy(self.enemyDigimonInfo)
+        previousEnemyDigimonInfo = copy.deepcopy(self.enemyDigimonInfo)
 
         if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") == RandomizeWildEncounters.UNCHANGED):
-            return updatedEnemyDigimonInfo
+            return
         
         offset_start = constants.AREA_ENCOUNTER_OFFSETS[self.version][0]
         offset_end = constants.AREA_ENCOUNTER_OFFSETS[self.version][1]
@@ -373,14 +372,23 @@ class Randomizer:
 
 
                 # change enemy stats to match the previous digimon's level
-                prev_digimon_data = self.enemyDigimonInfo[cur_digimon_id]
+                # compare to previousEnemyDigimonInfo in order to maintain coherency w previous data
+                prev_digimon_data = previousEnemyDigimonInfo[cur_digimon_id]
                 encounter_level = prev_digimon_data.level
 
                 base_digimon_leveled = utils.generateLvlupStats(self.lvlupTypeTable, self.baseDigimonInfo[randomized_digimon_id], encounter_level, self.config_manager.get("AREA_ENCOUNTERS_STATS"))
                 enemy_digimon_offset = self.enemyDigimonInfo[randomized_digimon_id].offset
 
+                # update stats
+                enemy_digimon_to_update = self.enemyDigimonInfo[randomized_digimon_id]
+                enemy_digimon_to_update.level = base_digimon_leveled.level
+                enemy_digimon_to_update.hp = base_digimon_leveled.hp
+                enemy_digimon_to_update.attack = base_digimon_leveled.attack
+                enemy_digimon_to_update.defense = base_digimon_leveled.defense
+                enemy_digimon_to_update.spirit = base_digimon_leveled.spirit
+                enemy_digimon_to_update.speed = base_digimon_leveled.speed
 
-                # the following does NOT change self.enemyDigimonInfo; this is on purpose
+                
                 # we do not write generated MP since enemy MP is always FF FF
                 utils.writeRomBytes(rom_data, base_digimon_leveled.level, enemy_digimon_offset+2, 1)    # write new level to rom
                 utils.writeRomBytes(rom_data, base_digimon_leveled.hp, enemy_digimon_offset+4, 2)    # write new hp
@@ -390,16 +398,6 @@ class Randomizer:
                 utils.writeRomBytes(rom_data, base_digimon_leveled.speed, enemy_digimon_offset+0x10, 2)    # write new speed
 
 
-                # this updates a deepcopy of self.enemyDigimonInfo; needed to patch the exp afterwards
-                enemy_digimon_to_update = updatedEnemyDigimonInfo[randomized_digimon_id]
-                enemy_digimon_to_update.level = base_digimon_leveled.level
-                enemy_digimon_to_update.hp = base_digimon_leveled.hp
-                enemy_digimon_to_update.attack = base_digimon_leveled.attack
-                enemy_digimon_to_update.defense = base_digimon_leveled.defense
-                enemy_digimon_to_update.spirit = base_digimon_leveled.spirit
-                enemy_digimon_to_update.speed = base_digimon_leveled.speed
-
-
                 cur_offset += 24        # skip 24 bytes to get next encounter
                 cur_digimon_id = int.from_bytes(rom_data[cur_offset:cur_offset+2], byteorder="little")
 
@@ -407,14 +405,12 @@ class Randomizer:
             area_offset += 0x200
             area_i += 1
 
-        return updatedEnemyDigimonInfo
 
 
 
 
     # patches wild encounters only; tamer digimon are not changed
-    # receives custom curEnemyDigimonInfo since the randomizer's own enemyDigimonInfo is not changed during randomization
-    def expPatchFlat(self, rom_data: bytearray, curEnemyDigimonInfo: dict[int, model.EnemyDataDigimon]):
+    def expPatchFlat(self, rom_data: bytearray):
 
         exp_yield_opt = self.config_manager.get("APPLY_EXP_PATCH_FLAT")
         if exp_yield_opt == ExpYieldConfig.UNCHANGED:
@@ -433,7 +429,7 @@ class Randomizer:
         # will change to divide by 14 (7*2) if exp reward is too huge afterwards
         for stage in constants.DIGIMON_IDS:
             for digimon_id in constants.DIGIMON_IDS[stage]:
-                enemy_digimon = curEnemyDigimonInfo[constants.DIGIMON_IDS[stage][digimon_id]]
+                enemy_digimon = self.enemyDigimonInfo[constants.DIGIMON_IDS[stage][digimon_id]]
                 new_exp_yield = round((stage_exp_ref[stage] * enemy_digimon.level) / exp_denominator)
                 enemy_digimon.updateExpYield(new_exp_yield)
 
@@ -541,7 +537,7 @@ class Randomizer:
 
                 digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"ID_{digimon_id}")
 
-                self.logger.info(f"{digimon_name}: {prev_species.name} -> {new_species.name}")
+                self.logger.info(f"{digimon_name}: {model.Species(prev_species).name} -> {new_species.name}")
 
                 # overwrite species in baseDigimonInfo to propagate for other modules
                 self.baseDigimonInfo[digimon_id].species = new_species
@@ -782,21 +778,117 @@ class Randomizer:
     def randomizeDigimonMovesets(self,
                                  rom_data: bytearray):
         randomize_movesets = self.config_manager.get("RANDOMIZE_MOVESETS", RandomizeMovesets.UNCHANGED)
+        MOVESET_SPECIES_BIAS = 0.8
+
 
         if(randomize_movesets == RandomizeMovesets.UNCHANGED):
-            # check for guaranteeBasicMove is done inside the function
-            self.guaranteeBasicMove(rom_data)
+            # check for guaranteeBasicMove is done inside the function as it returns immediately if setting is UNCHANGED
+            if(self.config_manager.get("MOVESETS_GUARANTEE_BASIC_MOVE", False)):
+                self.guaranteeBasicMove(rom_data)
             return
         
         learned_moves_pool = copy.deepcopy(self.moveDataArray[:196])
         signature_moves_pool = copy.deepcopy(self.moveDataArray[196:503])
-        if(randomize_movesets == RandomizeMovesets.RANDOM_SPECIES_BIAS):
-            # placeholder
-            return
+
+        target_regular_moves_pool = [] + learned_moves_pool
+        target_signature_moves_pool = [] + signature_moves_pool
+
+        moveset_level_bias = self.config_manager.get("MOVESETS_LEVEL_BIAS", False)
 
 
 
-        return
+        # add signature moves to regular moves pool
+        if(self.config_manager.get("MOVESETS_SIGNATURE_MOVES_POOL", False)):
+            target_regular_moves_pool += signature_moves_pool
+
+        
+            
+        # randomize digimon movesets; only randomize valid base digimon ids since we're replacing movesets on the enemies as well
+
+        for digimon_id in constants.DIGIMON_ID_TO_STR.keys():
+            current_regular_moves_pool = copy.deepcopy(target_regular_moves_pool)
+            digimon_moves = self.baseDigimonInfo[digimon_id].getRegularMoves()
+            current_randomized_regular_moves = []
+            for move_id in digimon_moves:
+
+                possible_movepool = list(set(current_regular_moves_pool).difference(current_randomized_regular_moves))  # do not repeat moves
+    
+                if(moveset_level_bias):     # filter by level
+                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool (move is still randomized into a legitimate one)
+                        previous_move = self.moveDataArray[move_id]
+                        possible_movepool = utils.filterMovesByLevel(previous_move, possible_movepool)
+
+
+                if(randomize_movesets == RandomizeMovesets.RANDOM_SPECIES_BIAS):
+                    probability_array = []
+                    cur_digimon_element = model.ELEMENTAL_RESISTANCES.get(self.baseDigimonInfo[digimon_id].species, None)
+                    total_matching_moves = sum(move.element == cur_digimon_element for move in possible_movepool)
+                    if(total_matching_moves > 0):
+                        for m in possible_movepool:
+                            if(m.element == cur_digimon_element):
+                                probability_array.append(MOVESET_SPECIES_BIAS / total_matching_moves)
+                            else:
+                                probability_array.append((1 - MOVESET_SPECIES_BIAS) / (len(possible_movepool) - total_matching_moves))
+                        current_randomized_regular_moves.append(random.choices(possible_movepool, weights=probability_array, k=1)[0])
+                    else:
+                        current_randomized_regular_moves.append(random.choice(possible_movepool))
+
+                if(randomize_movesets == RandomizeMovesets.RANDOM_COMPLETELY):
+                    current_randomized_regular_moves.append(random.choice(possible_movepool))
+            
+            # randomize signature move
+            if(randomize_movesets == RandomizeMovesets.RANDOM_SPECIES_BIAS):
+                probability_array = []
+                cur_digimon_element = model.ELEMENTAL_RESISTANCES.get(self.baseDigimonInfo[digimon_id].species, None)
+                total_matching_moves = sum(move.element == cur_digimon_element for move in target_signature_moves_pool)
+                if(total_matching_moves > 0):
+                    for m in target_signature_moves_pool:
+                        if(m.element == cur_digimon_element):
+                            probability_array.append(MOVESET_SPECIES_BIAS / total_matching_moves)
+                        else:
+                            probability_array.append((1 - MOVESET_SPECIES_BIAS) / (len(target_signature_moves_pool) - total_matching_moves))
+                    current_signature_move = random.choices(target_signature_moves_pool, weights=probability_array, k=1)[0]
+                else:
+                    current_signature_move = random.choice(target_signature_moves_pool)
+
+            if(randomize_movesets == RandomizeMovesets.RANDOM_COMPLETELY):
+                current_signature_move = random.choice(target_signature_moves_pool)
+
+            # update base digimon moves and enemy digimon moves
+            self.baseDigimonInfo[digimon_id].setRegularMoves([m.id for m in current_randomized_regular_moves])
+            self.enemyDigimonInfo[digimon_id].setRegularMoves([m.id for m in current_randomized_regular_moves])
+            move_offset = 0x30
+            for regular_move in current_randomized_regular_moves:        # we can do this since moves start at 0x30 for both base digimon and enemy digimon
+                utils.writeRomBytes(rom_data, regular_move.id, self.baseDigimonInfo[digimon_id].offset + move_offset, 2)
+                utils.writeRomBytes(rom_data, regular_move.id, self.enemyDigimonInfo[digimon_id].offset + move_offset, 2)
+                move_offset += 0x2
+
+            # update signature moves for both as well
+            self.baseDigimonInfo[digimon_id].move_signature = current_signature_move.id
+            self.enemyDigimonInfo[digimon_id].move_signature = current_signature_move.id
+            utils.writeRomBytes(rom_data, current_signature_move.id, self.baseDigimonInfo[digimon_id].offset + 0x2e, 2)
+            utils.writeRomBytes(rom_data, current_signature_move.id, self.enemyDigimonInfo[digimon_id].offset + 0x2e, 2)
+
+
+        
+        if(self.config_manager.get("MOVESETS_GUARANTEE_BASIC_MOVE", False)):
+            self.guaranteeBasicMove(rom_data)
+
+        # print logs
+        self.logger.info("\n==================== MOVESETS ====================")
+        updated_move_table = []
+
+        for digimon_id in constants.DIGIMON_ID_TO_STR.keys():
+            cur_digimon_basedata = self.baseDigimonInfo[digimon_id]
+            cur_digimon_log = []
+            cur_digimon_log.append(constants.DIGIMON_ID_TO_STR[digimon_id])
+            for move_id in cur_digimon_basedata.getRegularMoves():
+                cur_digimon_log.append(constants.MOVE_ARRAY_STR[move_id] if move_id < len(constants.MOVE_ARRAY_STR) else "-")
+            cur_digimon_log.append(constants.MOVE_ARRAY_STR[cur_digimon_basedata.move_signature] if cur_digimon_basedata.move_signature < len(constants.MOVE_ARRAY_STR) else "-")
+        
+        log_table = tabulate(updated_move_table, headers=["Digimon", "Move 1", "Move 2", "Move 3", "Move 4", "Signature Move"])
+        self.logger.info(f"\n{log_table}")
+
         
 
     def guaranteeBasicMove(self,
@@ -812,12 +904,16 @@ class Randomizer:
 
             # write move Charge to rom
             utils.writeRomBytes(rom_data, move_charge.primary_value, move_charge.offset + 8, 2)
-            utils.writeRomBytes(rom_data, move_charge.mp_cost, move_charge + 2, 2)
+            utils.writeRomBytes(rom_data, move_charge.mp_cost, move_charge.offset + 2, 2)
             
-            # set first move of all digimon to Charge (id = 0)
+            # set first move of all base digimon and enemy digimon to Charge (id = 0)
             for digimon_id in self.baseDigimonInfo.keys():
                 self.baseDigimonInfo[digimon_id].move_1 = 0
                 utils.writeRomBytes(rom_data, 0, self.baseDigimonInfo[digimon_id].offset + 0x30, 2)
+            for digimon_id in self.enemyDigimonInfo.keys():
+                self.enemyDigimonInfo[digimon_id].move_1 = 0
+                utils.writeRomBytes(rom_data, 0, self.enemyDigimonInfo[digimon_id].offset + 0x30, 2)
+
 
             self.logger.info(f"Changed Charge to 8 base power and 0 MP")
             self.logger.info(f"Set Charge as first move for all digimon")

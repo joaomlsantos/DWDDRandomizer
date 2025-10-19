@@ -221,7 +221,7 @@ class BaseDataDigimon:
             return None
         
 
-    def getBaseStats(self):
+    def getBaseStats(self) -> List[int]:
         return [self.hp,
                 self.mp,
                 self.attack,
@@ -244,6 +244,17 @@ class BaseDataDigimon:
             setattr(self, attr, stat_attrs[i])
 
 
+    def getRegularMoves(self) -> List[int]:
+        return [self.move_1, self.move_2, self.move_3, self.move_4]
+    
+    def setRegularMoves(self, move_array: List[int]):
+        move_attrs = ["move_1", "move_2", "move_3", "move_4"]
+
+        for i, attr in enumerate(move_attrs):
+            # skip value if -1: this is used to skip certain base stat values that are already set
+            if(move_array[i] == -1):
+                continue
+            setattr(self, attr, move_array[i])
 
 
 
@@ -394,6 +405,15 @@ class EnemyDataDigimon:
                 continue
             setattr(self, attr, resistance_array[i])
 
+
+    def setRegularMoves(self, move_array: List[int]):
+        move_attrs = ["move_1", "move_2", "move_3", "move_4"]
+
+        for i, attr in enumerate(move_attrs):
+            # skip value if -1: this is used to skip certain base stat values that are already set
+            if(move_array[i] == -1):
+                continue
+            setattr(self, attr, move_array[i])
 
 
 class FarmTerrain:

@@ -175,6 +175,24 @@ def enable_buttons():
     species_random_rb.configure(state="normal")
     speciesAllowUnknownCheckbox.configure(state="normal")
 
+    # Randomize elemental resistances
+    elemental_res_unchanged_rb.configure(state="normal")
+    elemental_res_shuffle_rb.configure(state="normal")
+    elemental_res_randomize_rb.configure(state="normal")
+    elementalResKeepCoherenceCheckbox.configure(state="normal")
+
+    # Randomize base stats
+    base_stats_unchanged_rb.configure(state="normal")
+    base_stats_shuffle_rb.configure(state="normal")
+    base_stats_random_sane_rb.configure(state="normal")
+    base_stats_random_full_rb.configure(state="normal")
+    base_stats_bias_type_cb.configure(state="normal")
+    
+    # Randomize stat type
+    digimon_type_unchanged_rb.configure(state="normal")
+    digimon_type_randomize_rb.configure(state="normal")
+    
+
     # Randomize movesets
     movesets_unchanged_rb.configure(state="normal")
     movesets_randomize_same_species_rb.configure(state="normal")
@@ -889,10 +907,10 @@ digimon_type_main_frame = ttk.Frame(digimon_type_frame)
 digimon_type_main_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 digimon_type_option_var = tk.IntVar(value=RandomizeDigimonStatType.UNCHANGED.value)
-digimon_type_unchanged_rb = tk.Radiobutton(digimon_type_main_frame, text="Unchanged", variable=digimon_type_option_var, value=RandomizeDigimonStatType.UNCHANGED, state="disabled")
+digimon_type_unchanged_rb = tk.Radiobutton(digimon_type_main_frame, text="Unchanged", variable=digimon_type_option_var, value=RandomizeDigimonStatType.UNCHANGED.value, state="disabled")
 digimon_type_unchanged_rb.pack(anchor="w")
 
-digimon_type_randomize_rb = tk.Radiobutton(digimon_type_main_frame, text="Random", variable=digimon_type_option_var, value=RandomizeDigimonStatType.RANDOMIZE, state="disabled")
+digimon_type_randomize_rb = tk.Radiobutton(digimon_type_main_frame, text="Random", variable=digimon_type_option_var, value=RandomizeDigimonStatType.RANDOMIZE.value, state="disabled")
 digimon_type_randomize_tooltip = CreateToolTip(digimon_type_randomize_rb, "Randomizes Digimon's StatType (Balance, Attacker, Tank, etc).\nThis affects stat growths (e.g. Attacker digimon typically have higher ATK stat gains upon levelling up).")
 digimon_type_randomize_rb.pack(anchor="w")
 
@@ -928,18 +946,18 @@ movesets_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
 movesets_level_bias_var = tk.BooleanVar(value=False)
 movesetsLevelBiasCheckbox = tk.Checkbutton(movesets_sub_frame, text="Moveset Level Bias", variable=movesets_level_bias_var, state="disabled")
 movesetsLevelBiasCheckbox.pack(anchor="w")
-movesetsLevelBiasTooltip = CreateToolTip(movesetsLevelBiasCheckbox, "When randomizing Digimon movesets, each new move will be learned at a level close to the original move's level (within +- 5 levels, by default).\nE.g. a digimon that originally learned Little Blizzard (lvl 10) will have it replaced by a move learned between levels 5-15.")
+movesetsLevelBiasTooltip = CreateToolTip(movesetsLevelBiasCheckbox, "When randomizing Digimon movesets, each new move will be learned at a level close to the original move's level (within +- 5 levels, by default).\nE.g. a digimon that originally learned Little Blizzard (lvl 10) will have it replaced by a move learned between levels 5-15.\nThis setting is not compatible with \"Add Signature Moves To Random Pool\".")
 
 movesets_signature_moves_var = tk.BooleanVar(value=False)
 movesetsSignatureMovesCheckbox = tk.Checkbutton(movesets_sub_frame, text="Add Signature Moves To Random Pool", variable=movesets_signature_moves_var, state="disabled")
 movesetsSignatureMovesCheckbox.pack(anchor="w")
-movesetsSignatureMovesCheckbox = CreateToolTip(movesetsSignatureMovesCheckbox, "Adds the exclusive signature move of each digimon to the general moveset randomization pool.\nBy default, learned moves and signature moves are randomized separately, as signature moves are always learned at lvl 1.\nE.g. with this option enabled, a digimon could have up to four signature moves at lvl 1 (depending on the randomization result).")
+movesetsSignatureMovesTooltip = CreateToolTip(movesetsSignatureMovesCheckbox, "Adds the exclusive signature move of each digimon to the general moveset randomization pool.\nBy default, learned moves and signature moves are randomized separately, as signature moves are always learned at lvl 1.\nE.g. with this option enabled, a digimon could have up to four signature moves at lvl 1 (depending on the randomization result).\nThis setting is not compatible with \"Moveset Level Bias\".")
 
 
 movesets_guarantee_basic_move_var = tk.BooleanVar(value=False)
 movesetsGuaranteeBasicMoveCheckbox = tk.Checkbutton(movesets_sub_frame, text="Guarantee Basic Move", variable=movesets_guarantee_basic_move_var, state="disabled")
 movesetsGuaranteeBasicMoveCheckbox.pack(anchor="w")
-movesetsGuaranteeBasicMoveCheckbox = CreateToolTip(movesetsGuaranteeBasicMoveCheckbox, "Forces the first move of each digimon to be the move Charge, which is changed to have 8 base power and cost 0 MP.\nThis ensures that all digimon have access to at least one basic move that they can use.\nIf this option is checked without randomizing the movesets, then the first move of all digimon will be replaced by Charge.")
+movesetsGuaranteeBasicMoveTooltip = CreateToolTip(movesetsGuaranteeBasicMoveCheckbox, "Forces the first move of each digimon to be the move Charge, which is changed to have 8 base power and cost 0 MP.\nThis ensures that all digimon have access to at least one basic move that they can use.\nIf this option is checked without randomizing the movesets, then the first move of all digimon will be replaced by Charge.")
 
 
 
