@@ -374,7 +374,7 @@ def generateConditions(s: int, max_conditions: int = 3):
 
 
 
-def generateBiasedConditions(stage_id: int, bias: float, species: List[int], max_conditions: int = 3):
+def generateBiasedConditions(stage_id: int, bias: float, species: List[model.Species], max_conditions: int = 3):
     '''
     0x2: "DRAGON EXP",                      HOLY = 0
     0x3: "BEAST EXP",                       DARK = 1
@@ -389,7 +389,7 @@ def generateBiasedConditions(stage_id: int, bias: float, species: List[int], max
     stage = constants.STAGE_NAMES[stage_id]
     digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x12]    # this should be a constant/setting i think
     species_condition_mapping = {0: 0x9, 1: 0x8, 2: 0x2, 3: 0x3, 4: 0x5, 5: 0x7, 6: 0x4, 7: 0x6}
-    species_exp = [species_condition_mapping[x] for x in species]
+    species_exp = [species_condition_mapping[x.value] for x in species if x.value in species_condition_mapping.keys()]
     other_species_total = len(species_condition_mapping) - len(species)
     non_species_exp_conditions_count = len(digivolution_conditions_pool) - other_species_total      # assuming 7 can be a fixed number since 8 species minus the target one
 

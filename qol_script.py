@@ -885,6 +885,7 @@ class Randomizer:
             for move_id in cur_digimon_basedata.getRegularMoves():
                 cur_digimon_log.append(constants.MOVE_ARRAY_STR[move_id] if move_id < len(constants.MOVE_ARRAY_STR) else "-")
             cur_digimon_log.append(constants.MOVE_ARRAY_STR[cur_digimon_basedata.move_signature] if cur_digimon_basedata.move_signature < len(constants.MOVE_ARRAY_STR) else "-")
+            updated_move_table.append(cur_digimon_log)
         
         log_table = tabulate(updated_move_table, headers=["Digimon", "Move 1", "Move 2", "Move 3", "Move 4", "Signature Move"])
         self.logger.info(f"\n{log_table}")
