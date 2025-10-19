@@ -87,6 +87,8 @@ def execute_rom_changes(save_path):
 
         "RANDOMIZE_MOVESETS": RandomizeMovesets(movesets_option_var.get()),
         "MOVESETS_LEVEL_BIAS": movesets_level_bias_var,
+        "REGULAR_MOVE_POWER_BIAS": movesets_power_bias_var,
+        "SIGNATURE_MOVE_POWER_BIAS": movesets_signature_power_bias_var,
         "MOVESETS_SIGNATURE_MOVES_POOL": movesets_signature_moves_var,
         "MOVESETS_GUARANTEE_BASIC_MOVE": movesets_guarantee_basic_move_var,
 
@@ -198,6 +200,8 @@ def enable_buttons():
     movesets_randomize_same_species_rb.configure(state="normal")
     movesets_randomize_rb.configure(state="normal")
     movesetsLevelBiasCheckbox.configure(state="normal")
+    movesetsPowerBiasCheckbox.configure(state="normal")
+    movesetsSignaturePowerBiasCheckbox.configure(state="normal")
     movesetsSignatureMovesCheckbox.configure(state="normal")
     movesetsGuaranteeBasicMoveCheckbox.configure(state="normal")
 
@@ -944,14 +948,24 @@ movesets_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 
 movesets_level_bias_var = tk.BooleanVar(value=False)
-movesetsLevelBiasCheckbox = tk.Checkbutton(movesets_sub_frame, text="Moveset Level Bias", variable=movesets_level_bias_var, state="disabled")
+movesetsLevelBiasCheckbox = tk.Checkbutton(movesets_sub_frame, text="Move Level Bias", variable=movesets_level_bias_var, state="disabled")
 movesetsLevelBiasCheckbox.pack(anchor="w")
-movesetsLevelBiasTooltip = CreateToolTip(movesetsLevelBiasCheckbox, "When randomizing Digimon movesets, each new move will be learned at a level close to the original move's level (within +- 5 levels, by default).\nE.g. a digimon that originally learned Little Blizzard (lvl 10) will have it replaced by a move learned between levels 5-15.\nThis setting is not compatible with \"Add Signature Moves To Random Pool\".")
+movesetsLevelBiasTooltip = CreateToolTip(movesetsLevelBiasCheckbox, "When randomizing Digimon movesets, each new move will be learned at a level close to the original move's level (within +- 5 levels, by default).\nE.g. a digimon that originally learned Little Blizzard (lvl 10) will have it replaced by a move learned between levels 5-15.\nThis setting is not recommended to use with \"Add Signature Moves To Random Pool\", as signature moves are learned at lvl 1 (thus only regular moves learned near lvl 1 would be changed).")
+
+movesets_power_bias_var = tk.BooleanVar(value=False)
+movesetsPowerBiasCheckbox = tk.Checkbutton(movesets_sub_frame, text="Regular Move Power Bias", variable=movesets_power_bias_var, state="disabled")
+movesetsPowerBiasCheckbox.pack(anchor="w")
+movesetsPowerBiasTooltip = CreateToolTip(movesetsPowerBiasCheckbox, "When randomizing Digimon movesets, each regular move will be replaced by a move with a similar power value to the original (within +- 8 power, by default).\nE.g. a digimon that originally learned Little Blizzard (28 power) will have it replaced by a move that has between 20-36 power whenever possible (this includes signature moves if \"Add Signature Moves To Regular Move Pool\" is enabled).")
+
+movesets_signature_power_bias_var = tk.BooleanVar(value=False)
+movesetsSignaturePowerBiasCheckbox = tk.Checkbutton(movesets_sub_frame, text="Signature Move Power Bias", variable=movesets_signature_power_bias_var, state="disabled")
+movesetsSignaturePowerBiasCheckbox.pack(anchor="w")
+movesetsSignaturePowerBiasTooltip = CreateToolTip(movesetsSignaturePowerBiasCheckbox, "When randomizing Digimon movesets, each signature move will be replaced by another signature move with a similar power value to the original (within +- 8 power, by default).\nE.g. a digimon that originally had Bantyo Blade (145 power) as its signature move will have it replaced by a move that has between 137-153 power whenever possible.")
 
 movesets_signature_moves_var = tk.BooleanVar(value=False)
-movesetsSignatureMovesCheckbox = tk.Checkbutton(movesets_sub_frame, text="Add Signature Moves To Random Pool", variable=movesets_signature_moves_var, state="disabled")
+movesetsSignatureMovesCheckbox = tk.Checkbutton(movesets_sub_frame, text="Add Signature Moves To Regular Move Pool", variable=movesets_signature_moves_var, state="disabled")
 movesetsSignatureMovesCheckbox.pack(anchor="w")
-movesetsSignatureMovesTooltip = CreateToolTip(movesetsSignatureMovesCheckbox, "Adds the exclusive signature move of each digimon to the general moveset randomization pool.\nBy default, learned moves and signature moves are randomized separately, as signature moves are always learned at lvl 1.\nE.g. with this option enabled, a digimon could have up to four signature moves at lvl 1 (depending on the randomization result).\nThis setting is not compatible with \"Moveset Level Bias\".")
+movesetsSignatureMovesTooltip = CreateToolTip(movesetsSignatureMovesCheckbox, "Adds the exclusive signature move of each digimon to the regular moveset randomization pool.\nBy default, learned moves and signature moves are randomized separately, as signature moves are always learned at lvl 1.\nE.g. with this option enabled, a digimon could have up to four signature moves at lvl 1 (depending on the randomization result).\nThis setting is not recommended to use with \"Move Level Bias\", as signature moves are learned at lvl 1 (thus only regular moves learned near lvl 1 would be changed).")
 
 
 movesets_guarantee_basic_move_var = tk.BooleanVar(value=False)

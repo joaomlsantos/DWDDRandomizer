@@ -2,6 +2,7 @@ import os
 import binascii
 import logging
 import random
+import time
 from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
@@ -778,7 +779,7 @@ class Randomizer:
     def randomizeDigimonMovesets(self,
                                  rom_data: bytearray):
         randomize_movesets = self.config_manager.get("RANDOMIZE_MOVESETS", RandomizeMovesets.UNCHANGED)
-        MOVESET_SPECIES_BIAS = 0.8
+        MOVESET_SPECIES_BIAS = 0.9
 
 
         if(randomize_movesets == RandomizeMovesets.UNCHANGED):
@@ -794,7 +795,8 @@ class Randomizer:
         target_signature_moves_pool = [] + signature_moves_pool
 
         moveset_level_bias = self.config_manager.get("MOVESETS_LEVEL_BIAS", False)
-
+        regular_move_power_bias = self.config_manager.get("REGULAR_MOVE_POWER_BIAS", False)
+        signature_move_power_bias = self.config_manager.get("SIGNATURE_MOVE_POWER_BIAS", False)
 
 
         # add signature moves to regular moves pool
@@ -806,7 +808,8 @@ class Randomizer:
         # randomize digimon movesets; only randomize valid base digimon ids since we're replacing movesets on the enemies as well
 
         for digimon_id in constants.DIGIMON_ID_TO_STR.keys():
-            current_regular_moves_pool = copy.deepcopy(target_regular_moves_pool)
+            
+            current_regular_moves_pool = list(target_regular_moves_pool)
             digimon_moves = self.baseDigimonInfo[digimon_id].getRegularMoves()
             current_randomized_regular_moves = []
             for move_id in digimon_moves:
@@ -816,12 +819,19 @@ class Randomizer:
                 if(moveset_level_bias):     # filter by level
                     if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool (move is still randomized into a legitimate one)
                         previous_move = self.moveDataArray[move_id]
+                        # if no moves pass the filter, filterMovesByLevel() returns the received movepool
                         possible_movepool = utils.filterMovesByLevel(previous_move, possible_movepool)
 
+                if(regular_move_power_bias):    # filter by move power
+                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool (move is still randomized into a legitimate one)
+                        previous_move = self.moveDataArray[move_id]
+                        # if no moves pass the filter, filterMovesByLevel() returns the received movepool
+                        possible_movepool = utils.filterMovesByPower(previous_move, possible_movepool)
+                    
 
                 if(randomize_movesets == RandomizeMovesets.RANDOM_SPECIES_BIAS):
                     probability_array = []
-                    cur_digimon_element = model.ELEMENTAL_RESISTANCES.get(self.baseDigimonInfo[digimon_id].species, None)
+                    cur_digimon_element = model.ELEMENTAL_RESISTANCES.get(model.Species(self.baseDigimonInfo[digimon_id].species), None)
                     total_matching_moves = sum(move.element == cur_digimon_element for move in possible_movepool)
                     if(total_matching_moves > 0):
                         for m in possible_movepool:
@@ -835,24 +845,34 @@ class Randomizer:
 
                 if(randomize_movesets == RandomizeMovesets.RANDOM_COMPLETELY):
                     current_randomized_regular_moves.append(random.choice(possible_movepool))
-            
+
             # randomize signature move
+
+            prev_signature_move_id = self.baseDigimonInfo[digimon_id].move_signature
+            possible_signature_movepool = list(set(target_signature_moves_pool).difference(current_randomized_regular_moves))  # do not repeat moves
+
+            if(signature_move_power_bias):    # filter by move power
+                if(prev_signature_move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool (move is still randomized into a legitimate one)
+                    previous_move = self.moveDataArray[prev_signature_move_id]
+                    # if no moves pass the filter, filterMovesByLevel() returns the received movepool
+                    possible_movepool = utils.filterMovesByPower(previous_move, possible_signature_movepool)
+
             if(randomize_movesets == RandomizeMovesets.RANDOM_SPECIES_BIAS):
                 probability_array = []
                 cur_digimon_element = model.ELEMENTAL_RESISTANCES.get(self.baseDigimonInfo[digimon_id].species, None)
-                total_matching_moves = sum(move.element == cur_digimon_element for move in target_signature_moves_pool)
+                total_matching_moves = sum(move.element == cur_digimon_element for move in possible_signature_movepool)
                 if(total_matching_moves > 0):
-                    for m in target_signature_moves_pool:
+                    for m in possible_signature_movepool:
                         if(m.element == cur_digimon_element):
                             probability_array.append(MOVESET_SPECIES_BIAS / total_matching_moves)
                         else:
-                            probability_array.append((1 - MOVESET_SPECIES_BIAS) / (len(target_signature_moves_pool) - total_matching_moves))
-                    current_signature_move = random.choices(target_signature_moves_pool, weights=probability_array, k=1)[0]
+                            probability_array.append((1 - MOVESET_SPECIES_BIAS) / (len(possible_signature_movepool) - total_matching_moves))
+                    current_signature_move = random.choices(possible_signature_movepool, weights=probability_array, k=1)[0]
                 else:
-                    current_signature_move = random.choice(target_signature_moves_pool)
+                    current_signature_move = random.choice(possible_signature_movepool)
 
             if(randomize_movesets == RandomizeMovesets.RANDOM_COMPLETELY):
-                current_signature_move = random.choice(target_signature_moves_pool)
+                current_signature_move = random.choice(possible_signature_movepool)
 
             # update base digimon moves and enemy digimon moves
             self.baseDigimonInfo[digimon_id].setRegularMoves([m.id for m in current_randomized_regular_moves])
@@ -909,9 +929,16 @@ class Randomizer:
             
             # set first move of all base digimon and enemy digimon to Charge (id = 0)
             for digimon_id in self.baseDigimonInfo.keys():
+                if(0x0 in self.baseDigimonInfo[digimon_id].getRegularMoves() + [self.baseDigimonInfo[digimon_id].move_signature]):
+                    # skip if digimon already has Charge in its movepool
+                    continue
                 self.baseDigimonInfo[digimon_id].move_1 = 0
                 utils.writeRomBytes(rom_data, 0, self.baseDigimonInfo[digimon_id].offset + 0x30, 2)
+            
             for digimon_id in self.enemyDigimonInfo.keys():
+                if(0x0 in self.baseDigimonInfo[digimon_id].getRegularMoves() + [self.baseDigimonInfo[digimon_id].move_signature]):
+                    # skip if digimon already has Charge in its movepool
+                    continue
                 self.enemyDigimonInfo[digimon_id].move_1 = 0
                 utils.writeRomBytes(rom_data, 0, self.enemyDigimonInfo[digimon_id].offset + 0x30, 2)
 
