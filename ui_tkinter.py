@@ -4,7 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeMovesets, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType
+from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeMovesets, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeTraits
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -92,6 +92,10 @@ def execute_rom_changes(save_path):
         "MOVESETS_SIGNATURE_MOVES_POOL": movesets_signature_moves_var,
         "MOVESETS_GUARANTEE_BASIC_MOVE": movesets_guarantee_basic_move_var,
 
+        "RANDOMIZE_TRAITS": RandomizeTraits(traits_option_var.get()),
+        "TRAITS_FORCE_FOUR": traits_force_four_var,
+        "TRAITS_ENABLE_UNUSED": traits_enable_unused_var,
+
         "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions(digivolutions_option_var.get()),
         "DIGIVOLUTIONS_SIMILAR_SPECIES": digivolution_similar_species_var,
 
@@ -119,6 +123,7 @@ def execute_rom_changes(save_path):
     app_state.writeLog(save_path)
     app_state.seed = -1
     app_state.target_rom = copy.deepcopy(app_state.current_rom)     # next randomization will be applied to base rom instead of previously randomized rom again
+    app_state.randomizer = Randomizer(app_state.target_rom.version, app_state.target_rom.rom_data, app_state.config_manager, app_state.logger)  # reset randomizer state
     app_state.target_rom.config_manager = app_state.config_manager
     app_state.log_stream.truncate(0)    # reset logger
     app_state.log_stream.seek(0)        # reset logger
@@ -206,6 +211,14 @@ def enable_buttons():
     movesetsGuaranteeBasicMoveCheckbox.configure(state="normal")
 
 
+    # Randomize traits
+    traits_unchanged_rb.configure(state="normal")
+    traits_randomize_same_stage_rb.configure(state="normal")
+    traits_randomize_completely_rb.configure(state="normal")
+    traitsForceFourCheckbox.configure(state="normal")
+    traitsEnableUnusedCheckbox.configure(state="normal")
+
+
     # Randomize digivolutions and conditions
     digivolutions_unchanged_rb.configure(state="normal")
     digivolutions_randomize_rb.configure(state="normal")
@@ -235,7 +248,7 @@ def open_rom():
             app_state.current_rom = DigimonROM(file_path, app_state.config_manager, app_state.logger)
             app_state.target_rom = copy.deepcopy(app_state.current_rom)
             app_state.target_rom.config_manager = app_state.config_manager
-            app_state.randomizer = Randomizer(app_state.current_rom.version, app_state.current_rom.rom_data, app_state.config_manager, app_state.logger)
+            app_state.randomizer = Randomizer(app_state.target_rom.version, app_state.target_rom.rom_data, app_state.config_manager, app_state.logger)
         except ValueError:
             messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
             return
@@ -974,6 +987,44 @@ movesetsGuaranteeBasicMoveCheckbox.pack(anchor="w")
 movesetsGuaranteeBasicMoveTooltip = CreateToolTip(movesetsGuaranteeBasicMoveCheckbox, "Forces the first move of each digimon to be the move Charge, which is changed to have 8 base power and cost 0 MP.\nThis ensures that all digimon have access to at least one basic move that they can use.\nIf this option is checked without randomizing the movesets, then the first move of all digimon will be replaced by Charge.")
 
 
+
+traits_frame = ttk.LabelFrame(base_information_tab, text="Digimon Traits", padding=10)
+traits_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+traits_option_var = tk.IntVar(value=RandomizeTraits.UNCHANGED.value)
+
+traits_radio_frame = ttk.Frame(traits_frame)
+traits_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+
+traits_unchanged_rb = tk.Radiobutton(traits_radio_frame, text="Unchanged", variable=traits_option_var, value=RandomizeTraits.UNCHANGED.value, state="disabled")
+traits_unchanged_rb.pack(anchor="w")
+
+traits_randomize_same_stage_rb = tk.Radiobutton(traits_radio_frame, text="Random (same stages)", variable=traits_option_var, value=RandomizeTraits.RANDOM_STAGE_BIAS.value, state="disabled")
+traits_randomize_same_stage_rb_tooltip = CreateToolTip(traits_randomize_same_stage_rb, "Randomizes each digimon's traits within its own stage group.\nE.g. the trait \"Speed 1\" will only be learnable by in-training digimon, \"Speed 2\" will only be learnable by rookie digimon, etc.")
+traits_randomize_same_stage_rb.pack(anchor="w")
+
+traits_randomize_completely_rb = tk.Radiobutton(traits_radio_frame, text="Random (completely)", variable=traits_option_var, value=RandomizeTraits.RANDOM_COMPLETELY.value, state="disabled")
+traits_randomize_completely_rb_tooltip = CreateToolTip(traits_randomize_completely_rb, "Randomizes each digimon's traits completely.")
+traits_randomize_completely_rb.pack(anchor="w")
+
+
+traits_sub_frame = ttk.Frame(traits_frame)
+traits_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+
+# force 4 traits on every digimon
+
+traits_force_four_var = tk.BooleanVar(value=False)
+traitsForceFourCheckbox = tk.Checkbutton(traits_sub_frame, text="Force Four Traits", variable=traits_force_four_var, state="disabled")
+traitsForceFourCheckbox.pack(anchor="w")
+traitsForceFourTooltip = CreateToolTip(traitsForceFourCheckbox, "Forces every digimon to have 4 traits (+ support trait).\nTypically, In-Training digimon have 1 trait, Rookie and Champion digimon have 2 traits, Ultimate digimon have 3 traits, and Mega digimon have 4 traits.")
+
+# enable unused traits
+traits_enable_unused_var = tk.BooleanVar(value=False)
+traitsEnableUnusedCheckbox = tk.Checkbutton(traits_sub_frame, text="Enable Unused Traits", variable=traits_enable_unused_var, state="disabled")
+traitsEnableUnusedCheckbox.pack(anchor="w")
+traitsEnableUnusedTooltip = CreateToolTip(traitsEnableUnusedCheckbox, "Adds traits that were not used by the game's code to the possible trait pool.\nIf Random (same stages) is set, then these traits will only appear for digimon of the stages Ultimate and Mega.\nThis option is highly experimental and not recommended for proper gameplay.\nThere are a total of 18 unused traits, with descriptions such as:\nFriend Power: Damage done using DigivolveDisk increases by 10%\nDigivolveSoul: Slightly increases Digimon's abrupt evolution\nChildlikeHeart: Slightly increases success rate of farm goods")
 
 
 

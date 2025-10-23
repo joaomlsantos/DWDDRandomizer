@@ -45,6 +45,12 @@ class RandomizeMovesets(Enum):
     RANDOM_COMPLETELY = 2               # randomize completely
 
 
+class RandomizeTraits(Enum):
+    UNCHANGED = 0
+    RANDOM_STAGE_BIAS = 1               # randomize while keeping traits coherent with each stage
+    RANDOM_COMPLETELY = 2               # randomize completely
+
+
 class RandomizeWildEncounters(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE_1_TO_1_SAME_STAGE = 1     # randomize 1-to-1, same stage digimon

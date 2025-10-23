@@ -251,11 +251,10 @@ class BaseDataDigimon:
         move_attrs = ["move_1", "move_2", "move_3", "move_4"]
 
         for i, attr in enumerate(move_attrs):
-            # skip value if -1: this is used to skip certain base stat values that are already set
+            # skip value if -1: this is used to skip certain move values that are already set
             if(move_array[i] == -1):
                 continue
             setattr(self, attr, move_array[i])
-
 
 
     # same order as Element class
@@ -281,7 +280,18 @@ class BaseDataDigimon:
                 continue
             setattr(self, attr, resistance_array[i])
 
+
+    def getRegularTraits(self) -> List[int]:
+        return [self.trait_1, self.trait_2, self.trait_3, self.trait_4]
         
+    def setRegularTraits(self, trait_array: List[int]):
+        trait_attrs = ["trait_1", "trait_2", "trait_3", "trait_4"]
+
+        for i, attr in enumerate(trait_attrs):
+            # skip value if -1: this is used to skip certain trait values that are already set
+            if(trait_array[i] == -1):
+                continue
+            setattr(self, attr, trait_array[i])
 
 
 class EnemyDataDigimon:
@@ -416,6 +426,16 @@ class EnemyDataDigimon:
             setattr(self, attr, move_array[i])
 
 
+    def setRegularTraits(self, trait_array: List[int]):
+        trait_attrs = ["trait_1", "trait_2", "trait_3", "trait_4"]
+
+        for i, attr in enumerate(trait_attrs):
+            # skip value if -1: this is used to skip certain trait values that are already set
+            if(trait_array[i] == -1):
+                continue
+            setattr(self, attr, trait_array[i])
+
+            
 class FarmTerrain:
     offset: int
     id: int

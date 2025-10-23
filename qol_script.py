@@ -7,7 +7,7 @@ from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeMovesets, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeMovesets, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeTraits, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 from tabulate import tabulate
 
@@ -193,6 +193,8 @@ class Randomizer:
         self.randomizeElementalResistances(target_rom_data)
 
         self.randomizeDigimonMovesets(target_rom_data)
+
+        self.randomizeDigimonTraits(target_rom_data)
 
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
@@ -909,6 +911,96 @@ class Randomizer:
         
         log_table = tabulate(updated_move_table, headers=["Digimon", "Move 1", "Move 2", "Move 3", "Move 4", "Signature Move"])
         self.logger.info(f"\n{log_table}")
+
+    
+    def randomizeDigimonTraits(self,
+                               rom_data: bytearray):
+        
+        randomize_traits = self.config_manager.get("RANDOMIZE_TRAITS", RandomizeTraits.UNCHANGED)
+        if(randomize_traits == RandomizeTraits.UNCHANGED):
+            return
+        
+        FORCE_FOUR_TRAITS = self.config_manager.get("TRAITS_FORCE_FOUR", False)
+        ENABLE_UNUSED_TRAITS = self.config_manager.get("TRAITS_ENABLE_UNUSED", False)
+
+        # easier to set as all traits in the beginning
+        all_regular_traits = list(set(sum((constants.TRAITS_REGULAR_BY_STAGE[stage] for stage in constants.STAGE_NAMES), [])))
+        all_support_traits = list(set(sum((constants.TRAITS_SUPPORT_BY_STAGE[stage] for stage in constants.STAGE_NAMES), [])))
+
+        if(ENABLE_UNUSED_TRAITS):
+            # do not need to convert into set here since these are not repeated
+            all_regular_traits += constants.TRAITS_REGULAR_BY_STAGE["OTHER"]
+
+        for digimon_id in constants.DIGIMON_ID_TO_STR.keys():
+            new_traits = []
+            regular_traits_pool = []
+            support_traits_pool = []
+            regular_traits = self.baseDigimonInfo[digimon_id].getRegularTraits()
+
+            if(randomize_traits == RandomizeTraits.RANDOM_STAGE_BIAS):
+                # set regular traits pool as specific for the stage
+                cur_digimon_stage = utils.getDigimonStage(digimon_id)
+                regular_traits_pool = list(constants.TRAITS_REGULAR_BY_STAGE[cur_digimon_stage])
+                support_traits_pool = list(constants.TRAITS_SUPPORT_BY_STAGE[cur_digimon_stage])
+                if(cur_digimon_stage in ["ULTIMATE", "MEGA"] and ENABLE_UNUSED_TRAITS):
+                    # do not need to convert into set here since these are not repeated
+                    regular_traits_pool += constants.TRAITS_REGULAR_BY_STAGE["OTHER"]
+                    
+            if (randomize_traits == RandomizeTraits.RANDOM_COMPLETELY):
+                regular_traits_pool = list(all_regular_traits)
+                support_traits_pool = list(all_support_traits)
+                if(ENABLE_UNUSED_TRAITS):
+                    regular_traits_pool += constants.TRAITS_REGULAR_BY_STAGE["OTHER"]
+
+            
+            for trait_id in regular_traits:
+                # skip trait if force four is disabled and trait is not defined
+                if(trait_id == 0xff and not FORCE_FOUR_TRAITS):
+                    new_traits.append(trait_id)
+                    continue
+
+                # do this w indexes so that we pop the trait each time; otherwise we'd have to cover repeating traits another way
+                new_trait_ix = random.randrange(len(regular_traits_pool))
+                new_traits.append(regular_traits_pool.pop(new_trait_ix))
+
+            # in the case of the support trait we don't need to pop since it's only one
+            new_support_trait = random.choice(support_traits_pool)
+
+
+            # update base digimon traits and enemy digimon traits
+            self.baseDigimonInfo[digimon_id].setRegularTraits(new_traits)
+            self.enemyDigimonInfo[digimon_id].setRegularTraits(new_traits)
+            trait_base_offset = 0x28
+            trait_enemy_offset = 0x26
+            for regular_trait in new_traits:     # distinct writes since base and enemy deal w trait ids differently
+                utils.writeRomBytes(rom_data, regular_trait, self.baseDigimonInfo[digimon_id].offset + trait_base_offset, 1)
+                utils.writeRomBytes(rom_data, regular_trait, self.enemyDigimonInfo[digimon_id].offset + trait_enemy_offset, 2)
+                trait_base_offset += 0x1
+                trait_enemy_offset += 0x2
+
+            # update support traits (only for base digimon since enemy does not have support trait)
+            self.baseDigimonInfo[digimon_id].support_trait = new_support_trait
+            utils.writeRomBytes(rom_data, new_support_trait, self.baseDigimonInfo[digimon_id].offset + 0x2c, 1)
+                
+
+        # print logs
+        self.logger.info("\n==================== TRAITS ====================")
+        updated_trait_table = []
+
+        for digimon_id in constants.DIGIMON_ID_TO_STR.keys():
+            cur_digimon_basedata = self.baseDigimonInfo[digimon_id]
+            cur_digimon_log = []
+            cur_digimon_log.append(constants.DIGIMON_ID_TO_STR[digimon_id])
+            for trait_id in cur_digimon_basedata.getRegularTraits():
+                cur_digimon_log.append(constants.TRAIT_ARRAY_STR[trait_id] if trait_id < len(constants.TRAIT_ARRAY_STR) else "-")
+            cur_digimon_log.append(constants.TRAIT_ARRAY_STR[cur_digimon_basedata.support_trait] if cur_digimon_basedata.support_trait < len(constants.TRAIT_ARRAY_STR) else "-")
+            updated_trait_table.append(cur_digimon_log)
+        
+        log_table = tabulate(updated_trait_table, headers=["Digimon", "Trait 1", "Trait 2", "Trait 3", "Trait 4", "Support Trait"])
+        self.logger.info(f"\n{log_table}")
+            
+
+
 
         
 
