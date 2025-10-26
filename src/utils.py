@@ -109,6 +109,24 @@ def loadEnemyDigimonInfo(version: str,
     return enemy_digimon_dict
 
 
+def loadQuestData(version: str,
+                  rom_data: bytearray):
+    offset_start = constants.QUEST_DATA_OFFSETS[version][0]
+    offset_end = constants.QUEST_DATA_OFFSETS[version][1]
+
+    seek_offset = offset_start
+
+    quest_data_array = []
+
+    while(seek_offset < offset_end):
+        cur_quest_data = rom_data[seek_offset:seek_offset+0x44]
+        cur_quest_obj = model.QuestData(cur_quest_data, seek_offset)
+        quest_data_array.append(cur_quest_obj)
+
+        seek_offset += 0x44
+
+    return quest_data_array
+
 
 def loadMoveData(version: str,
                  rom_data: bytearray):

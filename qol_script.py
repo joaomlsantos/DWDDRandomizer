@@ -170,6 +170,7 @@ class Randomizer:
         self.standardDigivolutions = utils.loadStandardDigivolutions(version, rom_data)
         self.armorDigivolutions = utils.loadArmorDigivolutions(version, rom_data)
         self.dnaDigivolutions, self.dnaConditionsByDigimonId = utils.loadDnaDigivolutions(version, rom_data)
+        self.questDataArray: List[model.QuestData] = utils.loadQuestData(version, rom_data)
         self.moveDataArray: List[model.MoveData] = utils.loadMoveData(version, rom_data)
         self.lvlupTypeTable = utils.loadLvlupTypeTable(version, rom_data)
         self.spriteMapTable = utils.loadSpriteMapTable(version, rom_data)
