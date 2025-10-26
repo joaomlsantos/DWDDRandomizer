@@ -540,6 +540,67 @@ class FarmTerrain:
             return None
 
 
+class QuestData:
+    offset: int
+    unknown_0x0: int
+    quest_stars: int
+    species_center: int
+    unknown_0x6: int
+    unknown_0x8: int
+    pointer_steps_1: int
+    pointer_steps_2: int
+    pointer_steps_3: int
+    pointer_steps_4: int
+    money_reward: int
+    item_reward: int
+    tamerpoints_reward: int
+    questflag_1: int
+    questflag_2: int
+    questflag_3: int
+    questflag_4: int
+    questflag_5: int
+    questgiver_name_pointer: int
+    unknown_0x36: int
+    unlock_condition_numquests: int
+    unlock_condition_questflag: int
+    unlock_condition_tamerpoints: int
+    unlock_condition_online: int
+    unlock_condition_personality: int
+    unknown_0x42: int
+
+
+    def __init__(self, quest_data: bytearray, offset: int):
+        self.offset = offset
+        self.unknown_0x0 = int.from_bytes(quest_data[0:4], byteorder="little")
+        self.quest_stars = quest_data[4]
+        self.species_center = quest_data[5]
+        self.unknown_0x6 = int.from_bytes(quest_data[6:8], byteorder="little")
+        self.unknown_0x8 = int.from_bytes(quest_data[8:0xc], byteorder="little")
+        self.pointer_steps_1 = int.from_bytes(quest_data[0xc:0x10], byteorder="little")
+        self.pointer_steps_2 = int.from_bytes(quest_data[0x10:0x14], byteorder="little")
+        self.pointer_steps_3 = int.from_bytes(quest_data[0x14:0x18], byteorder="little")
+        self.pointer_steps_4 = int.from_bytes(quest_data[0x18:0x1c], byteorder="little")
+        self.money_reward = int.from_bytes(quest_data[0x1c:0x20], byteorder="little")
+        self.item_reward = int.from_bytes(quest_data[0x20:0x24], byteorder="little")
+        self.tamerpoints_reward = int.from_bytes(quest_data[0x24:0x28], byteorder="little")
+        self.questflag_1 = int.from_bytes(quest_data[0x28:0x2a], byteorder="little")
+        self.questflag_2 = int.from_bytes(quest_data[0x2a:0x2c], byteorder="little")
+        self.questflag_3 = int.from_bytes(quest_data[0x2c:0x2e], byteorder="little")
+        self.questflag_4 = int.from_bytes(quest_data[0x2e:0x30], byteorder="little")
+        self.questflag_5 = int.from_bytes(quest_data[0x30:0x32], byteorder="little")
+        self.questgiver_name_pointer = int.from_bytes(quest_data[0x32:0x36], byteorder="little")
+        self.unknown_0x36 = int.from_bytes(quest_data[0x36:0x38], byteorder="little")
+        self.unlock_condition_numquests = int.from_bytes(quest_data[0x38:0x3a], byteorder="little")
+        self.unlock_condition_questflag = int.from_bytes(quest_data[0x3a:0x3c], byteorder="little")
+        self.unlock_condition_tamerpoints = int.from_bytes(quest_data[0x3c:0x3e], byteorder="little")
+        self.unlock_condition_online = int.from_bytes(quest_data[0x3e:0x40], byteorder="little")
+        self.unlock_condition_personality = int.from_bytes(quest_data[0x40:0x42], byteorder="little")
+        self.unknown_0x42 = int.from_bytes(quest_data[0x42:0x44], byteorder="little")
+
+
+
+
+
 
 class StandardDigivolution:
     offset: int
