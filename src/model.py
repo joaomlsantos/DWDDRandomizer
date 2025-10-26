@@ -12,7 +12,40 @@ class Species(Enum):
     MACHINE = 5
     AQUAN = 6
     INSECTPLANT = 7
+    UNKNOWN = 8
 
+class Element(Enum):
+    LIGHT = 0
+    DARK = 1
+    FIRE = 2
+    EARTH = 3
+    WIND = 4
+    STEEL = 5
+    WATER = 6
+    THUNDER = 7
+
+# keeping these as constant dicts in model.py, setting it in constants.py would require constants.py to import model.py
+ELEMENTAL_RESISTANCES = {
+    Species.HOLY: Element.LIGHT,
+    Species.DARK: Element.DARK,
+    Species.DRAGON: Element.FIRE,
+    Species.BEAST: Element.EARTH,
+    Species.BIRD: Element.WIND,
+    Species.MACHINE: Element.STEEL,
+    Species.AQUAN: Element.WATER,
+    Species.INSECTPLANT: Element.THUNDER
+    }
+
+ELEMENTAL_WEAKNESSES = {
+    Species.HOLY: Element.DARK,
+    Species.DARK: Element.LIGHT,
+    Species.DRAGON: Element.EARTH,
+    Species.BEAST: Element.FIRE,
+    Species.BIRD: Element.THUNDER,
+    Species.MACHINE: Element.WATER,
+    Species.AQUAN: Element.STEEL,
+    Species.INSECTPLANT: Element.WIND
+    }
 
 class DigimonType(Enum):
     BALANCE = 0
@@ -40,7 +73,6 @@ class ItemType(Enum):
     KEY_ITEM = 5
 
 
-
 class SpriteMapEntry:
     offset: int
     id: int
@@ -63,6 +95,51 @@ class BattleStringEntry:
     def __init__(self, offset: int, value: int):
         self.offset = offset
         self.value = value
+
+
+
+class MoveData:
+    offset: int
+    id: int
+    mp_cost: int
+    element: Element
+    special_identifier: int
+    primary_effect: int
+    primary_value: int
+    secondary_effect: int
+    secondary_value: int
+    unknown_0xe: int
+    is_consumable: int
+    num_hits: int
+    move_range: int
+    unknown_0x14: int
+    unknown_0x16: int
+    level_learned: int
+    eos_bytes: int
+
+    def __init__(self, move_data: bytearray, offset: int):
+        try:
+            self.offset = offset
+            self.id = int.from_bytes(move_data[0:2], byteorder="little")
+            self.mp_cost = int.from_bytes(move_data[2:4], byteorder="little")
+            self.element = Element(move_data[4])
+            self.special_identifier = move_data[5]
+            self.primary_effect = int.from_bytes(move_data[6:8], byteorder="little")
+            self.primary_value = int.from_bytes(move_data[8:0xa], byteorder="little")
+            self.secondary_effect = int.from_bytes(move_data[0xa:0xc], byteorder="little")
+            self.secondary_value = int.from_bytes(move_data[0xc:0xe], byteorder="little")
+            self.unknown_0xe = int.from_bytes(move_data[0xe:0x10], byteorder="little")
+            self.is_consumable = int.from_bytes(move_data[0x10:0x12], byteorder="little")
+            self.num_hits = move_data[0x12]
+            self.move_range = move_data[0x13]
+            self.unknown_0x14 = int.from_bytes(move_data[0x14:0x16], byteorder="little")
+            self.unknown_0x16 = int.from_bytes(move_data[0x16:0x18], byteorder="little")
+            self.level_learned = int.from_bytes(move_data[0x18:0x1a], byteorder="little")
+            self.eos_bytes = int.from_bytes(move_data[0x1a:0x1c], byteorder="little")
+        except:
+            print("Exception on MoveData call")
+            return None
+
 
 
 class BaseDataDigimon:
@@ -142,8 +219,79 @@ class BaseDataDigimon:
         except:
             print("Exception on BaseDataDigimon call")
             return None
-
         
+
+    def getBaseStats(self) -> List[int]:
+        return [self.hp,
+                self.mp,
+                self.attack,
+                self.defense,
+                self.spirit,
+                self.speed,
+                self.aptitude]
+    
+    def setBaseStats(self, stats_array: List[int]):
+        # check if stats_array has exactly 7 values
+        if(len(stats_array) != 7):
+            print(f"Resistance array {stats_array} does not have exactly 7 values; skipping operation")
+            return
+        
+        stat_attrs = ["hp", "mp", "attack", "defense", "spirit", "speed", "aptitude"]
+        for i, attr in enumerate(stat_attrs):
+            # skip value if -1: this is used to skip certain base stat values that are already set
+            if(stat_attrs[i] == -1):
+                continue
+            setattr(self, attr, stat_attrs[i])
+
+
+    def getRegularMoves(self) -> List[int]:
+        return [self.move_1, self.move_2, self.move_3, self.move_4]
+    
+    def setRegularMoves(self, move_array: List[int]):
+        move_attrs = ["move_1", "move_2", "move_3", "move_4"]
+
+        for i, attr in enumerate(move_attrs):
+            # skip value if -1: this is used to skip certain move values that are already set
+            if(move_array[i] == -1):
+                continue
+            setattr(self, attr, move_array[i])
+
+
+    # same order as Element class
+    def getResistanceValues(self):
+        return [self.light_res, 
+                self.dark_res, 
+                self.fire_res, 
+                self.earth_res,
+                self.wind_res, 
+                self.steel_res, 
+                self.water_res, 
+                self.thunder_res]
+    
+    def setResistanceValues(self, resistance_array: List[int]):
+        # check if resistance_array has exactly 8 values
+        if(len(resistance_array) != 8):
+            print(f"Resistance array {resistance_array} does not have exactly 8 values; skipping operation")
+            return
+        resistance_attrs = ["light_res", "dark_res", "fire_res", "earth_res", "wind_res", "steel_res", "water_res", "thunder_res"]
+        for i, attr in enumerate(resistance_attrs):
+            # skip value if -1: this is used to skip certain resistance values that are already set
+            if(resistance_array[i] == -1):
+                continue
+            setattr(self, attr, resistance_array[i])
+
+
+    def getRegularTraits(self) -> List[int]:
+        return [self.trait_1, self.trait_2, self.trait_3, self.trait_4]
+        
+    def setRegularTraits(self, trait_array: List[int]):
+        trait_attrs = ["trait_1", "trait_2", "trait_3", "trait_4"]
+
+        for i, attr in enumerate(trait_attrs):
+            # skip value if -1: this is used to skip certain trait values that are already set
+            if(trait_array[i] == -1):
+                continue
+            setattr(self, attr, trait_array[i])
 
 
 class EnemyDataDigimon:
@@ -255,7 +403,39 @@ class EnemyDataDigimon:
             if getattr(self, exp_species) > 0:
                 setattr(self, exp_species, exp_yield)
 
+    def setResistanceValues(self, resistance_array: List[int]):
+        # check if resistance_array has exactly 8 values
+        if(len(resistance_array) != 8):
+            print(f"Resistance array {resistance_array} does not have exactly 8 values; skipping operation")
+            return
+        resistance_attrs = ["light_res", "dark_res", "fire_res", "earth_res", "wind_res", "steel_res", "water_res", "thunder_res"]
+        for i, attr in enumerate(resistance_attrs):
+            # skip value if -1: this is used to skip certain resistance values that are already set
+            if(resistance_array[i] == -1):
+                continue
+            setattr(self, attr, resistance_array[i])
 
+
+    def setRegularMoves(self, move_array: List[int]):
+        move_attrs = ["move_1", "move_2", "move_3", "move_4"]
+
+        for i, attr in enumerate(move_attrs):
+            # skip value if -1: this is used to skip certain base stat values that are already set
+            if(move_array[i] == -1):
+                continue
+            setattr(self, attr, move_array[i])
+
+
+    def setRegularTraits(self, trait_array: List[int]):
+        trait_attrs = ["trait_1", "trait_2", "trait_3", "trait_4"]
+
+        for i, attr in enumerate(trait_attrs):
+            # skip value if -1: this is used to skip certain trait values that are already set
+            if(trait_array[i] == -1):
+                continue
+            setattr(self, attr, trait_array[i])
+
+            
 class FarmTerrain:
     offset: int
     id: int

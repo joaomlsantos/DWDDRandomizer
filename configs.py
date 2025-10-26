@@ -16,6 +16,41 @@ class RandomizeStartersConfig(Enum):
     RAND_FULL = 2                       # fully randomize
 
 
+class RandomizeSpeciesConfig(Enum):
+    UNCHANGED = 0                       # do not randomize
+    RANDOM = 1                          # randomize digimon species
+
+
+class RandomizeElementalResistances(Enum):
+    UNCHANGED = 0                       # do not randomize
+    SHUFFLE = 1                         # shuffles the existing values of a digimon's elemental resistances
+    RANDOM = 2                          # randomizes the values for each elemental resistance (keeping the sum of the total for the given digimon)
+
+
+class RandomizeBaseStats(Enum):
+    UNCHANGED = 0                       # do not randomize
+    SHUFFLE = 1                         # shuffles main base stats (atk, def, spirit, speed)
+    RANDOM_SANITY = 2                   # randomizes within sanity ranges
+    RANDOM_COMPLETELY = 3               # randomizes completely
+
+
+class RandomizeDigimonStatType(Enum):
+    UNCHANGED = 0                       # do not randomize
+    RANDOMIZE = 1                       # randomize digimon type
+
+
+class RandomizeMovesets(Enum):
+    UNCHANGED = 0
+    RANDOM_SPECIES_BIAS = 1             # randomize preferring moves of the given species' main element
+    RANDOM_COMPLETELY = 2               # randomize completely
+
+
+class RandomizeTraits(Enum):
+    UNCHANGED = 0
+    RANDOM_STAGE_BIAS = 1               # randomize while keeping traits coherent with each stage
+    RANDOM_COMPLETELY = 2               # randomize completely
+
+
 class RandomizeWildEncounters(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE_1_TO_1_SAME_STAGE = 1     # randomize 1-to-1, same stage digimon

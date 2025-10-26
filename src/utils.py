@@ -109,6 +109,26 @@ def loadEnemyDigimonInfo(version: str,
     return enemy_digimon_dict
 
 
+
+def loadMoveData(version: str,
+                 rom_data: bytearray):
+    offset_start = constants.MOVE_DATA_OFFSETS[version][0]
+    offset_end = constants.MOVE_DATA_OFFSETS[version][1]
+
+    seek_offset = offset_start
+    
+    move_data_array = []
+
+    while(seek_offset < offset_end):
+        cur_move_data = rom_data[seek_offset:seek_offset+0x1c]
+        cur_move_obj = model.MoveData(cur_move_data, seek_offset)
+        move_data_array.append(cur_move_obj)
+
+        seek_offset += 0x1c
+    
+    return move_data_array
+
+
 # this will not be used as the main loader for standard digievos yet; need to adapt previous code from loadDigivolutionInformation()
 # atm this loads each digimon as a single entry without taking evo logic propagation into account
 
@@ -354,7 +374,7 @@ def generateConditions(s: int, max_conditions: int = 3):
 
 
 
-def generateBiasedConditions(stage_id: int, bias: float, species: List[int], max_conditions: int = 3):
+def generateBiasedConditions(stage_id: int, bias: float, species: List[model.Species], max_conditions: int = 3):
     '''
     0x2: "DRAGON EXP",                      HOLY = 0
     0x3: "BEAST EXP",                       DARK = 1
@@ -369,7 +389,7 @@ def generateBiasedConditions(stage_id: int, bias: float, species: List[int], max
     stage = constants.STAGE_NAMES[stage_id]
     digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x12]    # this should be a constant/setting i think
     species_condition_mapping = {0: 0x9, 1: 0x8, 2: 0x2, 3: 0x3, 4: 0x5, 5: 0x7, 6: 0x4, 7: 0x6}
-    species_exp = [species_condition_mapping[x] for x in species]
+    species_exp = [species_condition_mapping[x.value] for x in species if x.value in species_condition_mapping.keys()]
     other_species_total = len(species_condition_mapping) - len(species)
     non_species_exp_conditions_count = len(digivolution_conditions_pool) - other_species_total      # assuming 7 can be a fixed number since 8 species minus the target one
 
@@ -464,7 +484,23 @@ def checkAptitudeDeadlockTuple(conditions_evo, aptitude: int):
     return log_val
 
 
-    
+def filterMovesByLevel(move: model.MoveData,
+                       movepool: List[model.MoveData]) -> List[model.MoveData]:
+    # the level range should be configurable
+    CONFIG_MOVE_LEVEL_RANGE = 5
+    filtered_movepool = [m for m in movepool if (m.level_learned >= move.level_learned - CONFIG_MOVE_LEVEL_RANGE and m.level_learned <= move.level_learned + CONFIG_MOVE_LEVEL_RANGE)]
+
+    return filtered_movepool if len(filtered_movepool) > 0 else movepool
+
+
+def filterMovesByPower(move: model.MoveData,
+                       movepool: List[model.MoveData]) -> List[model.MoveData]:
+    # the power range should be configurable
+    CONFIG_MOVE_POWER_RANGE = 8
+
+    filtered_movepool = [m for m in movepool if (m.primary_value >= move.primary_value - CONFIG_MOVE_POWER_RANGE and m.primary_value <= move.primary_value + CONFIG_MOVE_POWER_RANGE)]
+
+    return filtered_movepool if len(filtered_movepool) > 0 else movepool
 
 
 
