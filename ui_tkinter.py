@@ -775,10 +775,14 @@ toggle_stat_generation()
 
 
 
+items_quests_container = ttk.Frame(randomizer_tab)
+items_quests_container.pack(side="top", fill="x", padx=10, pady=5)
+
 
 # Overworld Items Frame
-overworld_items_frame = ttk.LabelFrame(randomizer_tab, text="Overworld Items", padding=10)
-overworld_items_frame.pack(side="top", fill="x", padx=10, pady=5)
+overworld_items_frame = ttk.LabelFrame(items_quests_container, text="Overworld Items", padding=10)
+#overworld_items_frame.pack(side="top", fill="x", padx=10, pady=5)
+overworld_items_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
 
 
 overworld_items_radio_frame = ttk.Frame(overworld_items_frame)
@@ -796,6 +800,37 @@ overworld_items_same_category_rb.pack(anchor="w")
 overworld_items_completely_random_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (completely)", variable=overworld_items_option_var, value=RandomizeOverworldItems.RANDOMIZE_COMPLETELY.value, state="disabled")
 overworld_items_completely_random_tooltip = CreateToolTip(overworld_items_completely_random_rb, "Randomizes each overworld item chest completely (a chest can have any item, regardless of its original item).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
 overworld_items_completely_random_rb.pack(anchor="w")
+
+
+
+# Quests Frame
+quests_frame = ttk.LabelFrame(items_quests_container, text="Quests", padding=10)
+#quests_frame.pack(side="top", fill="x", padx=10, pady=5)
+quests_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+quests_sub_frame = ttk.Frame(quests_frame)
+quests_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+
+quests_randomize_item_rewards_var = tk.BooleanVar(value=False)
+questsRandomizeItemRewardsCheckbox = tk.Checkbutton(quests_sub_frame, text="Randomize Quest Item Rewards", variable=quests_randomize_item_rewards_var, state="disabled")
+questsRandomizeItemRewardsCheckbox.pack(anchor='w')
+questsRandomizeItemRewardsTooltip = CreateToolTip(questsRandomizeItemRewardsCheckbox, "Randomizes the rewarded item for each completed quest.\nThis setting does not randomize the rewarded Love DigiEgg from the quest \"Explore Limit Valley\".")
+
+
+
+quests_enable_legendary_tamer_var = tk.BooleanVar(value=False)
+questsEnableLegendaryTamerCheckbox = tk.Checkbutton(quests_sub_frame, text="Enable Legendary Tamer Quest", variable=quests_enable_legendary_tamer_var, state="disabled")
+questsEnableLegendaryTamerCheckbox.pack(anchor='w')
+questsEnableLegendaryTamerTooltip = CreateToolTip(questsEnableLegendaryTamerCheckbox, "Enables the quest \"The Legendary Tamer\" after obtaining Platinum rank and completing the quest \"Gaia Origin Challenge\", disabling the requirement of playing online once.")
+
+
+
+quests_unlock_main_in_sequence_var = tk.BooleanVar(value=False)
+questsUnlockMainQuestsInSequenceCheckbox = tk.Checkbutton(quests_sub_frame, text="Unlock Main Quests in Sequence", variable=quests_unlock_main_in_sequence_var, state="disabled")
+questsUnlockMainQuestsInSequenceCheckbox.pack(anchor='w')
+questsUnlockMainQuestsInSequenceTooltip = CreateToolTip(questsUnlockMainQuestsInSequenceCheckbox, "Unlocks each main quest immediately after completing the previous main quest, eliminating the requirement of clearing side quests to unlock the next main quest.")
+
 
 
 
