@@ -107,7 +107,10 @@ def execute_rom_changes(save_path):
         "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions(dna_digivolution_conditions_option_var.get()),
         "DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": dna_digivolution_conditions_species_exp_var,
 
-        "RANDOMIZE_OVERWORLD_ITEMS": RandomizeOverworldItems(overworld_items_option_var.get())
+        "RANDOMIZE_OVERWORLD_ITEMS": RandomizeOverworldItems(overworld_items_option_var.get()),
+        "RANDOMIZE_QUEST_REWARD_ITEMS": quests_randomize_item_rewards_var,
+        "ENABLE_LEGENDARY_TAMER_QUEST": quests_enable_legendary_tamer_var,
+        "UNLOCK_MAIN_QUESTS_SEQUENCE": quests_unlock_main_in_sequence_var
     }
 
 

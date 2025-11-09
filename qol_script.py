@@ -186,6 +186,7 @@ class Randomizer:
         self.randomizeAreaEncounters(target_rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
         self.nerfFirstBoss(target_rom_data)
         self.randomizeOverworldItems(target_rom_data)
+        self.executeQuestChanges(target_rom_data)
 
         # the following function modifies self.baseDigimonInfo; this is needed to propagate base data changes into the randomization
         self.randomizeDigimonSpecies(target_rom_data)
@@ -495,6 +496,36 @@ class Randomizer:
             utils.writeRomBytes(rom_data, new_item_value, addr+4, 2)
 
 
+    def executeQuestChanges(self,
+                            rom_data: bytearray):
+        
+        enable_legendary_tamer_quest = self.config_manager.get("ENABLE_LEGENDARY_TAMER_QUEST", False)
+        unlock_main_quests_sequence = self.config_manager.get("UNLOCK_MAIN_QUESTS_SEQUENCE", False)
+        randomize_quest_reward_items = self.config_manager.get("RANDOMIZE_QUEST_REWARD_ITEMS", False)
+        
+        # check this first, then do 1 cycle through all quests for each operation
+        if(not (enable_legendary_tamer_quest or unlock_main_quests_sequence or randomize_quest_reward_items)):
+            return
+        
+        
+        for cur_quest in self.questDataArray:
+
+            if(enable_legendary_tamer_quest):
+            # set all condition_online vars of quest data to 0
+                cur_quest.unlock_condition_online = 0
+                utils.writeRomBytes(rom_data, 0, cur_quest.offset + 0x3e, 2)
+                self.logger.info("Set quest \"The Legendary Tamer\" to unlock without online connection")
+
+            if(unlock_main_quests_sequence):
+                cur_quest.unlock_condition_numquests = 0
+                utils.writeRomBytes(rom_data, 0, cur_quest.offset + 0x38, 2)
+                self.logger.info("Set main quests to unlock in sequence")
+
+            if(randomize_quest_reward_items):
+                # get function from overworld items data, do not replace Love DE
+                continue
+            
+            
 
 
 
