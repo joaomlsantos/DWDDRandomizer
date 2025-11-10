@@ -7,7 +7,7 @@ from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeMovesets, RandomizeOverworldItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeTraits, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeMovesets, RandomizeItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeTraits, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 from tabulate import tabulate
 
@@ -459,7 +459,7 @@ class Randomizer:
         
         config_randomize_overworld_items = self.config_manager.get("RANDOMIZE_OVERWORLD_ITEMS")
         
-        if(config_randomize_overworld_items == RandomizeOverworldItems.UNCHANGED):
+        if(config_randomize_overworld_items == RandomizeItems.UNCHANGED):
             return
         
         overworld_item_addrs = constants.OVERWORLD_ITEM_ADDRESSES[self.version]
@@ -483,10 +483,10 @@ class Randomizer:
                 continue    
 
             new_item_value = -1
-            if(config_randomize_overworld_items == RandomizeOverworldItems.RANDOMIZE_KEEP_CATEGORY):
+            if(config_randomize_overworld_items == RandomizeItems.RANDOMIZE_KEEP_CATEGORY):
                 new_item_value = random.randint(*constants.ITEM_TYPE_IDS[item_category])
 
-            if(config_randomize_overworld_items == RandomizeOverworldItems.RANDOMIZE_COMPLETELY):
+            if(config_randomize_overworld_items == RandomizeItems.RANDOMIZE_COMPLETELY):
                 new_item_value = random.choice(non_key_item_ids)
 
             
@@ -501,12 +501,22 @@ class Randomizer:
         
         enable_legendary_tamer_quest = self.config_manager.get("ENABLE_LEGENDARY_TAMER_QUEST", False)
         unlock_main_quests_sequence = self.config_manager.get("UNLOCK_MAIN_QUESTS_SEQUENCE", False)
-        randomize_quest_reward_items = self.config_manager.get("RANDOMIZE_QUEST_REWARD_ITEMS", False)
+        randomize_quest_reward_items = self.config_manager.get("RANDOMIZE_QUEST_REWARD_ITEMS")
         
         # check this first, then do 1 cycle through all quests for each operation
-        if(not (enable_legendary_tamer_quest or unlock_main_quests_sequence or randomize_quest_reward_items)):
+        if(not (enable_legendary_tamer_quest or unlock_main_quests_sequence or (randomize_quest_reward_items != RandomizeItems.UNCHANGED))):
             return
         
+        item_lookup_table = {
+            item_id: category
+            for category, (min_id, max_id) in constants.ITEM_TYPE_IDS.items()
+            for item_id in range(min_id, max_id + 1)
+        }
+
+        non_key_item_ids = [item_id for category, (min_id, max_id) in constants.ITEM_TYPE_IDS.items() if category != "KEY_ITEM" for item_id in range(min_id, max_id + 1)]
+
+        self.logger.info("\n==================== QUESTS ====================")
+
         
         for cur_quest in self.questDataArray:
 
@@ -514,19 +524,36 @@ class Randomizer:
             # set all condition_online vars of quest data to 0
                 cur_quest.unlock_condition_online = 0
                 utils.writeRomBytes(rom_data, 0, cur_quest.offset + 0x3e, 2)
-                self.logger.info("Set quest \"The Legendary Tamer\" to unlock without online connection")
 
             if(unlock_main_quests_sequence):
                 cur_quest.unlock_condition_numquests = 0
                 utils.writeRomBytes(rom_data, 0, cur_quest.offset + 0x38, 2)
-                self.logger.info("Set main quests to unlock in sequence")
 
-            if(randomize_quest_reward_items):
+            if(randomize_quest_reward_items != RandomizeItems.UNCHANGED):
                 # get function from overworld items data, do not replace Love DE
-                continue
-            
-            
+                item_category = item_lookup_table[cur_quest.item_reward]
+    
+                # skip key items and digieggs for now
+                if(model.ItemType[item_category] in [model.ItemType.KEY_ITEM, model.ItemType.DIGIEGG]):
+                    continue    
+                
+                new_item_value = cur_quest.item_reward
+                if(randomize_quest_reward_items == RandomizeItems.RANDOMIZE_KEEP_CATEGORY):
+                    new_item_value = random.randint(*constants.ITEM_TYPE_IDS[item_category])
+                    cur_quest.item_reward = new_item_value
+    
+                if(randomize_quest_reward_items == RandomizeItems.RANDOMIZE_COMPLETELY):
+                    new_item_value = random.choice(non_key_item_ids)
+                    cur_quest.item_reward = new_item_value
+    
+                self.logger.info(constants.ITEM_ID_TO_STR[cur_quest.item_reward] + " -> " + constants.ITEM_ID_TO_STR[new_item_value])
+                utils.writeRomBytes(rom_data, new_item_value, cur_quest.offset+0x20, 4)
 
+        if(enable_legendary_tamer_quest):
+            self.logger.info("Set quest \"The Legendary Tamer\" to unlock without online connection")
+
+        if(unlock_main_quests_sequence):
+            self.logger.info("Set main quests to unlock in sequence")
 
 
 
@@ -1123,7 +1150,7 @@ class Randomizer:
                         evo_digi_name = random.choice(list(digimon_pool_selection[constants.STAGE_NAMES[s+1]].keys()))
                         if(self.config_manager.get("DIGIVOLUTIONS_SIMILAR_SPECIES", False)):
                             evo_species_prob_dist = np.array(utils.generateSpeciesProbDistribution(digimon_pool_selection[constants.STAGE_NAMES[s+1]], self.baseDigimonInfo, self.config_manager.get("DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS"), self.baseDigimonInfo[digimon_id].species))
-                            evo_species_prob_dist /= evo_species_prob_dist.sum()
+                            evo_species_prob_dist /= evo_species_prob_dist.sum() 
                             evo_digi_name = np.random.choice(list(digimon_pool_selection[constants.STAGE_NAMES[s+1]].keys()), p=evo_species_prob_dist)
                         evo_digi_id = digimon_pool_selection[constants.STAGE_NAMES[s+1]].pop(evo_digi_name)              # this ensures there are no repeated digimon
                         #log_evo_names.append(evo_digi_name)

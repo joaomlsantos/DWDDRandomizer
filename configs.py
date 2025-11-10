@@ -75,7 +75,7 @@ class RandomizeDnaDigivolutionConditions(Enum):
     RANDOMIZE = 1                       # randomize (specific randomization options are outside of this enum)
     REMOVED = 2                         # remove DNA digivolution conditions: DNA digivolutions will only require joining both digimon
 
-class RandomizeOverworldItems(Enum):
+class RandomizeItems(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE_KEEP_CATEGORY = 1         # randomize while keeping the original item's category (consumables replaced by other consumables, farm items replaced by other farm items, etc)
     RANDOMIZE_COMPLETELY = 2            # randomize completely
@@ -149,7 +149,7 @@ default_configmanager_settings = {
     "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions.REMOVED,
     "DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP":True,
 
-    "RANDOMIZE_OVERWORLD_ITEMS": RandomizeOverworldItems.RANDOMIZE_COMPLETELY
+    "RANDOMIZE_OVERWORLD_ITEMS": RandomizeItems.RANDOMIZE_COMPLETELY
     
 }
 
