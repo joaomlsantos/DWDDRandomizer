@@ -598,6 +598,18 @@ class QuestData:
         self.unknown_0x42 = int.from_bytes(quest_data[0x42:0x44], byteorder="little")
 
 
+class EncounterRewardTable:
+    offset: int
+    probabilitiesArray: List[int]
+    rewardsArray: List[int]
+
+    def __init__(self, reward_data: bytearray, offset: int):
+        self.offset = offset
+        self.probabilitiesArray = []
+        self.rewardsArray = []
+        for byte_ix in range(0, len(reward_data), 4):
+            self.probabilitiesArray.append(int.from_bytes(reward_data[byte_ix, byte_ix+2], byteorder="little"))
+            self.rewardsArray.append(int.from_bytes(reward_data[byte_ix+2, byte_ix+4], byteorder="little"))
 
 
 

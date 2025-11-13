@@ -147,6 +147,35 @@ def loadMoveData(version: str,
     return move_data_array
 
 
+def loadEncounterRewardData(version: str,
+                            rom_data: bytearray) -> List[model.EncounterRewardTable]:
+    
+    offset_start = constants.ENCOUNTER_REWARD_OFFSETS[version][0]
+    offset_end = constants.ENCOUNTER_REWARD_OFFSETS[version][1]
+
+    page_offset = offset_start
+    seek_offset = offset_start
+
+    encounter_reward_array = []
+
+    while(seek_offset < offset_end):
+
+        cur_encounter_reward_data = rom_data[seek_offset:seek_offset+0x20]
+        if(hex(int.from_bytes(cur_encounter_reward_data[0:4], byteorder="little") == "0xffffffff")):
+            page_offset += 0x400
+            seek_offset = page_offset
+            continue
+        
+        cur_encounter_reward_obj = model.EncounterRewardTable(cur_encounter_reward_data, seek_offset)
+        encounter_reward_array.append(cur_encounter_reward_obj)
+
+        seek_offset += 0x20
+    
+    return encounter_reward_array
+        
+
+
+
 # this will not be used as the main loader for standard digievos yet; need to adapt previous code from loadDigivolutionInformation()
 # atm this loads each digimon as a single entry without taking evo logic propagation into account
 
