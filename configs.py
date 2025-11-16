@@ -161,8 +161,8 @@ inner_configmanager_settings = {
     "NEW_BASE_SCAN_RATE": 25,        # this is the base value for scanning an in-training digimon as normal rank tamer; -5 for each subsequent digivolution
     "DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS": 0.9,    # the total odds for the same species digimon will be the bias value (in this case it's 0.9), total odds for digimon from other species will be the remaining value (1 - bias)
     "DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS": 0.2,          # how less likely each exp condition is to be picked (in this case, the probability for each of those exp conditions is multiplied by the bias value; multiplying by 0.2 makes the condition 5 times less likely)
-    "FARM_EXP_MODIFIER": 10             # multiplier for farm exp
-
+    "FARM_EXP_MODIFIER": 10,             # multiplier for farm exp
+    "ENCOUNTER_MONEY_MULTIPLIER": 4,              # multiplier for money earned in wild encounters
 }
 
 PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"

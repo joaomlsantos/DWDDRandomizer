@@ -608,8 +608,39 @@ class EncounterRewardTable:
         self.probabilitiesArray = []
         self.rewardsArray = []
         for byte_ix in range(0, len(reward_data), 4):
-            self.probabilitiesArray.append(int.from_bytes(reward_data[byte_ix, byte_ix+2], byteorder="little"))
-            self.rewardsArray.append(int.from_bytes(reward_data[byte_ix+2, byte_ix+4], byteorder="little"))
+            self.probabilitiesArray.append(int.from_bytes(reward_data[byte_ix:byte_ix+2], byteorder="little"))
+            self.rewardsArray.append(int.from_bytes(reward_data[byte_ix+2:byte_ix+4], byteorder="little"))
+
+    def multiplyMoney(self, multiplier: int = 4):
+        for ix, reward in enumerate(self.rewardsArray):
+            # if value is greater than 0x8000, then it's money; otherwise it's item
+            if(reward > 0x8000):
+                calc_money = 0x10000 - reward
+                calc_money *= multiplier
+                self.rewardsArray[ix] = 0x10000 - calc_money
+                
+    def getByteRepresentation(self) -> bytearray:
+        # returns the entire byte representation for this object; this will be written directly in the ROM
+        result = bytearray()
+        for prob, reward in zip(self.probabilitiesArray, self.rewardsArray):
+            result.extend(prob.to_bytes(2, byteorder="little"))
+            result.extend(reward.to_bytes(2, byteorder="little"))
+        return result
+    
+    def getRewardReprString(self) -> str:
+        str_repr = []
+        for reward_ix, reward_value in enumerate(self.rewardsArray):
+            if(self.probabilitiesArray[reward_ix] == 0):
+                continue
+            if(reward_value > 0x8000):
+                calc_money = max(0x10000 - reward_value, 0x8001)
+                str_repr.append(f"{calc_money} bit")
+            else:
+                item_name = constants.ITEM_ID_TO_STR.get(reward_value, "Unknown Item")
+                str_repr.append(item_name)
+        return str(str_repr)
+
+                
 
 
 

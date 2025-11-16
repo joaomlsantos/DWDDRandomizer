@@ -187,6 +187,7 @@ class Randomizer:
         self.randomizeAreaEncounters(target_rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
         self.nerfFirstBoss(target_rom_data)
         self.randomizeOverworldItems(target_rom_data)
+        self.changeEncounterRewardData(target_rom_data)
         self.executeQuestChanges(target_rom_data)
 
         # the following function modifies self.baseDigimonInfo; this is needed to propagate base data changes into the randomization
@@ -497,12 +498,70 @@ class Randomizer:
             utils.writeRomBytes(rom_data, new_item_value, addr+4, 2)
 
 
+    def changeEncounterRewardData(self,
+                                  rom_data: bytearray):
+        buff_wild_encounter_money = self.config_manager.get("BUFF_WILD_ENCOUNTER_MONEY", False)
+        randomize_wild_encounter_items = self.config_manager.get("RANDOMIZE_WILD_ENCOUNTER_ITEMS", RandomizeItems.UNCHANGED)
+
+        # check this first, then do 1 cycle through all reward data for each operation
+        if(not (buff_wild_encounter_money or (randomize_wild_encounter_items != RandomizeItems.UNCHANGED))):
+            return
+
+        item_lookup_table = {
+            item_id: category
+            for category, (min_id, max_id) in constants.ITEM_TYPE_IDS.items()
+            for item_id in range(min_id, max_id + 1)
+        }
+
+        non_key_item_ids = [item_id for category, (min_id, max_id) in constants.ITEM_TYPE_IDS.items() if category != "KEY_ITEM" for item_id in range(min_id, max_id + 1)]
+
+        self.logger.info("\n==================== WILD ENCOUNTER REWARDS ====================")
+        
+        for cur_encounter_reward in self.encounterRewardsArray:
+
+            prev_rewards_str = cur_encounter_reward.getRewardReprString()
+
+            if(buff_wild_encounter_money):
+                cur_encounter_reward.multiplyMoney(self.config_manager.get("ENCOUNTER_MONEY_MULTIPLIER"))
+            
+            if(randomize_wild_encounter_items != RandomizeItems.UNCHANGED):
+                # get function from overworld items data, do not replace Love DE
+                #if item value does not have a type, default to null
+                for reward_ix, reward_id in enumerate(cur_encounter_reward.rewardsArray):
+                    reward_prob = cur_encounter_reward.probabilitiesArray[reward_ix]
+                    if(reward_prob == 0):
+                        continue
+                    
+                    item_category = item_lookup_table.get(reward_id, model.ItemType.NULL.name)
+
+                    # skip key items and digieggs for now
+                    if(model.ItemType[item_category] in [model.ItemType.KEY_ITEM, model.ItemType.DIGIEGG, model.ItemType.NULL]):
+                        continue    
+                    
+                    new_item_value = reward_id
+                    if(randomize_wild_encounter_items == RandomizeItems.RANDOMIZE_KEEP_CATEGORY):
+                        new_item_value = random.randint(*constants.ITEM_TYPE_IDS[item_category])
+                        cur_encounter_reward.rewardsArray[reward_ix] = new_item_value
+
+                    if(randomize_wild_encounter_items == RandomizeItems.RANDOMIZE_COMPLETELY):
+                        new_item_value = random.choice(non_key_item_ids)
+                        cur_encounter_reward.rewardsArray[reward_ix] = new_item_value
+            
+            updated_rewards_str = cur_encounter_reward.getRewardReprString()
+
+            rom_data[cur_encounter_reward.offset:cur_encounter_reward.offset+0x20] = cur_encounter_reward.getByteRepresentation()
+
+            self.logger.info(f"{prev_rewards_str} -> {updated_rewards_str}")
+            
+
+
+
     def executeQuestChanges(self,
                             rom_data: bytearray):
         
         enable_legendary_tamer_quest = self.config_manager.get("ENABLE_LEGENDARY_TAMER_QUEST", False)
         unlock_main_quests_sequence = self.config_manager.get("UNLOCK_MAIN_QUESTS_SEQUENCE", False)
-        randomize_quest_reward_items = self.config_manager.get("RANDOMIZE_QUEST_REWARD_ITEMS")
+        randomize_quest_reward_items = self.config_manager.get("RANDOMIZE_QUEST_REWARD_ITEMS", RandomizeItems.UNCHANGED)
         
         # check this first, then do 1 cycle through all quests for each operation
         if(not (enable_legendary_tamer_quest or unlock_main_quests_sequence or (randomize_quest_reward_items != RandomizeItems.UNCHANGED))):
@@ -532,10 +591,12 @@ class Randomizer:
 
             if(randomize_quest_reward_items != RandomizeItems.UNCHANGED):
                 # get function from overworld items data, do not replace Love DE
-                item_category = item_lookup_table[cur_quest.item_reward]
+                
+                #if item value does not have a type, default to null
+                item_category = item_lookup_table.get(cur_quest.item_reward, model.ItemType.NULL.name)
     
                 # skip key items and digieggs for now
-                if(model.ItemType[item_category] in [model.ItemType.KEY_ITEM, model.ItemType.DIGIEGG]):
+                if(model.ItemType[item_category] in [model.ItemType.KEY_ITEM, model.ItemType.DIGIEGG, model.ItemType.NULL]):
                     continue    
                 
                 new_item_value = cur_quest.item_reward

@@ -77,6 +77,9 @@ def execute_rom_changes(save_path):
         "WILD_DIGIMON_EXCLUDE_CALUMON": wild_digimon_exclude_calumon_var,
         "AREA_ENCOUNTERS_STATS": stat_gen_option_var,
 
+        "BUFF_WILD_ENCOUNTER_MONEY": buff_wild_encounter_money_var,
+        "RANDOMIZE_WILD_ENCOUNTER_ITEMS": RandomizeItems(wild_encounter_items_option_var.get()),
+
         "RANDOMIZE_DIGIMON_SPECIES": RandomizeSpeciesConfig(species_option_var.get()),
         "SPECIES_ALLOW_UNKNOWN": species_allow_unknown_var,
         "RANDOMIZE_ELEMENTAL_RESISTANCES": RandomizeElementalResistances(elemental_res_option_var.get()),
@@ -174,6 +177,12 @@ def enable_buttons():
     wild_digimon_randomize_rb.configure(state="normal")
     wild_digimon_randomize_completely_rb.configure(state="normal")
     wildDigimonExcludeCalumonCheckbox.configure(state="normal")
+
+    # Randomize wild encounter item drops
+    wild_encounter_items_unchanged_rb.configure(state="normal")
+    wild_encounter_items_same_category_rb.configure(state="normal")
+    wild_encounter_items_completely_random_rb.configure(state="normal")
+    buffWildEncounterMoneyCheckbox.configure(state="normal")
 
     # Randomize overworld items
     overworld_items_unchanged_rb.configure(state="normal")
@@ -755,10 +764,40 @@ wildDigimonExcludeCalumonTooltip = CreateToolTip(wildDigimonExcludeCalumonCheckb
 
 
 
+wild_encounter_rewards_radio_frame = ttk.LabelFrame(wild_digimon_inner_container, text="Encounter Item Drops")
+wild_encounter_rewards_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+wild_reward_items_radio_frame = ttk.Frame(wild_encounter_rewards_radio_frame)
+wild_reward_items_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+wild_reward_money_radio_frame = ttk.Frame(wild_encounter_rewards_radio_frame)
+wild_reward_money_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+wild_encounter_items_option_var = tk.IntVar(value=RandomizeItems.UNCHANGED.value)
+
+wild_encounter_items_unchanged_rb = tk.Radiobutton(wild_reward_items_radio_frame, text="Unchanged", variable=wild_encounter_items_option_var, value=RandomizeItems.UNCHANGED.value, state="disabled")
+wild_encounter_items_unchanged_rb.pack(anchor="w")
+
+wild_encounter_items_same_category_rb = tk.Radiobutton(wild_reward_items_radio_frame, text="Random (same category)", variable=wild_encounter_items_option_var, value=RandomizeItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
+wild_encounter_items_same_category_rb_tooltip = CreateToolTip(wild_encounter_items_same_category_rb, "Randomizes each wild encounter item drop while keeping the original category of the item.\nFor example, an equipment item like Water Ring will be replaced by another equipment item, farm items will be replaced by other farm items, etc.\nNOTE: Key items are not included in the randomization pool.")
+wild_encounter_items_same_category_rb.pack(anchor="w")
+
+wild_encounter_items_completely_random_rb = tk.Radiobutton(wild_reward_items_radio_frame, text="Random (completely)", variable=wild_encounter_items_option_var, value=RandomizeItems.RANDOMIZE_COMPLETELY.value, state="disabled")
+wild_encounter_items_completely_random_tooltip = CreateToolTip(wild_encounter_items_completely_random_rb, "Randomizes each wild encounter item drop completely (each drop can be any item type, regardless of its original item type).\nNOTE: Key items are not included in the randomization pool.")
+wild_encounter_items_completely_random_rb.pack(anchor="w")
+
+
+buff_wild_encounter_money_var = tk.BooleanVar(value=True)
+buffWildEncounterMoneyCheckbox = tk.Checkbutton(wild_reward_money_radio_frame, text="Increase Earned Money", variable=buff_wild_encounter_money_var, state="disabled")
+buffWildEncounterMoneyCheckbox.pack(anchor='w')
+buffWildEncounterMoneyTooltip = CreateToolTip(buffWildEncounterMoneyCheckbox, "Increase earned money from defeating wild digimon (by 4x).")
+
+
+
+
 
 # Right side: Stat Generation frame
 stat_gen_frame = ttk.LabelFrame(wild_digimon_inner_container, text="Stat Generation", padding=10)
-stat_gen_frame.pack(side="right", fill="y", padx=10, pady=5)
+stat_gen_frame.pack(side="top", fill="y", padx=10, pady=5)
 
 stat_gen_option_var = tk.IntVar(value=LvlUpMode.RANDOM.value)  # Default to "Random"
 
