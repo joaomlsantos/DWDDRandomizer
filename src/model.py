@@ -633,7 +633,7 @@ class EncounterRewardTable:
             if(self.probabilitiesArray[reward_ix] == 0):
                 continue
             if(reward_value > 0x8000):
-                calc_money = max(0x10000 - reward_value, 0x8001)
+                calc_money = min(0x10000 - reward_value, 0x8001)
                 str_repr.append(f"{calc_money} bit")
             else:
                 item_name = constants.ITEM_ID_TO_STR.get(reward_value, "Unknown Item")

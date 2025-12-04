@@ -939,14 +939,18 @@ class Randomizer:
 
                 possible_movepool = list(set(current_regular_moves_pool).difference(current_randomized_regular_moves))  # do not repeat moves
     
+                if(move_id == 65535):    # move does not exist, skip
+                    current_randomized_regular_moves.append(move_id)
+                    continue
+
                 if(moveset_level_bias):     # filter by level
-                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool (move is still randomized into a legitimate one)
+                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool 
                         previous_move = self.moveDataArray[move_id]
                         # if no moves pass the filter, filterMovesByLevel() returns the received movepool
                         possible_movepool = utils.filterMovesByLevel(previous_move, possible_movepool)
 
                 if(regular_move_power_bias):    # filter by move power
-                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool (move is still randomized into a legitimate one)
+                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool 
                         previous_move = self.moveDataArray[move_id]
                         # if no moves pass the filter, filterMovesByLevel() returns the received movepool
                         possible_movepool = utils.filterMovesByPower(previous_move, possible_movepool)
@@ -978,7 +982,7 @@ class Randomizer:
                 if(prev_signature_move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool (move is still randomized into a legitimate one)
                     previous_move = self.moveDataArray[prev_signature_move_id]
                     # if no moves pass the filter, filterMovesByLevel() returns the received movepool
-                    possible_movepool = utils.filterMovesByPower(previous_move, possible_signature_movepool)
+                    possible_signature_movepool = utils.filterMovesByPower(previous_move, possible_signature_movepool)
 
             if(randomize_movesets == RandomizeMovesets.RANDOM_SPECIES_BIAS):
                 probability_array = []
@@ -997,13 +1001,15 @@ class Randomizer:
             if(randomize_movesets == RandomizeMovesets.RANDOM_COMPLETELY):
                 current_signature_move = random.choice(possible_signature_movepool)
 
+            current_randomized_regular_move_ids = [m.id if hasattr(m, "id") else m for m in current_randomized_regular_moves]
+
             # update base digimon moves and enemy digimon moves
-            self.baseDigimonInfo[digimon_id].setRegularMoves([m.id for m in current_randomized_regular_moves])
-            self.enemyDigimonInfo[digimon_id].setRegularMoves([m.id for m in current_randomized_regular_moves])
+            self.baseDigimonInfo[digimon_id].setRegularMoves(current_randomized_regular_move_ids)
+            self.enemyDigimonInfo[digimon_id].setRegularMoves(current_randomized_regular_move_ids)
             move_offset = 0x30
-            for regular_move in current_randomized_regular_moves:        # we can do this since moves start at 0x30 for both base digimon and enemy digimon
-                utils.writeRomBytes(rom_data, regular_move.id, self.baseDigimonInfo[digimon_id].offset + move_offset, 2)
-                utils.writeRomBytes(rom_data, regular_move.id, self.enemyDigimonInfo[digimon_id].offset + move_offset, 2)
+            for regular_move_id in current_randomized_regular_move_ids:        # we can do this since moves start at 0x30 for both base digimon and enemy digimon
+                utils.writeRomBytes(rom_data, regular_move_id, self.baseDigimonInfo[digimon_id].offset + move_offset, 2)
+                utils.writeRomBytes(rom_data, regular_move_id, self.enemyDigimonInfo[digimon_id].offset + move_offset, 2)
                 move_offset += 0x2
 
             # update signature moves for both as well

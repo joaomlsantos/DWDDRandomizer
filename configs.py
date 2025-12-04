@@ -165,8 +165,8 @@ inner_configmanager_settings = {
     "ENCOUNTER_MONEY_MULTIPLIER": 4,              # multiplier for money earned in wild encounters
 }
 
-PATH_SOURCE = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
-PATH_TARGET = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_overworlditem_test.nds"
+PATH_SOURCE = "C:/Workspace/digimon_stuffs/rom_files/1421 - Digimon World - Dawn (USA).nds"
+PATH_TARGET = "C:/Workspace/digimon_stuffs/rom_files/1421 - Digimon World - Dawn (USA)_overworlditem_test.nds"
 
 #PATH_SOURCE = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA).nds"
 #PATH_TARGET = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA)_qolpatch_contra.nds"
