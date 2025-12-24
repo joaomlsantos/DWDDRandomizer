@@ -57,6 +57,12 @@ class RandomizeWildEncounters(Enum):
     RANDOMIZE_1_TO_1_COMPLETELY = 2     # randomize 1-to-1, completely random digimon
 
 
+class RandomizeEnemyDigimonEncounters(Enum):
+    UNCHANGED = 0                       # do not randomize
+    RANDOMIZE_1_TO_1_SAME_STAGE = 1     # randomize 1-to-1, same stage digimon
+    RANDOMIZE_1_TO_1_COMPLETELY = 2     # randomize 1-to-1, completely random digimon
+
+
 class RandomizeDigivolutions(Enum):
     UNCHANGED = 0                       # do not randomize
     RANDOMIZE = 1                       # randomize (specific randomization options are outside of this enum)

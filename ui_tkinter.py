@@ -4,7 +4,7 @@ from tkinter import ttk, filedialog, messagebox
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeMovesets, RandomizeItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeTraits
+from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeMovesets, RandomizeItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeTraits, RandomizeEnemyDigimonEncounters
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -484,6 +484,17 @@ def toggle_stat_generation():
             rb.configure(state="disabled")
 
 
+
+def toggle_enemy_stat_generation():
+    if enemy_digimon_option_var.get() != RandomizeEnemyDigimonEncounters.UNCHANGED.value:
+        for rb in enemy_stat_gen_radio_buttons:
+            rb.configure(state="normal")
+    else:
+        for rb in enemy_stat_gen_radio_buttons:
+            rb.configure(state="disabled")
+
+
+
 def toggle_digivolution_randomization_options():
     if digivolutions_option_var.get() != RandomizeDigivolutions.UNCHANGED.value:
         digivolutionSimilarSpeciesCheckbox.configure(state="normal")
@@ -650,7 +661,7 @@ tk.Scale(qol_frame, from_=0.5, to=3.0, orient="horizontal", resolution=0.5,
 # Randomization Settings Tab
 randomizer_tab = ttk.Frame(notebook, padding=10)
 randomizer_tab.pack(fill="both", expand=True)  # Ensure frame fills space
-notebook.add(randomizer_tab, text="Randomization Settings")
+notebook.add(randomizer_tab, text="Starters, Items & Quests")
 
 
 # Starters frame
@@ -723,9 +734,93 @@ starters_completely_random_rb.pack(anchor="w")
 '''
 
 
+
+
+
+items_quests_container = ttk.Frame(randomizer_tab)
+items_quests_container.pack(side="top", fill="x", padx=10, pady=5)
+
+
+# Overworld Items Frame
+overworld_items_frame = ttk.LabelFrame(items_quests_container, text="Overworld Items", padding=10)
+#overworld_items_frame.pack(side="top", fill="x", padx=10, pady=5)
+overworld_items_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+
+overworld_items_radio_frame = ttk.Frame(overworld_items_frame)
+overworld_items_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+overworld_items_option_var = tk.IntVar(value=RandomizeItems.UNCHANGED.value)
+
+overworld_items_unchanged_rb = tk.Radiobutton(overworld_items_radio_frame, text="Unchanged", variable=overworld_items_option_var, value=RandomizeItems.UNCHANGED.value, state="disabled")
+overworld_items_unchanged_rb.pack(anchor="w")
+
+overworld_items_same_category_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (same category)", variable=overworld_items_option_var, value=RandomizeItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
+overworld_items_same_category_rb_tooltip = CreateToolTip(overworld_items_same_category_rb, "Randomizes each overworld item chest while keeping the original category of the item.\nFor example, a consumable like a GateDisk will be replaced by another consumable, farm items will be replaced by other farm items, etc.\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
+overworld_items_same_category_rb.pack(anchor="w")
+
+overworld_items_completely_random_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (completely)", variable=overworld_items_option_var, value=RandomizeItems.RANDOMIZE_COMPLETELY.value, state="disabled")
+overworld_items_completely_random_tooltip = CreateToolTip(overworld_items_completely_random_rb, "Randomizes each overworld item chest completely (a chest can have any item, regardless of its original item).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
+overworld_items_completely_random_rb.pack(anchor="w")
+
+
+
+# Quests Frame
+quests_frame = ttk.LabelFrame(items_quests_container, text="Quests", padding=10)
+#quests_frame.pack(side="top", fill="x", padx=10, pady=5)
+quests_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
+
+quest_rewards_radio_frame = ttk.LabelFrame(quests_frame, text="Item Rewards")
+quest_rewards_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+quest_rewards_option_var = tk.IntVar(value=RandomizeItems.UNCHANGED.value)
+
+quest_rewards_unchanged_rb = tk.Radiobutton(quest_rewards_radio_frame, text="Unchanged", variable=quest_rewards_option_var, value=RandomizeItems.UNCHANGED.value, state="disabled")
+quest_rewards_unchanged_rb.pack(anchor="w")
+
+quest_rewards_same_category_rb = tk.Radiobutton(quest_rewards_radio_frame, text="Random (same category)", variable=quest_rewards_option_var, value=RandomizeItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
+quest_rewards_same_category_rb_tooltip = CreateToolTip(quest_rewards_same_category_rb, "Randomizes each quest reward while keeping the original category of the item.\nFor example, an equipment item like Water Ring will be replaced by another equipment item, farm items will be replaced by other farm items, etc.\nNOTE: Key items are not included in the randomization pool, and rewards corresponding to key items will not be randomized (e.g. the rewarded Love DigiEgg from the quest \"Explore Limit Valley\").")
+quest_rewards_same_category_rb.pack(anchor="w")
+
+quest_rewards_completely_random_rb = tk.Radiobutton(quest_rewards_radio_frame, text="Random (completely)", variable=quest_rewards_option_var, value=RandomizeItems.RANDOMIZE_COMPLETELY.value, state="disabled")
+quest_rewards_completely_random_tooltip = CreateToolTip(quest_rewards_completely_random_rb, "Randomizes each quest reward completely (each reward can be any item type, regardless of its original item type).\nNOTE: Key items are not included in the randomization pool, and rewards corresponding to key items will not be randomized.")
+quest_rewards_completely_random_rb.pack(anchor="w")
+
+
+
+#quests_randomize_item_rewards_var = tk.IntVar(value=RandomizeItems.UNCHANGED.value)
+#questsRandomizeItemRewardsCheckbox = tk.Checkbutton(quests_sub_frame, text="Randomize Quest Item Rewards", variable=quests_randomize_item_rewards_var, state="disabled")
+#questsRandomizeItemRewardsCheckbox.pack(anchor='w')
+#questsRandomizeItemRewardsTooltip = CreateToolTip(questsRandomizeItemRewardsCheckbox, "Randomizes the rewarded item for each completed quest.\nThis setting does not randomize the rewarded Love DigiEgg from the quest \"Explore Limit Valley\".")
+
+
+quests_sub_frame = ttk.Frame(quests_frame)
+quests_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+quests_enable_legendary_tamer_var = tk.BooleanVar(value=False)
+questsEnableLegendaryTamerCheckbox = tk.Checkbutton(quests_sub_frame, text="Enable Legendary Tamer Quest", variable=quests_enable_legendary_tamer_var, state="disabled")
+questsEnableLegendaryTamerCheckbox.pack(anchor='w')
+questsEnableLegendaryTamerTooltip = CreateToolTip(questsEnableLegendaryTamerCheckbox, "Enables the quest \"The Legendary Tamer\" after obtaining Platinum rank and completing the quest \"Gaia Origin Challenge\", disabling the requirement of playing online once.")
+
+
+
+quests_unlock_main_in_sequence_var = tk.BooleanVar(value=False)
+questsUnlockMainQuestsInSequenceCheckbox = tk.Checkbutton(quests_sub_frame, text="Unlock Main Quests in Sequence", variable=quests_unlock_main_in_sequence_var, state="disabled")
+questsUnlockMainQuestsInSequenceCheckbox.pack(anchor='w')
+questsUnlockMainQuestsInSequenceTooltip = CreateToolTip(questsUnlockMainQuestsInSequenceCheckbox, "Unlocks each main quest immediately after completing the previous main quest, eliminating the requirement of clearing side quests to unlock the next main quest.")
+
+
+
+# Encounters & Tamers Tab
+encounters_tamers_tab = ttk.Frame(notebook, padding=10)
+encounters_tamers_tab.pack(fill="both", expand=True)
+notebook.add(encounters_tamers_tab, text="Enemy Encounters & Tamers")
+
+
+
 # Wild digimon frame
 
-wild_digimon_frame = ttk.LabelFrame(randomizer_tab, text="Wild Digimon", padding=10)
+wild_digimon_frame = ttk.LabelFrame(encounters_tamers_tab, text="Wild Digimon", padding=10)
 wild_digimon_frame.pack(side="top", fill="x", padx=10, pady=5)
 
 # Create a container frame inside Wild Digimon for horizontal layout
@@ -821,80 +916,61 @@ for text, value in stat_gen_options:
 toggle_stat_generation()
 
 
+# Enemy tamers & bosses
+
+
+enemy_digimon_frame = ttk.LabelFrame(encounters_tamers_tab, text="Enemy Tamers & Bosses", padding=10)
+enemy_digimon_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+# Create a container frame inside Enemy Tamers & Bosses for horizontal layout
+enemy_digimon_inner_container = ttk.Frame(enemy_digimon_frame)
+enemy_digimon_inner_container.pack(side="top", fill="x")
+
+enemy_digimon_option_var = tk.IntVar(value=RandomizeEnemyDigimonEncounters.UNCHANGED.value)
+
+# Left side: Enemy Digimon randomization radio buttons
+enemy_digimon_radio_frame = ttk.Frame(enemy_digimon_inner_container)
+enemy_digimon_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+enemy_digimon_unchanged_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Unchanged", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.UNCHANGED.value, state="disabled", command=toggle_enemy_stat_generation)
+enemy_digimon_unchanged_rb.pack(anchor="w")
+
+enemy_digimon_randomize_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Random (same digivolution stages)", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_SAME_STAGE.value, state="disabled", command=toggle_enemy_stat_generation)
+enemy_digimon_randomize_tooltip = CreateToolTip(enemy_digimon_randomize_rb, "Replaces each enemy digimon by another digimon of the same stage.\nThis setting does not yet randomize non-scannable digimon (e.g. Grimmon, SkullBaluchimon).")
+enemy_digimon_randomize_rb.pack(anchor="w")
+
+enemy_digimon_randomize_completely_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Random (completely)", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_COMPLETELY.value, state="disabled", command=toggle_enemy_stat_generation)
+enemy_digimon_randomize_tooltip = CreateToolTip(enemy_digimon_randomize_completely_rb, "Replaces each enemy digimon by a random digimon of any stage.\nThis setting does not yet randomize non-scannable digimon (e.g. Grimmon, SkullBaluchimon).")
+enemy_digimon_randomize_completely_rb.pack(anchor="w")
 
 
 
-items_quests_container = ttk.Frame(randomizer_tab)
-items_quests_container.pack(side="top", fill="x", padx=10, pady=5)
+## Right side: Stat Generation frame
+#enemy_stat_gen_frame = ttk.LabelFrame(enemy_digimon_inner_container, text="Stat Generation", padding=10)
+#enemy_stat_gen_frame.pack(side="top", fill="y", padx=10, pady=5)
+#
+#enemy_stat_gen_option_var = tk.IntVar(value=LvlUpMode.RANDOM.value)  # Default to "Random"
+#
+#enemy_stat_gen_radio_buttons = []
+#enemy_stat_gen_options = [("Random", LvlUpMode.RANDOM.value), ("Lowest (easier)", LvlUpMode.FIXED_MIN.value), ("Median", LvlUpMode.FIXED_AVG.value), ("Highest (harder)", LvlUpMode.FIXED_MAX.value)]
+#enemy_stat_gen_tooltips = ["A random value from the possible level-up values is picked for each stat upon each level-up operation while generating the enemy digimon's stats.\nThis is likely to result in an average stat distribution for the digimon, but is less deterministic than Median.", "The lowest value from the possible level-up values is always picked for each stat upon each level-up operation while generating the enemy digimon's stats.\nThis gives the enemy digimon a weaker stat constitution, thus granting an easier game experience.", "The median value from the possible level-up values is always picked for each stat upon each level-up operation while generating the enemy digimon's stats.\nThis gives the enemy digimon a median stat constitution.", "The highest value from the possible level-up values is always picked for each stat upon each level-up operation while generating the enemy digimon's stats.\nThis gives the enemy digimon a stronger stat constitution, thus granting a harder game experience."]
+#
+#for text, value in enemy_stat_gen_options:
+#    rb = tk.Radiobutton(
+#        enemy_stat_gen_frame,
+#        text=text,
+#        variable=enemy_stat_gen_option_var,
+#        value=value,
+#        state="disabled"  # Initially disabled
+#    )
+#    rb.pack(anchor="w")
+#    CreateToolTip(rb, enemy_stat_gen_tooltips[value])
+#    enemy_stat_gen_radio_buttons.append(rb)
+#
+## Initialize the toggle state
+#toggle_enemy_stat_generation()
 
 
-# Overworld Items Frame
-overworld_items_frame = ttk.LabelFrame(items_quests_container, text="Overworld Items", padding=10)
-#overworld_items_frame.pack(side="top", fill="x", padx=10, pady=5)
-overworld_items_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
-
-
-overworld_items_radio_frame = ttk.Frame(overworld_items_frame)
-overworld_items_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
-
-overworld_items_option_var = tk.IntVar(value=RandomizeItems.UNCHANGED.value)
-
-overworld_items_unchanged_rb = tk.Radiobutton(overworld_items_radio_frame, text="Unchanged", variable=overworld_items_option_var, value=RandomizeItems.UNCHANGED.value, state="disabled")
-overworld_items_unchanged_rb.pack(anchor="w")
-
-overworld_items_same_category_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (same category)", variable=overworld_items_option_var, value=RandomizeItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
-overworld_items_same_category_rb_tooltip = CreateToolTip(overworld_items_same_category_rb, "Randomizes each overworld item chest while keeping the original category of the item.\nFor example, a consumable like a GateDisk will be replaced by another consumable, farm items will be replaced by other farm items, etc.\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
-overworld_items_same_category_rb.pack(anchor="w")
-
-overworld_items_completely_random_rb = tk.Radiobutton(overworld_items_radio_frame, text="Random (completely)", variable=overworld_items_option_var, value=RandomizeItems.RANDOMIZE_COMPLETELY.value, state="disabled")
-overworld_items_completely_random_tooltip = CreateToolTip(overworld_items_completely_random_rb, "Randomizes each overworld item chest completely (a chest can have any item, regardless of its original item).\nNOTE: Key items are not included in the randomization pool, and chests that contain key items are not randomized.")
-overworld_items_completely_random_rb.pack(anchor="w")
-
-
-
-# Quests Frame
-quests_frame = ttk.LabelFrame(items_quests_container, text="Quests", padding=10)
-#quests_frame.pack(side="top", fill="x", padx=10, pady=5)
-quests_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
-
-quest_rewards_radio_frame = ttk.LabelFrame(quests_frame, text="Item Rewards")
-quest_rewards_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
-
-quest_rewards_option_var = tk.IntVar(value=RandomizeItems.UNCHANGED.value)
-
-quest_rewards_unchanged_rb = tk.Radiobutton(quest_rewards_radio_frame, text="Unchanged", variable=quest_rewards_option_var, value=RandomizeItems.UNCHANGED.value, state="disabled")
-quest_rewards_unchanged_rb.pack(anchor="w")
-
-quest_rewards_same_category_rb = tk.Radiobutton(quest_rewards_radio_frame, text="Random (same category)", variable=quest_rewards_option_var, value=RandomizeItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
-quest_rewards_same_category_rb_tooltip = CreateToolTip(quest_rewards_same_category_rb, "Randomizes each quest reward while keeping the original category of the item.\nFor example, an equipment item like Water Ring will be replaced by another equipment item, farm items will be replaced by other farm items, etc.\nNOTE: Key items are not included in the randomization pool, and rewards corresponding to key items will not be randomized (e.g. the rewarded Love DigiEgg from the quest \"Explore Limit Valley\").")
-quest_rewards_same_category_rb.pack(anchor="w")
-
-quest_rewards_completely_random_rb = tk.Radiobutton(quest_rewards_radio_frame, text="Random (completely)", variable=quest_rewards_option_var, value=RandomizeItems.RANDOMIZE_COMPLETELY.value, state="disabled")
-quest_rewards_completely_random_tooltip = CreateToolTip(quest_rewards_completely_random_rb, "Randomizes each quest reward completely (each reward can be any item type, regardless of its original item type).\nNOTE: Key items are not included in the randomization pool, and rewards corresponding to key items will not be randomized.")
-quest_rewards_completely_random_rb.pack(anchor="w")
-
-
-
-#quests_randomize_item_rewards_var = tk.IntVar(value=RandomizeItems.UNCHANGED.value)
-#questsRandomizeItemRewardsCheckbox = tk.Checkbutton(quests_sub_frame, text="Randomize Quest Item Rewards", variable=quests_randomize_item_rewards_var, state="disabled")
-#questsRandomizeItemRewardsCheckbox.pack(anchor='w')
-#questsRandomizeItemRewardsTooltip = CreateToolTip(questsRandomizeItemRewardsCheckbox, "Randomizes the rewarded item for each completed quest.\nThis setting does not randomize the rewarded Love DigiEgg from the quest \"Explore Limit Valley\".")
-
-
-quests_sub_frame = ttk.Frame(quests_frame)
-quests_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
-
-quests_enable_legendary_tamer_var = tk.BooleanVar(value=False)
-questsEnableLegendaryTamerCheckbox = tk.Checkbutton(quests_sub_frame, text="Enable Legendary Tamer Quest", variable=quests_enable_legendary_tamer_var, state="disabled")
-questsEnableLegendaryTamerCheckbox.pack(anchor='w')
-questsEnableLegendaryTamerTooltip = CreateToolTip(questsEnableLegendaryTamerCheckbox, "Enables the quest \"The Legendary Tamer\" after obtaining Platinum rank and completing the quest \"Gaia Origin Challenge\", disabling the requirement of playing online once.")
-
-
-
-quests_unlock_main_in_sequence_var = tk.BooleanVar(value=False)
-questsUnlockMainQuestsInSequenceCheckbox = tk.Checkbutton(quests_sub_frame, text="Unlock Main Quests in Sequence", variable=quests_unlock_main_in_sequence_var, state="disabled")
-questsUnlockMainQuestsInSequenceCheckbox.pack(anchor='w')
-questsUnlockMainQuestsInSequenceTooltip = CreateToolTip(questsUnlockMainQuestsInSequenceCheckbox, "Unlocks each main quest immediately after completing the previous main quest, eliminating the requirement of clearing side quests to unlock the next main quest.")
 
 
 
