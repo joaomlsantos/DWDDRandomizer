@@ -79,6 +79,7 @@ def execute_rom_changes(save_path):
 
         "BUFF_WILD_ENCOUNTER_MONEY": buff_wild_encounter_money_var,
         "RANDOMIZE_WILD_ENCOUNTER_ITEMS": RandomizeItems(wild_encounter_items_option_var.get()),
+        "RANDOMIZE_FIXED_BATTLES": RandomizeEnemyDigimonEncounters(enemy_digimon_option_var.get()),
 
         "RANDOMIZE_DIGIMON_SPECIES": RandomizeSpeciesConfig(species_option_var.get()),
         "SPECIES_ALLOW_UNKNOWN": species_allow_unknown_var,
@@ -183,6 +184,12 @@ def enable_buttons():
     wild_encounter_items_same_category_rb.configure(state="normal")
     wild_encounter_items_completely_random_rb.configure(state="normal")
     buffWildEncounterMoneyCheckbox.configure(state="normal")
+
+    # Randomize fixed enemies
+    enemy_digimon_unchanged_rb.configure(state="normal")
+    enemy_digimon_randomize_rb.configure(state="normal")
+    enemy_digimon_randomize_completely_rb.configure(state="normal")
+
 
     # Randomize overworld items
     overworld_items_unchanged_rb.configure(state="normal")
@@ -485,13 +492,13 @@ def toggle_stat_generation():
 
 
 
-def toggle_enemy_stat_generation():
-    if enemy_digimon_option_var.get() != RandomizeEnemyDigimonEncounters.UNCHANGED.value:
-        for rb in enemy_stat_gen_radio_buttons:
-            rb.configure(state="normal")
-    else:
-        for rb in enemy_stat_gen_radio_buttons:
-            rb.configure(state="disabled")
+#def toggle_enemy_stat_generation():
+#    if enemy_digimon_option_var.get() != RandomizeEnemyDigimonEncounters.UNCHANGED.value:
+#        for rb in enemy_stat_gen_radio_buttons:
+#            rb.configure(state="normal")
+#    else:
+#        for rb in enemy_stat_gen_radio_buttons:
+#            rb.configure(state="disabled")
 
 
 
@@ -932,15 +939,18 @@ enemy_digimon_option_var = tk.IntVar(value=RandomizeEnemyDigimonEncounters.UNCHA
 enemy_digimon_radio_frame = ttk.Frame(enemy_digimon_inner_container)
 enemy_digimon_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
 
-enemy_digimon_unchanged_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Unchanged", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.UNCHANGED.value, state="disabled", command=toggle_enemy_stat_generation)
+#enemy_digimon_unchanged_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Unchanged", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.UNCHANGED.value, state="disabled", command=toggle_enemy_stat_generation)
+enemy_digimon_unchanged_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Unchanged", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.UNCHANGED.value, state="disabled")
 enemy_digimon_unchanged_rb.pack(anchor="w")
 
-enemy_digimon_randomize_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Random (same digivolution stages)", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_SAME_STAGE.value, state="disabled", command=toggle_enemy_stat_generation)
-enemy_digimon_randomize_tooltip = CreateToolTip(enemy_digimon_randomize_rb, "Replaces each enemy digimon by another digimon of the same stage.\nThis setting does not yet randomize non-scannable digimon (e.g. Grimmon, SkullBaluchimon).")
+#enemy_digimon_randomize_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Random (same digivolution stages)", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_SAME_STAGE.value, state="disabled", command=toggle_enemy_stat_generation)
+enemy_digimon_randomize_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Random (same digivolution stages)", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_SAME_STAGE.value, state="disabled")
+enemy_digimon_randomize_tooltip = CreateToolTip(enemy_digimon_randomize_rb, "Replaces each fixed enemy digimon by another digimon of the same stage.\nThis setting does not yet randomize non-scannable digimon (e.g. Grimmon, SkullBaluchimon).")
 enemy_digimon_randomize_rb.pack(anchor="w")
 
-enemy_digimon_randomize_completely_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Random (completely)", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_COMPLETELY.value, state="disabled", command=toggle_enemy_stat_generation)
-enemy_digimon_randomize_tooltip = CreateToolTip(enemy_digimon_randomize_completely_rb, "Replaces each enemy digimon by a random digimon of any stage.\nThis setting does not yet randomize non-scannable digimon (e.g. Grimmon, SkullBaluchimon).")
+#enemy_digimon_randomize_completely_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Random (completely)", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_COMPLETELY.value, state="disabled", command=toggle_enemy_stat_generation)
+enemy_digimon_randomize_completely_rb = tk.Radiobutton(enemy_digimon_radio_frame, text="Random (completely)", variable=enemy_digimon_option_var, value=RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_COMPLETELY.value, state="disabled")
+enemy_digimon_randomize_tooltip = CreateToolTip(enemy_digimon_randomize_completely_rb, "Replaces each fixed enemy digimon by a random digimon of any stage.\nThis setting does not yet randomize non-scannable digimon (e.g. Grimmon, SkullBaluchimon).")
 enemy_digimon_randomize_completely_rb.pack(anchor="w")
 
 

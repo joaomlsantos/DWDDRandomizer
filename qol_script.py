@@ -7,7 +7,7 @@ from typing import Dict, List
 from src import constants, utils, model
 import numpy as np
 import copy
-from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeMovesets, RandomizeItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeTraits, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
+from configs import PATH_SOURCE, PATH_TARGET, ConfigManager, ExpYieldConfig, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeElementalResistances, RandomizeEnemyDigimonEncounters, RandomizeMovesets, RandomizeItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeTraits, RandomizeWildEncounters, RookieResetConfig, default_configmanager_settings
 from io import StringIO
 from tabulate import tabulate
 
@@ -200,6 +200,9 @@ class Randomizer:
 
         self.randomizeDigimonTraits(target_rom_data)
 
+        # randomizeFixedBattles MUST run AFTER all base randomizations (species, resistances, movesets, traits)
+        self.randomizeFixedBattles(target_rom_data)
+
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
             self.curUpdatedPreEvos, self.curStandardEvos = self.randomizeDigivolutions(target_rom_data)
@@ -385,8 +388,7 @@ class Randomizer:
 
                 base_digimon_leveled = utils.generateLvlupStats(self.lvlupTypeTable, self.baseDigimonInfo[randomized_digimon_id], encounter_level, self.config_manager.get("AREA_ENCOUNTERS_STATS"))
                 enemy_digimon_offset = self.enemyDigimonInfo[randomized_digimon_id].offset
-
-                # update stats
+                
                 enemy_digimon_to_update = self.enemyDigimonInfo[randomized_digimon_id]
                 enemy_digimon_to_update.level = base_digimon_leveled.level
                 enemy_digimon_to_update.hp = base_digimon_leveled.hp
@@ -395,14 +397,13 @@ class Randomizer:
                 enemy_digimon_to_update.spirit = base_digimon_leveled.spirit
                 enemy_digimon_to_update.speed = base_digimon_leveled.speed
 
-                
-                # we do not write generated MP since enemy MP is always FF FF
-                utils.writeRomBytes(rom_data, base_digimon_leveled.level, enemy_digimon_offset+2, 1)    # write new level to rom
-                utils.writeRomBytes(rom_data, base_digimon_leveled.hp, enemy_digimon_offset+4, 2)    # write new hp
-                utils.writeRomBytes(rom_data, base_digimon_leveled.attack, enemy_digimon_offset+0xa, 2)    # write new attack
-                utils.writeRomBytes(rom_data, base_digimon_leveled.defense, enemy_digimon_offset+0xc, 2)    # write new defense
-                utils.writeRomBytes(rom_data, base_digimon_leveled.spirit, enemy_digimon_offset+0xe, 2)    # write new spirit
-                utils.writeRomBytes(rom_data, base_digimon_leveled.speed, enemy_digimon_offset+0x10, 2)    # write new speed
+                # write only stats to ROM
+                utils.writeRomBytes(rom_data, base_digimon_leveled.level, enemy_digimon_offset+2, 1)
+                utils.writeRomBytes(rom_data, base_digimon_leveled.hp, enemy_digimon_offset+4, 2)
+                utils.writeRomBytes(rom_data, base_digimon_leveled.attack, enemy_digimon_offset+0xa, 2)
+                utils.writeRomBytes(rom_data, base_digimon_leveled.defense, enemy_digimon_offset+0xc, 2)
+                utils.writeRomBytes(rom_data, base_digimon_leveled.spirit, enemy_digimon_offset+0xe, 2)
+                utils.writeRomBytes(rom_data, base_digimon_leveled.speed, enemy_digimon_offset+0x10, 2)
 
 
                 cur_offset += 24        # skip 24 bytes to get next encounter
@@ -621,14 +622,244 @@ class Randomizer:
 
     def randomizeFixedBattles(self,
                               rom_data: bytearray):
-        
-        if(not self.config_manager.get("RANDOMIZE_FIXED_BATTLES", False)):
+
+        randomize_option = self.config_manager.get("RANDOMIZE_FIXED_BATTLES", RandomizeEnemyDigimonEncounters.UNCHANGED)
+        if(randomize_option == RandomizeEnemyDigimonEncounters.UNCHANGED):
             return
-        
 
-        # to accomplish this we randomize every enemy encounter after 0x01f4
+        previousEnemyDigimonInfo = copy.deepcopy(self.enemyDigimonInfo)
 
-        
+        # setup randomization pools based on option
+        options_same_stage = [RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_SAME_STAGE]
+        options_completely_random = [RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_COMPLETELY]
+
+        if(randomize_option in options_same_stage):
+            digimon_stage_pool = copy.deepcopy(constants.DIGIMON_IDS)
+            if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
+                digimon_stage_pool["IN-TRAINING"].pop("Calumon", None)
+
+        if(randomize_option in options_completely_random):
+            digimon_ids_by_stage = copy.deepcopy(constants.DIGIMON_IDS)
+            digimon_pool = {}
+            for stage in digimon_ids_by_stage:
+                digimon_pool = digimon_pool | digimon_ids_by_stage[stage]
+            if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
+                digimon_pool.pop("Calumon", None)
+
+        self.logger.info("\n==================== FIXED BATTLES ====================")
+
+        for enemy_id in self.enemyDigimonInfo.keys():
+
+            # skip default area encounter enemies (base digimon IDs)
+            if enemy_id <= 0x1f4:
+                continue
+
+            original_enemy_data = previousEnemyDigimonInfo[enemy_id]
+            original_level = original_enemy_data.level
+
+            # derive current enemy id from sprite info
+            if enemy_id < len(self.spriteMapTable):
+                original_sprite_entry = self.spriteMapTable[enemy_id]
+                original_sprite_id = original_sprite_entry.main_sprite
+                original_stage = utils.getDigimonStageFromSpriteInfo(original_sprite_id)
+
+                original_base_digimon_id = None
+                for base_id in constants.DIGIMON_ID_TO_STR.keys():
+                    if base_id <= 0x1f4 and base_id < len(self.spriteMapTable):
+                        if self.spriteMapTable[base_id].main_sprite == original_sprite_id:
+                            original_base_digimon_id = base_id
+                            break
+
+                if original_base_digimon_id is None:
+                    self.logger.debug(f"Enemy {hex(enemy_id)} sprite {hex(original_sprite_id)} not matched to base Digimon, skipping")
+                    continue
+            else:
+                # fallback if enemy_id does not exist in sprite table
+                self.logger.debug(f"Enemy {hex(enemy_id)} not found in sprite table, skipping")
+                continue
+
+            # skip non-scannable digimon for now (e.g. Grimmon, SkullBaluchimon)
+            if original_stage in ["JOINT_SLOT_BOSS", "BATTLE_EXCLUSIVE", ""]:
+                self.logger.debug(f"Skipping non-scannable enemy {hex(enemy_id)} (base ID {hex(original_base_digimon_id)}, stage: {original_stage})")
+                continue
+
+            original_name = constants.DIGIMON_ID_TO_STR.get(original_base_digimon_id, f"ID_{hex(original_base_digimon_id)}")
+
+            if(randomize_option in options_same_stage):
+                if original_stage not in constants.DIGIMON_IDS:
+                    self.logger.debug(f"Digimon with id {hex(original_base_digimon_id)} has invalid stage {original_stage}, skipping")
+                    continue
+
+                picked_digimon_name = random.choice(list(digimon_stage_pool[original_stage].keys()))
+                randomized_digimon_id = digimon_stage_pool[original_stage][picked_digimon_name]
+
+            if(randomize_option in options_completely_random):
+                picked_digimon_name = random.choice(list(digimon_pool.keys()))
+                randomized_digimon_id = digimon_pool[picked_digimon_name]
+
+            # generate stats for the randomized digimon at the original level
+            base_digimon_leveled = utils.generateLvlupStats(
+                self.lvlupTypeTable,
+                self.baseDigimonInfo[randomized_digimon_id],
+                original_level,
+                self.config_manager.get("AREA_ENCOUNTERS_STATS", model.LvlUpMode.RANDOM)
+            )
+
+            original_base_total = (
+                original_enemy_data.attack +
+                original_enemy_data.defense +
+                original_enemy_data.spirit +
+                original_enemy_data.speed
+            )
+
+            generated_base_total = (
+                base_digimon_leveled.attack +
+                base_digimon_leveled.defense +
+                base_digimon_leveled.spirit +
+                base_digimon_leveled.speed
+            )
+
+            # check if generated stats are within acceptable range
+            stat_tolerance = 0.20
+            lower_bound = original_base_total * (1 - stat_tolerance)
+            upper_bound = original_base_total * (1 + stat_tolerance)
+
+            if generated_base_total < lower_bound or generated_base_total > upper_bound:
+                # stats are outside range, fit them proportionally
+                if generated_base_total > 0:
+                    scaling_factor = original_base_total / generated_base_total
+                    base_digimon_leveled.attack = int(base_digimon_leveled.attack * scaling_factor)
+                    base_digimon_leveled.defense = int(base_digimon_leveled.defense * scaling_factor)
+                    base_digimon_leveled.spirit = int(base_digimon_leveled.spirit * scaling_factor)
+                    base_digimon_leveled.speed = int(base_digimon_leveled.speed * scaling_factor)
+
+            # check if new HP is within 20% tolerance of original
+            hp_lower_bound = original_enemy_data.hp * (1 - stat_tolerance)
+            hp_upper_bound = original_enemy_data.hp * (1 + stat_tolerance)
+
+            if base_digimon_leveled.hp < hp_lower_bound or base_digimon_leveled.hp > hp_upper_bound:
+                base_digimon_leveled.hp = original_enemy_data.hp
+
+            # update enemy digimon info in memory
+            enemy_digimon_to_update = self.enemyDigimonInfo[enemy_id]
+            enemy_digimon_to_update.id = randomized_digimon_id
+            enemy_digimon_to_update.level = base_digimon_leveled.level
+            enemy_digimon_to_update.hp = base_digimon_leveled.hp
+            enemy_digimon_to_update.attack = base_digimon_leveled.attack
+            enemy_digimon_to_update.defense = base_digimon_leveled.defense
+            enemy_digimon_to_update.spirit = base_digimon_leveled.spirit
+            enemy_digimon_to_update.speed = base_digimon_leveled.speed
+
+            base_digimon = self.baseDigimonInfo[randomized_digimon_id]
+
+            enemy_digimon_to_update.species = base_digimon.species
+            enemy_digimon_to_update.trait_1 = base_digimon.trait_1
+            enemy_digimon_to_update.trait_2 = base_digimon.trait_2
+            enemy_digimon_to_update.trait_3 = base_digimon.trait_3
+            enemy_digimon_to_update.trait_4 = base_digimon.trait_4
+
+            enemy_digimon_to_update.light_res = base_digimon.light_res
+            enemy_digimon_to_update.dark_res = base_digimon.dark_res
+            enemy_digimon_to_update.fire_res = base_digimon.fire_res
+            enemy_digimon_to_update.earth_res = base_digimon.earth_res
+            enemy_digimon_to_update.wind_res = base_digimon.wind_res
+            enemy_digimon_to_update.steel_res = base_digimon.steel_res
+            enemy_digimon_to_update.water_res = base_digimon.water_res
+            enemy_digimon_to_update.thunder_res = base_digimon.thunder_res
+
+            exp_yield_opt = self.config_manager.get("APPLY_EXP_PATCH_FLAT", ExpYieldConfig.UNCHANGED)
+            exp_denominator = 7
+            if exp_yield_opt == ExpYieldConfig.INCREASE_HALVED:
+                exp_denominator = 14
+
+            randomized_stage = utils.getDigimonStage(randomized_digimon_id)
+            if randomized_stage in constants.EXP_FLAT_BY_STAGE:
+                stage_exp_base = constants.EXP_FLAT_BY_STAGE[randomized_stage]
+                new_exp_yield = round((stage_exp_base * base_digimon_leveled.level) / exp_denominator)
+                enemy_digimon_to_update.updateExpYield(new_exp_yield)
+
+            base_moves = base_digimon.getRegularMoves()
+            signature_move = base_digimon.move_signature
+
+            # filter moves by level learned
+            learned_moves = []
+            for move_id in base_moves:
+                if move_id < len(self.moveDataArray) and move_id != 65535:
+                    move_data = self.moveDataArray[move_id]
+                    if move_data.level_learned <= base_digimon_leveled.level:
+                        learned_moves.append(move_id)
+
+            if len(learned_moves) < 2:
+                # add first 2 base moves regardless of level
+                learned_moves = []
+                for i in range(min(2, len(base_moves))):
+                    if base_moves[i] != 65535:
+                        learned_moves.append(base_moves[i])
+
+            while len(learned_moves) < 4:
+                learned_moves.append(65535)
+
+            enemy_digimon_to_update.move_signature = signature_move
+            enemy_digimon_to_update.move_1 = learned_moves[0] if len(learned_moves) > 0 else 65535
+            enemy_digimon_to_update.move_2 = learned_moves[1] if len(learned_moves) > 1 else 65535
+            enemy_digimon_to_update.move_3 = learned_moves[2] if len(learned_moves) > 2 else 65535
+            enemy_digimon_to_update.move_4 = learned_moves[3] if len(learned_moves) > 3 else 65535
+
+            enemy_offset = original_enemy_data.offset
+
+            utils.writeRomBytes(rom_data, base_digimon_leveled.level, enemy_offset+2, 1)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.species.value if isinstance(enemy_digimon_to_update.species, model.Species) else enemy_digimon_to_update.species, enemy_offset+3, 1)
+            utils.writeRomBytes(rom_data, base_digimon_leveled.hp, enemy_offset+4, 2)
+            utils.writeRomBytes(rom_data, base_digimon_leveled.attack, enemy_offset+0xa, 2)
+            utils.writeRomBytes(rom_data, base_digimon_leveled.defense, enemy_offset+0xc, 2)
+            utils.writeRomBytes(rom_data, base_digimon_leveled.spirit, enemy_offset+0xe, 2)
+            utils.writeRomBytes(rom_data, base_digimon_leveled.speed, enemy_offset+0x10, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.light_res, enemy_offset+0x14, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.dark_res, enemy_offset+0x16, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.fire_res, enemy_offset+0x18, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.earth_res, enemy_offset+0x1a, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.wind_res, enemy_offset+0x1c, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.steel_res, enemy_offset+0x1e, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.water_res, enemy_offset+0x20, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.thunder_res, enemy_offset+0x22, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.trait_1, enemy_offset+0x26, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.trait_2, enemy_offset+0x28, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.trait_3, enemy_offset+0x2a, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.trait_4, enemy_offset+0x2c, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.move_signature, enemy_offset+0x2e, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.move_1, enemy_offset+0x30, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.move_2, enemy_offset+0x32, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.move_3, enemy_offset+0x34, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.move_4, enemy_offset+0x36, 2)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.holy_exp, enemy_offset+0x3c, 4)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.dark_exp, enemy_offset+0x40, 4)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.dragon_exp, enemy_offset+0x44, 4)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.beast_exp, enemy_offset+0x48, 4)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.bird_exp, enemy_offset+0x4c, 4)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.machine_exp, enemy_offset+0x50, 4)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.aquan_exp, enemy_offset+0x54, 4)
+            utils.writeRomBytes(rom_data, enemy_digimon_to_update.insectplant_exp, enemy_offset+0x58, 4)
+
+            # update sprite mapping table
+            if enemy_id < len(self.spriteMapTable):
+                original_sprite = self.spriteMapTable[enemy_id]
+                if randomized_digimon_id < len(self.spriteMapTable):
+                    new_sprite = self.spriteMapTable[randomized_digimon_id]
+                    utils.writeRomBytes(rom_data, new_sprite.main_sprite, original_sprite.offset+8, 4)
+                    utils.writeRomBytes(rom_data, new_sprite.upperscreen_sprites, original_sprite.offset+0xc, 4)
+
+            # update battle string tabl
+            if enemy_id < len(self.battleStrTable):
+                original_str_entry = self.battleStrTable[enemy_id]
+                if randomized_digimon_id < len(self.battleStrTable):
+                    new_str_entry = self.battleStrTable[randomized_digimon_id]
+                    utils.writeRomBytes(rom_data, new_str_entry.value, original_str_entry.offset, 4)
+
+            original_stats = f"HP:{original_enemy_data.hp} ATK:{original_enemy_data.attack} DEF:{original_enemy_data.defense} SPR:{original_enemy_data.spirit} SPD:{original_enemy_data.speed}"
+            new_stats = f"HP:{base_digimon_leveled.hp} ATK:{base_digimon_leveled.attack} DEF:{base_digimon_leveled.defense} SPR:{base_digimon_leveled.spirit} SPD:{base_digimon_leveled.speed}"
+
+            self.logger.info(f"Enemy {hex(enemy_id)}: {original_name} (Lv{original_level}, {original_stats}) -> {picked_digimon_name} (Lv{base_digimon_leveled.level}, {new_stats})")
+
     def nerfFirstBoss(self,
                       rom_data: bytearray):
         if(not self.config_manager.get("NERF_FIRST_BOSS", False)):
