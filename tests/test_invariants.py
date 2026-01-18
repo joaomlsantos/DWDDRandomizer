@@ -30,7 +30,7 @@ from configs import (
     RandomizeItems,
 )
 
-from unittests.conftest import create_config_manager, set_seed
+from tests.conftest import create_config_manager, set_seed
 
 
 # ============================================================================

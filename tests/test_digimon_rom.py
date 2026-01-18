@@ -5,7 +5,7 @@ import pytest
 from src import model
 from qol_script import DigimonROM, Randomizer
 from configs import ConfigManager, RandomizeDigivolutionConditions, RandomizeDigivolutions, RandomizeStartersConfig, RandomizeWildEncounters, ExpYieldConfig
-from unittests.test_configs import PATH_TARGET_DAWN, PATH_TARGET_DUSK, test_unchanged_settings, PATH_SOURCE_DAWN, PATH_SOURCE_DUSK
+from tests.test_configs import PATH_TARGET_DAWN, PATH_TARGET_DUSK, test_unchanged_settings, PATH_SOURCE_DAWN, PATH_SOURCE_DUSK
 import copy
 
 

@@ -20,7 +20,7 @@ from configs import (
     RandomizeMovesets,
     RandomizeDigivolutions,
 )
-from unittests.conftest import set_seed, create_config_manager
+from tests.conftest import set_seed, create_config_manager
 
 
 # ============================================================================

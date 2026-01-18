@@ -30,7 +30,7 @@ from configs import (
     RandomizeWildEncounters,
     RookieResetConfig,
 )
-from unittests.conftest import set_seed
+from tests.conftest import set_seed
 
 
 # ============================================================================
