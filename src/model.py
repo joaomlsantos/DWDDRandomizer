@@ -239,9 +239,9 @@ class BaseDataDigimon:
         stat_attrs = ["hp", "mp", "attack", "defense", "spirit", "speed", "aptitude"]
         for i, attr in enumerate(stat_attrs):
             # skip value if -1: this is used to skip certain base stat values that are already set
-            if(stat_attrs[i] == -1):
+            if(stats_array[i] == -1):
                 continue
-            setattr(self, attr, stat_attrs[i])
+            setattr(self, attr, stats_array[i])
 
 
     def getRegularMoves(self) -> List[int]:

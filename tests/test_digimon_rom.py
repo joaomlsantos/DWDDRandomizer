@@ -213,17 +213,17 @@ def test_areaEncountersStats(randomizer_dawn, randomizer_dusk):
 def test_expPatchUnchanged(randomizer_dawn, randomizer_dusk):
     randomizer_dawn.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.UNCHANGED
     randomizer_dusk.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.UNCHANGED
-    randomizer_dawn.expPatchFlat(randomizer_dawn.rom_data, randomizer_dawn.enemyDigimonInfo)
-    randomizer_dusk.expPatchFlat(randomizer_dusk.rom_data, randomizer_dusk.enemyDigimonInfo)
+    randomizer_dawn.expPatchFlat(randomizer_dawn.rom_data)
+    randomizer_dusk.expPatchFlat(randomizer_dusk.rom_data)
 
 def test_expPatchHalved(randomizer_dawn, randomizer_dusk):
     randomizer_dawn.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.INCREASE_HALVED
     randomizer_dusk.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.INCREASE_HALVED
-    randomizer_dawn.expPatchFlat(randomizer_dawn.rom_data, randomizer_dawn.enemyDigimonInfo)
-    randomizer_dusk.expPatchFlat(randomizer_dusk.rom_data, randomizer_dusk.enemyDigimonInfo)
+    randomizer_dawn.expPatchFlat(randomizer_dawn.rom_data)
+    randomizer_dusk.expPatchFlat(randomizer_dusk.rom_data)
 
 def test_expPatchFull(randomizer_dawn, randomizer_dusk):
     randomizer_dawn.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.INCREASE_FULL
     randomizer_dusk.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.INCREASE_FULL
-    randomizer_dawn.expPatchFlat(randomizer_dawn.rom_data, randomizer_dawn.enemyDigimonInfo)
-    randomizer_dusk.expPatchFlat(randomizer_dusk.rom_data, randomizer_dusk.enemyDigimonInfo)
+    randomizer_dawn.expPatchFlat(randomizer_dawn.rom_data)
+    randomizer_dusk.expPatchFlat(randomizer_dusk.rom_data)

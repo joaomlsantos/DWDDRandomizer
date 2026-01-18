@@ -34,7 +34,7 @@ test_unchanged_settings = {
     "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": False,    
 }
 
-PATH_SOURCE_DAWN = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA).nds"
-PATH_SOURCE_DUSK = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA).nds"
-PATH_TARGET_DAWN = "C:/Workspace/digimon_stuffs/1421 - Digimon World - Dawn (USA)_pytest.nds"
-PATH_TARGET_DUSK = "C:/Workspace/digimon_stuffs/Digimon World - Dusk (USA)_pytest.nds"
+PATH_SOURCE_DAWN = "C:/Workspace/digimon_stuffs/rom_files/1421 - Digimon World - Dawn (USA).nds"
+PATH_SOURCE_DUSK = "C:/Workspace/digimon_stuffs/rom_files/1420 - Digimon World - Dusk (US).nds"
+PATH_TARGET_DAWN = "C:/Workspace/digimon_stuffs/rom_files/1421 - Digimon World - Dawn (USA)_pytest.nds"
+PATH_TARGET_DUSK = "C:/Workspace/digimon_stuffs/rom_files/1420 - Digimon World - Dusk (US)_pytest.nds"

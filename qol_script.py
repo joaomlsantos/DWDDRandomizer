@@ -1162,13 +1162,18 @@ class Randomizer:
         # randomize digimon movesets; only randomize valid base digimon ids since we're replacing movesets on the enemies as well
 
         for digimon_id in constants.DIGIMON_ID_TO_STR.keys():
-            
+
             current_regular_moves_pool = list(target_regular_moves_pool)
             digimon_moves = self.baseDigimonInfo[digimon_id].getRegularMoves()
             current_randomized_regular_moves = []
+            current_randomized_regular_move_ids_set = set()  # Track IDs for faster lookup
             for move_id in digimon_moves:
 
-                possible_movepool = list(set(current_regular_moves_pool).difference(current_randomized_regular_moves))  # do not repeat moves
+                # Filter out already selected moves by ID, then sort by ID for deterministic ordering
+                possible_movepool = sorted(
+                    [m for m in current_regular_moves_pool if m.id not in current_randomized_regular_move_ids_set],
+                    key=lambda m: m.id
+                )
     
                 if(move_id == 65535):    # move does not exist, skip
                     current_randomized_regular_moves.append(move_id)
@@ -1197,17 +1202,27 @@ class Randomizer:
                                 probability_array.append(MOVESET_SPECIES_BIAS / total_matching_moves)
                             else:
                                 probability_array.append((1 - MOVESET_SPECIES_BIAS) / (len(possible_movepool) - total_matching_moves))
-                        current_randomized_regular_moves.append(random.choices(possible_movepool, weights=probability_array, k=1)[0])
+                        selected_move = random.choices(possible_movepool, weights=probability_array, k=1)[0]
+                        current_randomized_regular_moves.append(selected_move)
+                        current_randomized_regular_move_ids_set.add(selected_move.id)
                     else:
-                        current_randomized_regular_moves.append(random.choice(possible_movepool))
+                        selected_move = random.choice(possible_movepool)
+                        current_randomized_regular_moves.append(selected_move)
+                        current_randomized_regular_move_ids_set.add(selected_move.id)
 
                 if(randomize_movesets == RandomizeMovesets.RANDOM_COMPLETELY):
-                    current_randomized_regular_moves.append(random.choice(possible_movepool))
+                    selected_move = random.choice(possible_movepool)
+                    current_randomized_regular_moves.append(selected_move)
+                    current_randomized_regular_move_ids_set.add(selected_move.id)
 
             # randomize signature move
 
             prev_signature_move_id = self.baseDigimonInfo[digimon_id].move_signature
-            possible_signature_movepool = list(set(target_signature_moves_pool).difference(current_randomized_regular_moves))  # do not repeat moves
+            # Filter out already selected moves by ID, then sort by ID for deterministic ordering
+            possible_signature_movepool = sorted(
+                [m for m in target_signature_moves_pool if m.id not in current_randomized_regular_move_ids_set],
+                key=lambda m: m.id
+            )
 
             if(signature_move_power_bias):    # filter by move power
                 if(prev_signature_move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool (move is still randomized into a legitimate one)
