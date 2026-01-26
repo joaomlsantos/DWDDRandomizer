@@ -4862,10 +4862,10 @@ EXP_FLAT_BY_STAGE = {
 CALUMON_ADJUSTED_STATS = {
     "hp": 85,
     "mp": 95,
-    "attack": 50,
-    "defense": 45,
+    "attack": 40,
+    "defense": 38,
     "spirit": 55,
-    "speed": 33,
+    "speed": 60,
     "unknown_0x12": 5,
     "aptitude": 15,
     "dark_res": 0,
