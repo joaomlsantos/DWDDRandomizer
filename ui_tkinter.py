@@ -60,13 +60,15 @@ def execute_rom_changes(save_path):
         "CHANGE_TEXT_SPEED": change_text_speed_var,
         "CHANGE_MOVEMENT_SPEED": change_movement_speed_var,
         "CHANGE_ENCOUNTER_RATE": change_wild_encounter_rate_var,
+        "IMPROVE_BATTLE_PERFORMANCE": improve_battle_performance_var,
         #"CHANGE_STAT_CAPS": increase_stat_caps_var,
         "EXTEND_PLAYERNAME_SIZE": expand_player_name_var,
 
-        "APPLY_EXP_PATCH_FLAT": ExpYieldConfig(exp_yield_option_var.get()),
+        "APPLY_EXP_PATCH_FLAT": ExpYieldConfig.INCREASE_HALVED if exp_wild_digimon_var else ExpYieldConfig.UNCHANGED,
         "BUFF_SCAN_RATE": increase_flat_scan_rate_var,
         "CHANGE_FARM_EXP": change_farm_exp_var,
         "ENABLE_VERSION_EXCLUSIVE_AREAS": unlock_version_exclusive_areas_var,
+        "BALANCE_CALUMON_STATS": balance_calumon_var,
     
         "RANDOMIZE_STARTERS": RandomizeStartersConfig(starters_option_var.get()),  # RandomizeStartersConfig(starters_option_var) might have to be initialized like this
         "ROOKIE_RESET_EVENT": RookieResetConfig(rookie_reset_option_var.get()),
@@ -74,7 +76,6 @@ def execute_rom_changes(save_path):
         "FORCE_STARTER_W_ROOKIE": force_starter_w_rookie_var,
         
         "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters(wild_digimon_option_var.get()),
-        "WILD_DIGIMON_EXCLUDE_CALUMON": wild_digimon_exclude_calumon_var,
         "AREA_ENCOUNTERS_STATS": stat_gen_option_var,
 
         "BUFF_WILD_ENCOUNTER_MONEY": buff_wild_encounter_money_var,
@@ -151,11 +152,13 @@ def enable_buttons():
     #increaseExpYieldCheckbox.configure(state="normal")
     increaseFlatScanRateCheckbox.configure(state="normal")
     expandPlayerNameCheckbox.configure(state="normal")
+    improveBattlePerformanceCheckbox.configure(state="normal")
     increaseFarmExpCheckbox.configure(state="normal")
     unlockVersionExclusiveAreasCheckbox.configure(state="normal")
-    exp_yield_unchanged_rb.configure(state="normal")
-    exp_yield_halved_rb.configure(state="normal")
-    exp_yield_full_rb.configure(state="normal")
+    increaseExpWildDigimonCheckbox.configure(state="normal")
+    #exp_yield_unchanged_rb.configure(state="normal")
+    #exp_yield_halved_rb.configure(state="normal")
+    #exp_yield_full_rb.configure(state="normal")
 
 
     # Enable tabs
@@ -177,7 +180,7 @@ def enable_buttons():
     wild_digimon_unchanged_rb.configure(state="normal")
     wild_digimon_randomize_rb.configure(state="normal")
     wild_digimon_randomize_completely_rb.configure(state="normal")
-    wildDigimonExcludeCalumonCheckbox.configure(state="normal")
+    balanceCalumonCheckbox.configure(state="normal")
 
     # Randomize wild encounter item drops
     wild_encounter_items_unchanged_rb.configure(state="normal")
@@ -281,7 +284,7 @@ def open_rom():
         rom_name_label.config(text=f"ROM Name: {file_path.split('/')[-1]}")
         #rom_size_label.config(text=f"ROM Size: {os.path.getsize(file_path) / 1024:.2f} KB")
         rom_version_label.config(text=f"ROM Version: {app_state.current_rom.version}")
-        rom_path_label.config(text=f"ROM Path: {file_path}")
+        #rom_path_label.config(text=f"ROM Path: {file_path}")
         
         rom_status_label.config(text="Status: Loaded")
 
@@ -306,6 +309,12 @@ def save_changes():
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save changes: {e}")
 
+
+def import_settings():
+    return
+
+def export_settings():
+    return
 
 def set_random_seed():
 
@@ -521,7 +530,8 @@ def toggle_dna_digivolution_rand_options():
 root = tk.Tk()
 root.title("Digimon World Dawn/Dusk Randomizer")
 root.geometry("")
-root.minsize(800, 600) 
+#root.minsize(800, 600) 
+root.minsize(800, 700) 
 #root.iconbitmap(icon_path)
 root.iconphoto(False, tk.PhotoImage(file=icon_png_path))
 
@@ -540,15 +550,12 @@ open_rom_button.pack(fill="x", pady=5, ipadx=30)
 save_changes_button = ttk.Button(button_frame, text="Save Patched ROM", command=save_changes, state="disabled")
 save_changes_button.pack(fill="x", pady=5)
 
-premade_seed_button = ttk.Button(button_frame, text="Set Random Seed", command=set_random_seed)
-premade_seed_button.pack(fill="x", pady=5)
-
 about_button = ttk.Button(button_frame, text="About", command=show_about_popup)
 about_button.pack(fill="x", pady=5)
 
 # Right section: ROM Information
 rom_info_frame = ttk.LabelFrame(rom_frame, text="ROM Information", padding=10)
-rom_info_frame.pack(side="right", fill="both", expand=True, padx=10)
+rom_info_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 # Add some labels to display ROM info (placeholders for now)
 rom_name_label = ttk.Label(rom_info_frame, text="ROM Name: Not Loaded")
@@ -560,12 +567,25 @@ rom_name_label.pack(anchor="w", pady=2)
 rom_version_label = ttk.Label(rom_info_frame, text="ROM Version: N/A")
 rom_version_label.pack(anchor="w", pady=2)
 
-rom_path_label = ttk.Label(rom_info_frame, text="ROM Path: N/A")
-rom_path_label.pack(anchor="w", pady=2)
+#rom_path_label = ttk.Label(rom_info_frame, text="ROM Path: N/A")
+#rom_path_label.pack(anchor="w", pady=2)
 
 rom_status_label = ttk.Label(rom_info_frame, text="Status: Not Loaded")
 rom_status_label.pack(anchor="w", pady=2)
 
+
+# Last section: Import/Export Settings
+settings_buttons_frame = ttk.Frame(rom_frame)
+settings_buttons_frame.pack(side="right", fill="both", padx=10)
+
+import_settings_button = ttk.Button(settings_buttons_frame, text="Import Settings", command=import_settings)
+import_settings_button.pack(fill="x", pady=5, ipadx=30)
+
+export_settings_button = ttk.Button(settings_buttons_frame, text="Export Settings", command=export_settings)
+export_settings_button.pack(fill="x", pady=5)
+
+premade_seed_button = ttk.Button(settings_buttons_frame, text="Set Random Seed", command=set_random_seed)
+premade_seed_button.pack(fill="x", pady=5)
 
 
 # Create a Notebook widget to hold the tabs
@@ -573,23 +593,55 @@ notebook = ttk.Notebook(root, padding=10)
 notebook.pack(fill="both", expand=True)
 
 # QoL Changes Tab
+#qol_frame = ttk.Frame(notebook, padding=10)
 qol_frame = ttk.Frame(notebook, padding=10)
 qol_frame.pack(fill="both", expand=True)  # Ensure frame fills space
 notebook.add(qol_frame, text="QoL Patches")
 
+
+
+# Performance Improvements frame
+performance_frame = ttk.LabelFrame(qol_frame, text="Performance Improvements", padding=10)
+performance_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+
+performance_checkbox_frame = ttk.Frame(performance_frame)
+performance_checkbox_frame.pack(side="left", fill="both", expand=True, padx=10)
+
 # QoL Checkbuttons
 change_text_speed_var = tk.BooleanVar(value=True)
-textSpeedCheckbox = tk.Checkbutton(qol_frame, text="Increase Text Speed", variable=change_text_speed_var, state="disabled")
+textSpeedCheckbox = tk.Checkbutton(performance_checkbox_frame, text="Increase Text Speed", variable=change_text_speed_var, state="disabled")
 textSpeedCheckbox.pack(anchor='w')
 textSpeedTooltip = CreateToolTip(textSpeedCheckbox, "Increases the speed at which the text is displayed, removing the need to hold A to speed up the dialogues.")
 
 change_movement_speed_var = tk.BooleanVar(value=True)
-increaseMovementSpeedCheckbox = tk.Checkbutton(qol_frame, text="Increase Movement Speed", variable=change_movement_speed_var, state="disabled")
+increaseMovementSpeedCheckbox = tk.Checkbutton(performance_checkbox_frame, text="Increase Movement Speed", variable=change_movement_speed_var, state="disabled")
 increaseMovementSpeedCheckbox.pack(anchor='w')
 increaseMovementSpeedTooltip = CreateToolTip(increaseMovementSpeedCheckbox, "Increases the player's movement speed to 1.5x of the default speed.")
 
-change_wild_encounter_rate_var = tk.BooleanVar(value=True)
-decreaseWildEncounterCheckbox = tk.Checkbutton(qol_frame, text="Reduce Wild Encounter Rate", variable=change_wild_encounter_rate_var, state="disabled")
+expand_player_name_var = tk.BooleanVar(value=True)
+expandPlayerNameCheckbox = tk.Checkbutton(performance_checkbox_frame, text="Expand Player Name Length", variable=expand_player_name_var, state="disabled")
+expandPlayerNameCheckbox.pack(anchor="w")
+expandPlayerNameTooltip = CreateToolTip(expandPlayerNameCheckbox, "Expands the maximum length of the player's name from 5 to 7 characters.")
+
+improve_battle_performance_var = tk.BooleanVar(value=True)
+improveBattlePerformanceCheckbox = tk.Checkbutton(performance_checkbox_frame, text="Improve Battle Performance", variable=improve_battle_performance_var, state="disabled")
+improveBattlePerformanceCheckbox.pack(anchor="w")
+improveBattlePerformanceTooltip = CreateToolTip(improveBattlePerformanceCheckbox, "Reduces imposed frame delay in several battle animations, making battles significantly faster.")
+
+
+
+
+# Wild Encounters, Money & EXP frame
+wild_exp_money_frame = ttk.LabelFrame(qol_frame, text="Wild Encounters, Money & EXP", padding=10)
+wild_exp_money_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+wild_exp_money_checkbox_frame = ttk.Frame(wild_exp_money_frame)
+wild_exp_money_checkbox_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+
+change_wild_encounter_rate_var = tk.BooleanVar(value=False)
+decreaseWildEncounterCheckbox = tk.Checkbutton(wild_exp_money_checkbox_frame, text="Reduce Wild Encounter Rate", variable=change_wild_encounter_rate_var, state="disabled")
 decreaseWildEncounterCheckbox.pack(anchor='w')
 decreaseWildEncounterTooltip = CreateToolTip(decreaseWildEncounterCheckbox, "Reduces the wild encounter rate in all areas by 0.5x.")
 
@@ -601,35 +653,72 @@ decreaseWildEncounterTooltip = CreateToolTip(decreaseWildEncounterCheckbox, "Red
 #increaseExpYieldCheckbox.pack(anchor='w')
 #increaseExpYieldTootip = CreateToolTip(increaseExpYieldCheckbox, "Changes the exp given by all wild digimon to match game progression.\nThe exp yield values are roughly calculated through pokémon's standard formula for experience yield: base_exp * encounter_lvl / 7, where base_exp is a fixed value depending on the digimon's digivolution stage, and encounter_lvl is the level of the encounter.")
 
-increase_flat_scan_rate_var = tk.BooleanVar(value=True)
-increaseFlatScanRateCheckbox = tk.Checkbutton(qol_frame, text="Increase Scan Rate", variable=increase_flat_scan_rate_var, state="disabled")
+increase_flat_scan_rate_var = tk.BooleanVar(value=False)
+increaseFlatScanRateCheckbox = tk.Checkbutton(wild_exp_money_checkbox_frame, text="Increase Scan Rate", variable=increase_flat_scan_rate_var, state="disabled")
 increaseFlatScanRateCheckbox.pack(anchor='w')
 increaseFlatScanRateTooltip = CreateToolTip(increaseFlatScanRateCheckbox, "Increases the base scan rate by 10%.")
-
-expand_player_name_var = tk.BooleanVar(value=True)
-expandPlayerNameCheckbox = tk.Checkbutton(qol_frame, text="Expand Player Name Length", variable=expand_player_name_var, state="disabled")
-expandPlayerNameCheckbox.pack(anchor="w")
-expandPlayerNameTooltip = CreateToolTip(expandPlayerNameCheckbox, "Expands the maximum length of the player's name from 5 to 7 characters.")
 
 #increase_stat_caps_var = tk.BooleanVar(value=False)
 #increaseStatCapsCheckbox = tk.Checkbutton(qol_frame, text="Increase Stat Caps", variable=increase_stat_caps_var, state="disabled")
 #increaseStatCapsCheckbox.pack(anchor='w')
 #increaseStatCapsTooltip = CreateToolTip(increaseStatCapsCheckbox, "Increases the stat cap to 65535 for all stats.\nOriginally the HP and MP are limited to 9999, and the other stats are limited to 999.")
 
+exp_wild_digimon_var = tk.BooleanVar(value=False)
+increaseExpWildDigimonCheckbox = tk.Checkbutton(wild_exp_money_checkbox_frame, text="Increase Wild Digimon EXP", variable=exp_wild_digimon_var, state="disabled")
+increaseExpWildDigimonCheckbox.pack(anchor='w')
+increaseExpWildDigimonTooltip = CreateToolTip(increaseExpWildDigimonCheckbox, "Increases earned experience from defeating wild digimon.\nExp is calculated using Pokémon's exp.share formula: base_exp * level / 14, where base_exp depends on evolution stage and level is the encounter level.\nFor reference, a lvl 33 wild Greymon's exp yield increases from 71 to 283 points.")
+
+
+buff_wild_encounter_money_var = tk.BooleanVar(value=False)
+buffWildEncounterMoneyCheckbox = tk.Checkbutton(wild_exp_money_checkbox_frame, text="Increase Wild Encounter Money", variable=buff_wild_encounter_money_var, state="disabled")
+buffWildEncounterMoneyCheckbox.pack(anchor='w')
+buffWildEncounterMoneyTooltip = CreateToolTip(buffWildEncounterMoneyCheckbox, "Increase earned money from defeating wild digimon (by 4x).")
+
+
 
 # Farm EXP; might do a custom frame for all exp-related stuff
 
-
-change_farm_exp_var = tk.BooleanVar(value=True)
-increaseFarmExpCheckbox = tk.Checkbutton(qol_frame, text="Increase Farm EXP", variable=change_farm_exp_var, state="disabled")
+change_farm_exp_var = tk.BooleanVar(value=False)
+increaseFarmExpCheckbox = tk.Checkbutton(wild_exp_money_checkbox_frame, text="Increase Farm EXP", variable=change_farm_exp_var, state="disabled")
 increaseFarmExpCheckbox.pack(anchor='w')
-increaseFarmExpTooltip = CreateToolTip(increaseFarmExpCheckbox, "Increases the base farm exp by 10x.")
+increaseFarmExpTooltip = CreateToolTip(increaseFarmExpCheckbox, "Increases the base farm exp by 10x for all terrains.")
+
+
+# Balance Calumon
+
+balance_calumon_var = tk.BooleanVar(value=True)
+balanceCalumonCheckbox = tk.Checkbutton(wild_exp_money_checkbox_frame, text="Balance Calumon Stats", variable=balance_calumon_var, state="disabled")
+balanceCalumonCheckbox.pack(anchor='w')
+balanceCalumonTooltip = CreateToolTip(balanceCalumonCheckbox, "Reduces Calumon's stats to those of a regular in-training digimon.\nOriginally, while Calumon is an In-Training digimon, its stats are equivalent to the stats of a Mega.\nReducing Calumon's stats avoids situations where a player would struggle to defeat (or run from) Calumon encounters, or situations where a player would suddenly have an overpowered digimon at an early stage of the game.\nThis setting also removes Calumon's additional traits besides D-Entelechy, and sets its signature move to Frothy Spit.")
+
+
+
+
+# Quests & Version Exclusives frame
+quests_versions_frame = ttk.LabelFrame(qol_frame, text="Quests & Version Exclusives", padding=10)
+quests_versions_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+quests_versions_checkbox_frame = ttk.Frame(quests_versions_frame)
+quests_versions_checkbox_frame.pack(side="left", fill="both", expand=True, padx=10)
+
+quests_enable_legendary_tamer_var = tk.BooleanVar(value=True)
+questsEnableLegendaryTamerCheckbox = tk.Checkbutton(quests_versions_checkbox_frame, text="Enable Legendary Tamer Quest", variable=quests_enable_legendary_tamer_var, state="disabled")
+questsEnableLegendaryTamerCheckbox.pack(anchor='w')
+questsEnableLegendaryTamerTooltip = CreateToolTip(questsEnableLegendaryTamerCheckbox, "Enables the quest \"The Legendary Tamer\" after obtaining Platinum rank and completing the quest \"Gaia Origin Challenge\", disabling the requirement of playing online once.")
+
+
+
+quests_unlock_main_in_sequence_var = tk.BooleanVar(value=False)
+questsUnlockMainQuestsInSequenceCheckbox = tk.Checkbutton(quests_versions_checkbox_frame, text="Unlock Main Quests in Sequence", variable=quests_unlock_main_in_sequence_var, state="disabled")
+questsUnlockMainQuestsInSequenceCheckbox.pack(anchor='w')
+questsUnlockMainQuestsInSequenceTooltip = CreateToolTip(questsUnlockMainQuestsInSequenceCheckbox, "Unlocks each main quest immediately after completing the previous main quest, eliminating the requirement of clearing side quests to unlock the next main quest.")
+
 
 
 # unlock version-exclusive areas
 
-unlock_version_exclusive_areas_var = tk.BooleanVar(value=True)
-unlockVersionExclusiveAreasCheckbox = tk.Checkbutton(qol_frame, text="Unlock Version-Exclusive Areas", variable=unlock_version_exclusive_areas_var, state="disabled")
+unlock_version_exclusive_areas_var = tk.BooleanVar(value=False)
+unlockVersionExclusiveAreasCheckbox = tk.Checkbutton(quests_versions_checkbox_frame, text="Unlock Version-Exclusive Areas", variable=unlock_version_exclusive_areas_var, state="disabled")
 unlockVersionExclusiveAreasCheckbox.pack(anchor='w')
 unlockVersionExclusiveAreasTooltip = CreateToolTip(unlockVersionExclusiveAreasCheckbox, "Unlocks areas that were previously exclusive to a single version of the game.\nFor DAWN, this option unlocks Magnet Mine at the same time that Task Canyon is unlocked, and unlocks Process Factory at the same time that Pallette Amazon is unlocked.\nFor DUSK, this option unlocks Task Canyon at the same time that Magnet Mine is unlocked.")
 
@@ -637,22 +726,25 @@ unlockVersionExclusiveAreasTooltip = CreateToolTip(unlockVersionExclusiveAreasCh
 
 
 # Exp Yield frame
-exp_yield_frame = ttk.LabelFrame(qol_frame, text="Exp. Yield", padding=10)
-exp_yield_frame.pack(side="top", anchor="w", padx=10, pady=10)
+#exp_yield_frame = ttk.LabelFrame(qol_frame, text="Wild Digimon Exp.", padding=10)
+#exp_yield_frame.pack(side="top", anchor="w", padx=10, pady=10)
 
 
-exp_yield_option_var = tk.IntVar(value=ExpYieldConfig.INCREASE_HALVED.value)
 
-exp_yield_unchanged_rb = tk.Radiobutton(exp_yield_frame, text="Unchanged", variable=exp_yield_option_var, value=ExpYieldConfig.UNCHANGED.value, state="disabled")
-exp_yield_unchanged_rb.pack(anchor="w")
 
-exp_yield_halved_rb = tk.Radiobutton(exp_yield_frame, text="Increase (halved)", variable=exp_yield_option_var, value=ExpYieldConfig.INCREASE_HALVED.value, state="disabled")
-exp_yield_halved_tooltip = CreateToolTip(exp_yield_halved_rb, "Adjusts wild Digimon exp to match progression with half increase.\nExp is calculated using Pokémon's exp.share formula: base_exp * level / 14, where base_exp depends on evolution stage and level is the encounter level.\nFor reference, a lvl 33 wild Greymon's exp yield increases from 71 to 283 points.")
-exp_yield_halved_rb.pack(anchor="w")
 
-exp_yield_full_rb = tk.Radiobutton(exp_yield_frame, text="Increase (full)", variable=exp_yield_option_var, value=ExpYieldConfig.INCREASE_FULL.value, state="disabled")
-exp_yield_full_tooltip = CreateToolTip(exp_yield_full_rb, "Adjusts wild Digimon exp to match progression with full increase.\nExp is calculated using Pokémon's formula: base_exp * level / 7, where base_exp depends on evolution stage and level is the encounter level.\nFor reference, a lvl 33 wild Greymon's exp yield increases from 71 to 566 points.")
-exp_yield_full_rb.pack(anchor="w")
+#exp_yield_option_var = tk.IntVar(value=ExpYieldConfig.INCREASE_HALVED.value)
+#
+#exp_yield_unchanged_rb = tk.Radiobutton(exp_yield_frame, text="Unchanged", variable=exp_yield_option_var, value=ExpYieldConfig.UNCHANGED.value, state="disabled")
+#exp_yield_unchanged_rb.pack(anchor="w")
+#
+#exp_yield_halved_rb = tk.Radiobutton(exp_yield_frame, text="Increase (halved)", variable=exp_yield_option_var, value=ExpYieldConfig.INCREASE_HALVED.value, state="disabled")
+#exp_yield_halved_tooltip = CreateToolTip(exp_yield_halved_rb, "Adjusts wild Digimon exp to match progression with half increase.\nExp is calculated using Pokémon's exp.share formula: base_exp * level / 14, where base_exp depends on evolution stage and level is the encounter level.\nFor reference, a lvl 33 wild Greymon's exp yield increases from 71 to 283 points.")
+#exp_yield_halved_rb.pack(anchor="w")
+#
+#exp_yield_full_rb = tk.Radiobutton(exp_yield_frame, text="Increase (full)", variable=exp_yield_option_var, value=ExpYieldConfig.INCREASE_FULL.value, state="disabled")
+#exp_yield_full_tooltip = CreateToolTip(exp_yield_full_rb, "Adjusts wild Digimon exp to match progression with full increase.\nExp is calculated using Pokémon's formula: base_exp * level / 7, where base_exp depends on evolution stage and level is the encounter level.\nFor reference, a lvl 33 wild Greymon's exp yield increases from 71 to 566 points.")
+#exp_yield_full_rb.pack(anchor="w")
 
 
 '''
@@ -665,14 +757,14 @@ tk.Scale(qol_frame, from_=0.5, to=3.0, orient="horizontal", resolution=0.5,
          
 
 
-# Randomization Settings Tab
-randomizer_tab = ttk.Frame(notebook, padding=10)
-randomizer_tab.pack(fill="both", expand=True)  # Ensure frame fills space
-notebook.add(randomizer_tab, text="Starters, Items & Quests")
+# Starters, Items & Quests Tab
+starters_items_quests_tab = ttk.Frame(notebook, padding=10)
+starters_items_quests_tab.pack(fill="both", expand=True)  # Ensure frame fills space
+notebook.add(starters_items_quests_tab, text="Starters, Items & Quests")
 
 
 # Starters frame
-starters_frame = ttk.LabelFrame(randomizer_tab, text="Starter Packs", padding=10)
+starters_frame = ttk.LabelFrame(starters_items_quests_tab, text="Starter Packs", padding=10)
 starters_frame.pack(side="top", fill="x", padx=10, pady=5)
 
 
@@ -744,7 +836,7 @@ starters_completely_random_rb.pack(anchor="w")
 
 
 
-items_quests_container = ttk.Frame(randomizer_tab)
+items_quests_container = ttk.Frame(starters_items_quests_tab)
 items_quests_container.pack(side="top", fill="x", padx=10, pady=5)
 
 
@@ -773,23 +865,20 @@ overworld_items_completely_random_rb.pack(anchor="w")
 
 
 # Quests Frame
-quests_frame = ttk.LabelFrame(items_quests_container, text="Quests", padding=10)
+quests_frame = ttk.LabelFrame(items_quests_container, text="Quest Item Rewards", padding=10)
 #quests_frame.pack(side="top", fill="x", padx=10, pady=5)
 quests_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
 
-quest_rewards_radio_frame = ttk.LabelFrame(quests_frame, text="Item Rewards")
-quest_rewards_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
-
 quest_rewards_option_var = tk.IntVar(value=RandomizeItems.UNCHANGED.value)
 
-quest_rewards_unchanged_rb = tk.Radiobutton(quest_rewards_radio_frame, text="Unchanged", variable=quest_rewards_option_var, value=RandomizeItems.UNCHANGED.value, state="disabled")
+quest_rewards_unchanged_rb = tk.Radiobutton(quests_frame, text="Unchanged", variable=quest_rewards_option_var, value=RandomizeItems.UNCHANGED.value, state="disabled")
 quest_rewards_unchanged_rb.pack(anchor="w")
 
-quest_rewards_same_category_rb = tk.Radiobutton(quest_rewards_radio_frame, text="Random (same category)", variable=quest_rewards_option_var, value=RandomizeItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
+quest_rewards_same_category_rb = tk.Radiobutton(quests_frame, text="Random (same category)", variable=quest_rewards_option_var, value=RandomizeItems.RANDOMIZE_KEEP_CATEGORY.value, state="disabled")
 quest_rewards_same_category_rb_tooltip = CreateToolTip(quest_rewards_same_category_rb, "Randomizes each quest reward while keeping the original category of the item.\nFor example, an equipment item like Water Ring will be replaced by another equipment item, farm items will be replaced by other farm items, etc.\nNOTE: Key items are not included in the randomization pool, and rewards corresponding to key items will not be randomized (e.g. the rewarded Love DigiEgg from the quest \"Explore Limit Valley\").")
 quest_rewards_same_category_rb.pack(anchor="w")
 
-quest_rewards_completely_random_rb = tk.Radiobutton(quest_rewards_radio_frame, text="Random (completely)", variable=quest_rewards_option_var, value=RandomizeItems.RANDOMIZE_COMPLETELY.value, state="disabled")
+quest_rewards_completely_random_rb = tk.Radiobutton(quests_frame, text="Random (completely)", variable=quest_rewards_option_var, value=RandomizeItems.RANDOMIZE_COMPLETELY.value, state="disabled")
 quest_rewards_completely_random_tooltip = CreateToolTip(quest_rewards_completely_random_rb, "Randomizes each quest reward completely (each reward can be any item type, regardless of its original item type).\nNOTE: Key items are not included in the randomization pool, and rewards corresponding to key items will not be randomized.")
 quest_rewards_completely_random_rb.pack(anchor="w")
 
@@ -801,27 +890,10 @@ quest_rewards_completely_random_rb.pack(anchor="w")
 #questsRandomizeItemRewardsTooltip = CreateToolTip(questsRandomizeItemRewardsCheckbox, "Randomizes the rewarded item for each completed quest.\nThis setting does not randomize the rewarded Love DigiEgg from the quest \"Explore Limit Valley\".")
 
 
-quests_sub_frame = ttk.Frame(quests_frame)
-quests_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
-
-quests_enable_legendary_tamer_var = tk.BooleanVar(value=False)
-questsEnableLegendaryTamerCheckbox = tk.Checkbutton(quests_sub_frame, text="Enable Legendary Tamer Quest", variable=quests_enable_legendary_tamer_var, state="disabled")
-questsEnableLegendaryTamerCheckbox.pack(anchor='w')
-questsEnableLegendaryTamerTooltip = CreateToolTip(questsEnableLegendaryTamerCheckbox, "Enables the quest \"The Legendary Tamer\" after obtaining Platinum rank and completing the quest \"Gaia Origin Challenge\", disabling the requirement of playing online once.")
-
-
-
-quests_unlock_main_in_sequence_var = tk.BooleanVar(value=False)
-questsUnlockMainQuestsInSequenceCheckbox = tk.Checkbutton(quests_sub_frame, text="Unlock Main Quests in Sequence", variable=quests_unlock_main_in_sequence_var, state="disabled")
-questsUnlockMainQuestsInSequenceCheckbox.pack(anchor='w')
-questsUnlockMainQuestsInSequenceTooltip = CreateToolTip(questsUnlockMainQuestsInSequenceCheckbox, "Unlocks each main quest immediately after completing the previous main quest, eliminating the requirement of clearing side quests to unlock the next main quest.")
-
-
-
 # Encounters & Tamers Tab
 encounters_tamers_tab = ttk.Frame(notebook, padding=10)
 encounters_tamers_tab.pack(fill="both", expand=True)
-notebook.add(encounters_tamers_tab, text="Enemy Encounters & Tamers")
+notebook.add(encounters_tamers_tab, text="Wild Encounters & Enemies")
 
 
 
@@ -829,6 +901,8 @@ notebook.add(encounters_tamers_tab, text="Enemy Encounters & Tamers")
 
 wild_digimon_frame = ttk.LabelFrame(encounters_tamers_tab, text="Wild Digimon", padding=10)
 wild_digimon_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+
 
 # Create a container frame inside Wild Digimon for horizontal layout
 wild_digimon_inner_container = ttk.Frame(wild_digimon_frame)
@@ -855,14 +929,9 @@ wild_digimon_randomize_completely_rb.pack(anchor="w")
 
 # Specific options for wild digimon randomization
 
-wild_digimon_sub_frame = ttk.Frame(wild_digimon_inner_container)
-wild_digimon_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
+#wild_digimon_sub_frame = ttk.Frame(wild_digimon_inner_container)
+#wild_digimon_sub_frame.pack(side="left", fill="both", expand=True, padx=10)
 
-
-wild_digimon_exclude_calumon_var = tk.BooleanVar(value=True)
-wildDigimonExcludeCalumonCheckbox = tk.Checkbutton(wild_digimon_sub_frame, text="Exclude Calumon", variable=wild_digimon_exclude_calumon_var, state="disabled")
-wildDigimonExcludeCalumonCheckbox.pack(anchor='w')
-wildDigimonExcludeCalumonTooltip = CreateToolTip(wildDigimonExcludeCalumonCheckbox, "Excludes Calumon from the wild digimon pool.\nWhile Calumon is an In-Training digimon, its stats are equivalent to the stats of a Mega.\nExcluding Calumon from the wild digimon pool avoids situations where a player would struggle to defeat (or run from) Calumon encounters.")
 
 
 
@@ -888,10 +957,6 @@ wild_encounter_items_completely_random_tooltip = CreateToolTip(wild_encounter_it
 wild_encounter_items_completely_random_rb.pack(anchor="w")
 
 
-buff_wild_encounter_money_var = tk.BooleanVar(value=True)
-buffWildEncounterMoneyCheckbox = tk.Checkbutton(wild_reward_money_radio_frame, text="Increase Earned Money", variable=buff_wild_encounter_money_var, state="disabled")
-buffWildEncounterMoneyCheckbox.pack(anchor='w')
-buffWildEncounterMoneyTooltip = CreateToolTip(buffWildEncounterMoneyCheckbox, "Increase earned money from defeating wild digimon (by 4x).")
 
 
 
@@ -926,7 +991,7 @@ toggle_stat_generation()
 # Enemy tamers & bosses
 
 
-enemy_digimon_frame = ttk.LabelFrame(encounters_tamers_tab, text="Enemy Tamers & Bosses", padding=10)
+enemy_digimon_frame = ttk.LabelFrame(encounters_tamers_tab, text="Enemy Tamers, Quest Digimon & Bosses", padding=10)
 enemy_digimon_frame.pack(side="top", fill="x", padx=10, pady=5)
 
 # Create a container frame inside Enemy Tamers & Bosses for horizontal layout
@@ -989,17 +1054,13 @@ enemy_digimon_randomize_completely_rb.pack(anchor="w")
 # Base Information Tab
 base_information_tab = ttk.Frame(notebook, padding=10)
 base_information_tab.pack(fill="both", expand=True)  # Ensure frame fills space
-notebook.add(base_information_tab, text="Base Information")
-
-
-species_elemental_container = ttk.Frame(base_information_tab)
-species_elemental_container.pack(side="top", fill="x", padx=10, pady=5)
+notebook.add(base_information_tab, text="Species & Base Stats")
 
 
 # Species frame
-species_frame = ttk.LabelFrame(species_elemental_container, text="Digimon Species", padding=10)
-#species_frame.pack(side="top", fill="x", padx=10, pady=5)
-species_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
+species_frame = ttk.LabelFrame(base_information_tab, text="Digimon Species", padding=10)
+species_frame.pack(side="top", fill="x", padx=10, pady=5)
+#species_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
 
 
 
@@ -1030,9 +1091,9 @@ speciesAllowUnknownTooltip = CreateToolTip(speciesAllowUnknownCheckbox, "Allows 
 
 
 
-elemental_res_frame = ttk.LabelFrame(species_elemental_container, text="Elemental Resistances", padding=10)
-#elemental_res_frame.pack(side="top", fill="x", padx=10, pady=5)
-elemental_res_frame.pack(side="left", fill="both", expand=True, padx=(5, 0))
+elemental_res_frame = ttk.LabelFrame(base_information_tab, text="Elemental Resistances", padding=10)
+elemental_res_frame.pack(side="top", fill="x", padx=10, pady=5)
+#elemental_res_frame.pack(side="left", fill="both", expand=True, padx=(5, 0))
 
 
 elemental_res_main_frame = ttk.Frame(elemental_res_frame)
@@ -1069,7 +1130,7 @@ stats_stattype_container.pack(side="top", fill="x", padx=10, pady=5)
 
 # Base Stats frame
 base_stats_frame = ttk.LabelFrame(stats_stattype_container, text="Base Stats", padding=10)
-base_stats_frame.pack(side="left", fill="both", expand=True, padx=(5, 0))
+base_stats_frame.pack(side="left", fill="both", expand=True)
 
 
 base_stats_main_frame = ttk.Frame(base_stats_frame)
@@ -1118,9 +1179,17 @@ digimon_type_randomize_tooltip = CreateToolTip(digimon_type_randomize_rb, "Rando
 digimon_type_randomize_rb.pack(anchor="w")
 
 
+
+# Base Information Tab
+movesets_traits_tab = ttk.Frame(notebook, padding=10)
+movesets_traits_tab.pack(fill="both", expand=True)  # Ensure frame fills space
+notebook.add(movesets_traits_tab, text="Movesets & Traits")
+
+
+
 # Movesets frame
 
-movesets_frame = ttk.LabelFrame(base_information_tab, text="Digimon Movesets", padding=10)
+movesets_frame = ttk.LabelFrame(movesets_traits_tab, text="Movesets", padding=10)
 movesets_frame.pack(side="top", fill="x", padx=10, pady=5)
 
 movesets_option_var = tk.IntVar(value=RandomizeMovesets.UNCHANGED.value)
@@ -1174,7 +1243,7 @@ movesetsGuaranteeBasicMoveTooltip = CreateToolTip(movesetsGuaranteeBasicMoveChec
 
 
 
-traits_frame = ttk.LabelFrame(base_information_tab, text="Digimon Traits", padding=10)
+traits_frame = ttk.LabelFrame(movesets_traits_tab, text="Traits", padding=10)
 traits_frame.pack(side="top", fill="x", padx=10, pady=5)
 
 traits_option_var = tk.IntVar(value=RandomizeTraits.UNCHANGED.value)

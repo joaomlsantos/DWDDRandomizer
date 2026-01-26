@@ -48,6 +48,8 @@ class DigimonROM:
             self.changeFarmExp()
         if(self.config_manager.get("ENABLE_VERSION_EXCLUSIVE_AREAS", False)):
             self.unlockExclusiveAreas()
+        if(self.config_manager.get("IMPROVE_BATTLE_PERFORMANCE", False)):
+            self.improveBattlePerformance()
         
 
     def loadRom(self, 
@@ -144,8 +146,20 @@ class DigimonROM:
             utils.writeRomBytes(self.rom_data, cur_value, cur_address, 2)
             self.logger.info("VERSION-EXCLUSIVE AREA UNLOCK: " + cur_description)
 
-            
 
+    def improveBattlePerformance(self):
+        battle_frame_addrs = constants.BATTLE_FRAME_ADDRESSES[self.version]
+
+        self.logger.info("\n==================== BATTLE FRAME CHANGES ====================")
+        log_table = []
+
+        # each of the values is applied directly to the MOV operation, changing exactly 1 byte, thus we can do direct attribution
+        for addr, new_delay in battle_frame_addrs.items():
+            prev_delay = self.rom_data[addr]
+            self.rom_data[prev_delay] = new_delay
+            log_table.append([hex(addr), hex(prev_delay), hex(new_delay)])
+
+        self.logger.info(tabulate(log_table, headers=["ROM Address", "Previous Delay", "New Delay"]))
         
 
 
@@ -182,6 +196,10 @@ class Randomizer:
 
         if(target_rom_data is None):
             target_rom_data = self.rom_data
+
+        # baseDigimonInfo is loaded here, so we do the stat changes on the randomizer side instead
+        if(self.config_manager.get("BALANCE_CALUMON_STATS", False)):
+            self.balanceCalumonStats()
 
         self.rookieResetEvent(target_rom_data)
         self.randomizeAreaEncounters(target_rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
@@ -222,6 +240,26 @@ class Randomizer:
         '''
 
         self.expPatchFlat(target_rom_data)
+
+
+    def balanceCalumonStats(self,
+                            rom_data: bytearray):
+        # get calumon base obj
+        calumon_obj = self.baseDigimonInfo[constants.DIGIMON_IDS["IN-TRAINING"]["Calumon"]]
+        
+        # set new stats internally
+        for i, attr in enumerate(constants.CALUMON_ADJUSTED_STATS):
+            setattr(calumon_obj, attr, constants.CALUMON_ADJUSTED_STATS[attr])
+
+        # write new stats to rom; writing entire object since CALUMON_ADJUSTED_STATS may change
+        new_bytearray = calumon_obj.getByteArray()
+        utils.writeRomBytes(rom_data, new_bytearray, calumon_obj.offset, len(new_bytearray))
+
+        log_calumon = tabulate([list(constants.CALUMON_ADJUSTED_STATS.values())], headers=list(constants.CALUMON_ADJUSTED_STATS.keys()))
+        self.logger.info("Changed base info for Calumon:")        
+        self.logger.info(f"\n{log_calumon}")
+        
+        
 
     
     def randomizeStarters(self, 
@@ -328,8 +366,8 @@ class Randomizer:
 
         if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") in options_same_stage):
             digimon_stage_pool = copy.deepcopy(constants.DIGIMON_IDS)
-            if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
-                digimon_stage_pool["IN-TRAINING"].pop("Calumon")
+            #if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
+            #    digimon_stage_pool["IN-TRAINING"].pop("Calumon")
         
         # if completely random, digimon_pool is mixed between all digimon
         if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") in options_completely_random):
@@ -337,8 +375,8 @@ class Randomizer:
             digimon_pool = {}
             for stage in digimon_ids_by_stage:
                 digimon_pool = digimon_pool | digimon_ids_by_stage[stage]
-            if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
-                digimon_pool.pop("Calumon")
+            #if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
+            #    digimon_pool.pop("Calumon")
 
         randomized_digimon_history = {}
 
@@ -635,16 +673,16 @@ class Randomizer:
 
         if(randomize_option in options_same_stage):
             digimon_stage_pool = copy.deepcopy(constants.DIGIMON_IDS)
-            if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
-                digimon_stage_pool["IN-TRAINING"].pop("Calumon", None)
+            #if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
+            #    digimon_stage_pool["IN-TRAINING"].pop("Calumon", None)
 
         if(randomize_option in options_completely_random):
             digimon_ids_by_stage = copy.deepcopy(constants.DIGIMON_IDS)
             digimon_pool = {}
             for stage in digimon_ids_by_stage:
                 digimon_pool = digimon_pool | digimon_ids_by_stage[stage]
-            if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
-                digimon_pool.pop("Calumon", None)
+            #if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
+            #    digimon_pool.pop("Calumon", None)
 
         self.logger.info("\n==================== FIXED BATTLES ====================")
 

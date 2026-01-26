@@ -2288,6 +2288,43 @@ OVERWORLD_ITEM_ADDRESSES = {
     }
 }
 
+# these addresses correspond to the MOV instructions that control each delay in battle, and the corresponding value to overwrite
+# the addresses for DUSK are equivalent to the addresses of DAWN + 0x200
+BATTLE_FRAME_ADDRESSES = {
+    "DUSK": {
+        0x0015C270: 0x01,
+        0x0015C73C: 0x01,
+        0x001793F4: 0x08,
+        0x001797E4: 0x08,
+        0x00170A88: 0x04,
+        0x0016FE3C: 0x01,
+        0x001718c4: 0x1E,
+        0x001718dc: 0x08,
+        0x00178678: 0x04,
+        0x0017A4F8: 0x1E,
+        0x0016FA64: 0x04,
+        0x001701D0: 0x04,
+        0x00171B9C: 0x08,
+        0x00171BA0: 0x1E
+    },
+    "DAWN": {
+        0x0015C070: 0x01,
+        0x0015C53C: 0x01,
+        0x001791F4: 0x08,
+        0x001797E4: 0x08,
+        0x00170888: 0x04,
+        0x0016FC3C: 0x01,
+        0x001716C4: 0x1E,
+        0x001716DC: 0x08,
+        0x00178478: 0x04,
+        0x0017A2F8: 0x1E,
+        0x0016F864: 0x04,
+        0x0016FFD0: 0x04,
+        0x0017199C: 0x08,
+        0x001719A0: 0x1E
+    }
+}
+
 ITEM_ID_TO_STR = {
     0x000:"Scale",
     0x001:"Belt Machine",
@@ -4820,4 +4857,21 @@ EXP_FLAT_BY_STAGE = {
     "CHAMPION": 120,
     "ULTIMATE": 160,
     "MEGA": 300
+}
+
+CALUMON_ADJUSTED_STATS = {
+    "hp": 85,
+    "mp": 95,
+    "attack": 50,
+    "defense": 45,
+    "spirit": 55,
+    "speed": 33,
+    "unknown_0x12": 5,
+    "aptitude": 15,
+    "dark_res": 0,
+    "trait_2": 255,
+    "trait_3": 255,
+    "trait_4": 255,
+    "support_trait": 155,
+    "move_signature": 1
 }

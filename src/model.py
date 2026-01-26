@@ -294,6 +294,49 @@ class BaseDataDigimon:
             setattr(self, attr, trait_array[i])
 
 
+    def getByteArray(self) -> bytearray:
+        digimon_data_out = bytearray(0x40)
+
+        digimon_data_out[0:2] = self.id.to_bytes(2, byteorder="little")
+        digimon_data_out[2] = self.level
+        digimon_data_out[3] = self.species
+        digimon_data_out[4:6] = self.hp.to_bytes(2, byteorder="little")
+        # bytes 6:8 are always 0
+        digimon_data_out[8:0xa] = self.mp.to_bytes(2, byteorder="little")
+        digimon_data_out[0xa:0xc] = self.attack.to_bytes(2, byteorder="little")
+        digimon_data_out[0xc:0xe] = self.defense.to_bytes(2, byteorder="little")
+        digimon_data_out[0xe:0x10] = self.spirit.to_bytes(2, byteorder="little")
+        digimon_data_out[0x10:0x12] = self.speed.to_bytes(2, byteorder="little")
+        digimon_data_out[0x12:0x14] = self.unknown_0x12.to_bytes(2, byteorder="little")
+        digimon_data_out[0x14:0x16] = self.aptitude.to_bytes(2, byteorder="little")
+        digimon_data_out[0x16:0x18] = self.light_res.to_bytes(2, byteorder="little")
+        digimon_data_out[0x18:0x1a] = self.dark_res.to_bytes(2, byteorder="little")
+        digimon_data_out[0x1a:0x1c] = self.fire_res.to_bytes(2, byteorder="little")
+        digimon_data_out[0x1c:0x1e] = self.earth_res.to_bytes(2, byteorder="little")
+        digimon_data_out[0x1e:0x20] = self.wind_res.to_bytes(2, byteorder="little")
+        digimon_data_out[0x20:0x22] = self.steel_res.to_bytes(2, byteorder="little")
+        digimon_data_out[0x22:0x24] = self.water_res.to_bytes(2, byteorder="little")
+        digimon_data_out[0x24:0x26] = self.thunder_res.to_bytes(2, byteorder="little")
+        digimon_data_out[0x26:0x28] = self.unknown_0x26.to_bytes(2, byteorder="little")
+        digimon_data_out[0x28] = self.trait_1
+        digimon_data_out[0x29] = self.trait_2
+        digimon_data_out[0x2a] = self.trait_3
+        digimon_data_out[0x2b] = self.trait_4
+        digimon_data_out[0x2c] = self.support_trait
+        digimon_data_out[0x2d] = self.digimon_type
+        digimon_data_out[0x2e:0x30] = self.move_signature.to_bytes(2, byteorder="little")
+        digimon_data_out[0x30:0x32] = self.move_1.to_bytes(2, byteorder="little")
+        digimon_data_out[0x32:0x34] = self.move_2.to_bytes(2, byteorder="little")
+        digimon_data_out[0x34:0x36] = self.move_3.to_bytes(2, byteorder="little")
+        digimon_data_out[0x36:0x38] = self.move_4.to_bytes(2, byteorder="little")
+        digimon_data_out[0x38:0x3a] = self.unknown_0x38.to_bytes(2, byteorder="little")
+        digimon_data_out[0x3a:0x3c] = self.unknown_0x3A.to_bytes(2, byteorder="little")
+        digimon_data_out[0x3c:0x40] = self.exp_curve.to_bytes(4, byteorder="little")
+
+        return digimon_data_out
+
+
+
 class EnemyDataDigimon:
     offset: int
     id: int
