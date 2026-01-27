@@ -2,6 +2,7 @@ from enum import Enum
 from typing import List, Tuple
 
 from . import constants
+import random
 
 class Species(Enum):
     HOLY = 0
@@ -439,12 +440,33 @@ class EnemyDataDigimon:
 
     def getTotalExp(self):
         return self.holy_exp + self.dark_exp + self.dragon_exp + self.beast_exp + self.bird_exp + self.machine_exp + self.aquan_exp + self.insectplant_exp
+
     
     # this assumes that only the corresponding species exp is supposed to be updated
+    # covers cases where enemies give exp of more than one species, regardless of their own species
     def updateExpYield(self, exp_yield):
         for exp_species in ["holy_exp", "dark_exp", "dragon_exp", "beast_exp", "bird_exp", "machine_exp", "aquan_exp", "insectplant_exp"]:
             if getattr(self, exp_species) > 0:
                 setattr(self, exp_species, exp_yield)
+
+
+    def updateExpYieldBySpecies(self, exp_yield=None):
+        # changes exp earned from this digimon to its current species exp; used when randomizing species and updating fixed enemy exp
+        if exp_yield is None:
+            exp_yield = self.getTotalExp()
+    
+        exp_attrs = ["holy_exp", "dark_exp", "dragon_exp", "beast_exp", "bird_exp", "machine_exp", "aquan_exp", "insectplant_exp"]
+
+        # reset all exp attributes to zero before setting exp
+        for exp_species in exp_attrs:
+            setattr(self, exp_species, 0)
+
+        if self.species == Species.UNKNOWN:
+            for attr in random.sample(exp_attrs, 2):
+                setattr(self, attr, exp_yield // 2)
+        else:
+            setattr(self, f"{self.species.name.lower()}_exp", exp_yield)
+
 
     def setResistanceValues(self, resistance_array: List[int]):
         # check if resistance_array has exactly 8 values

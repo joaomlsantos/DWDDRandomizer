@@ -156,7 +156,7 @@ class DigimonROM:
         # each of the values is applied directly to the MOV operation, changing exactly 1 byte, thus we can do direct attribution
         for addr, new_delay in battle_frame_addrs.items():
             prev_delay = self.rom_data[addr]
-            self.rom_data[prev_delay] = new_delay
+            self.rom_data[addr] = new_delay
             log_table.append([hex(addr), hex(prev_delay), hex(new_delay)])
 
         self.logger.info(tabulate(log_table, headers=["ROM Address", "Previous Delay", "New Delay"]))
@@ -199,7 +199,7 @@ class Randomizer:
 
         # baseDigimonInfo is loaded here, so we do the stat changes on the randomizer side instead
         if(self.config_manager.get("BALANCE_CALUMON_STATS", False)):
-            self.balanceCalumonStats()
+            self.balanceCalumonStats(target_rom_data)
 
         self.rookieResetEvent(target_rom_data)
         self.randomizeAreaEncounters(target_rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
@@ -253,7 +253,7 @@ class Randomizer:
 
         # write new stats to rom; writing entire object since CALUMON_ADJUSTED_STATS may change
         new_bytearray = calumon_obj.getByteArray()
-        utils.writeRomBytes(rom_data, new_bytearray, calumon_obj.offset, len(new_bytearray))
+        rom_data[calumon_obj.offset:calumon_obj.offset+len(new_bytearray)] = new_bytearray
 
         log_calumon = tabulate([list(constants.CALUMON_ADJUSTED_STATS.values())], headers=list(constants.CALUMON_ADJUSTED_STATS.keys()))
         self.logger.info("Changed base info for Calumon:")        
@@ -814,7 +814,7 @@ class Randomizer:
             if randomized_stage in constants.EXP_FLAT_BY_STAGE:
                 stage_exp_base = constants.EXP_FLAT_BY_STAGE[randomized_stage]
                 new_exp_yield = round((stage_exp_base * base_digimon_leveled.level) / exp_denominator)
-                enemy_digimon_to_update.updateExpYield(new_exp_yield)
+                enemy_digimon_to_update.updateExpYieldBySpecies(new_exp_yield)
 
             base_moves = base_digimon.getRegularMoves()
             signature_move = base_digimon.move_signature
@@ -946,10 +946,21 @@ class Randomizer:
                     # cover edge-cases where digimon_id does not have a match
                     continue
                 corresponding_enemy_data.species = new_species
+                corresponding_enemy_data.updateExpYieldBySpecies()
 
                 # 0x3 corresponds to the species info in enemy digimon data as well
                 cur_offset = corresponding_enemy_data.offset + 3
                 utils.writeRomBytes(rom_data, new_species.value, cur_offset, 1)
+                
+                # always write all of the exp attributes in order to set previous species' exp to zero
+                utils.writeRomBytes(rom_data, corresponding_enemy_data.holy_exp, corresponding_enemy_data.offset+0x3c, 4) 
+                utils.writeRomBytes(rom_data, corresponding_enemy_data.dark_exp, corresponding_enemy_data.offset+0x40, 4) 
+                utils.writeRomBytes(rom_data, corresponding_enemy_data.dragon_exp, corresponding_enemy_data.offset+0x44, 4) 
+                utils.writeRomBytes(rom_data, corresponding_enemy_data.beast_exp, corresponding_enemy_data.offset+0x48, 4) 
+                utils.writeRomBytes(rom_data, corresponding_enemy_data.bird_exp, corresponding_enemy_data.offset+0x4c, 4) 
+                utils.writeRomBytes(rom_data, corresponding_enemy_data.machine_exp, corresponding_enemy_data.offset+0x50, 4) 
+                utils.writeRomBytes(rom_data, corresponding_enemy_data.aquan_exp, corresponding_enemy_data.offset+0x54, 4) 
+                utils.writeRomBytes(rom_data, corresponding_enemy_data.insectplant_exp, corresponding_enemy_data.offset+0x58, 4)
 
 
 

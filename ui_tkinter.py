@@ -1074,7 +1074,7 @@ species_unchanged_rb.pack(anchor="w")
 
 
 species_random_rb = tk.Radiobutton(species_radio_frame, text="Random", variable=species_option_var, value=RandomizeSpeciesConfig.RANDOM.value, state="disabled")
-species_random_tooltip = CreateToolTip(species_random_rb, "Randomizes each digimon's species (HOLY, DARK, DRAGON, etc).\nBy itself, this option is an aesthetic change; if paired with related options such as Elemental Resistance randomization, or Digivolution randomization w/ Similar Species, this option will significantly influence the results of the randomization.")
+species_random_tooltip = CreateToolTip(species_random_rb, "Randomizes each digimon's species (HOLY, DARK, DRAGON, etc), changing the corresponding Species EXP awarded.\nIf paired with related options such as Elemental Resistance randomization, or Digivolution randomization w/ Similar Species, this option will significantly influence the results of the randomization.")
 species_random_rb.pack(anchor="w")
 
 
