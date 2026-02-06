@@ -2,7 +2,6 @@ from enum import Enum
 from src import model
 
 
-# strife was here
 class RookieResetConfig(Enum):
     UNCHANGED = 0                       # same as base game; resets digimon to rookies after the chaos event 
     #RESET_ALL_INCLUDING_LUNAMON = 1     # same as base game but also resets Lunamon to lvl 1
@@ -14,6 +13,7 @@ class RandomizeStartersConfig(Enum):
     UNCHANGED = 0                       # do not randomize
     RAND_SAME_STAGE = 1                 # randomize while keeping the same stage of the digimon
     RAND_FULL = 2                       # fully randomize
+    CUSTOM = 3                          # custom starter packs
 
 
 class RandomizeSpeciesConfig(Enum):
@@ -117,15 +117,15 @@ class ConfigManager:
 # these are loaded specifically when running qol_script directly
 default_configmanager_settings = {
 
-    "CHANGE_TEXT_SPEED": True,
-    "CHANGE_MOVEMENT_SPEED": True,
-    "CHANGE_ENCOUNTER_RATE": True,
+    "INCREASE_TEXT_SPEED": True,
+    "INCREASE_MOVEMENT_SPEED": True,
+    "REDUCE_WILD_ENCOUNTER_RATE": True,
     "CHANGE_STAT_CAPS": True,
-    "EXTEND_PLAYERNAME_SIZE": True,
+    "EXPAND_PLAYER_NAME_LENGTH": True,
     
-    "APPLY_EXP_PATCH_FLAT": ExpYieldConfig.INCREASE_FULL,
-    "BUFF_SCAN_RATE": True,
-    "CHANGE_FARM_EXP": True,
+    "INCREASE_DIGIMON_EXP": ExpYieldConfig.INCREASE_FULL,
+    "INCREASE_SCAN_RATE": True,
+    "INCREASE_FARM_EXP": True,
     
     
     # Randomization settings
@@ -134,8 +134,8 @@ default_configmanager_settings = {
     "RANDOMIZE_STARTERS": RandomizeStartersConfig.RAND_SAME_STAGE,
     "NERF_FIRST_BOSS": True,                                  # city attack boss's max hp will be reduced by half (to compensate for no Lunamon at lvl 20)
     
-    "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters.UNCHANGED,
-    "AREA_ENCOUNTERS_STATS": model.LvlUpMode.FIXED_AVG,      # this defines how the randomized enemy digimon's stats are generated when changing the levels
+    "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS": RandomizeWildEncounters.UNCHANGED,
+    "WILD_ENCOUNTERS_STATS": model.LvlUpMode.FIXED_AVG,      # this defines how the randomized enemy digimon's stats are generated when changing the levels
     
     "RANDOMIZE_FIXED_BATTLES": False,
     "FIXED_BATTLES_DIGIMON_SAME_STAGE": True,                 # digimon will be swapped with another digimon of the same stage
@@ -148,12 +148,12 @@ default_configmanager_settings = {
     "DIGIVOLUTIONS_SIMILAR_SPECIES": True,        # example: holy digimon will be more likely to evolve into other holy digimon
     
     "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions.UNCHANGED,
-    "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": True,       # example: a digivolution from the holy species will be less likely to have aquan/dark/etc exp as a requirement than other conditions
+    "DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": True,       # example: a digivolution from the holy species will be less likely to have aquan/dark/etc exp as a requirement than other conditions
 
     "RANDOMIZE_DNADIGIVOLUTIONS": RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE,
     #"FORCE_RARE_DNADIGIVOLUTIONS": dna_digivolution_force_rare_var,
     "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions.REMOVED,
-    "DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP":True,
+    "DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP":True,
 
     "RANDOMIZE_OVERWORLD_ITEMS": RandomizeItems.RANDOMIZE_COMPLETELY
     

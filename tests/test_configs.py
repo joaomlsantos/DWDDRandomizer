@@ -5,20 +5,20 @@ from src import model
 
 test_unchanged_settings = {
 
-    "CHANGE_TEXT_SPEED": False,
-    "CHANGE_MOVEMENT_SPEED": False,
-    "CHANGE_ENCOUNTER_RATE": False,
+    "INCREASE_TEXT_SPEED": False,
+    "INCREASE_MOVEMENT_SPEED": False,
+    "REDUCE_WILD_ENCOUNTER_RATE": False,
     "CHANGE_STAT_CAPS": False,
-    "EXTEND_PLAYERNAME_SIZE": False,
-    "APPLY_EXP_PATCH_FLAT": ExpYieldConfig.UNCHANGED,
-    "BUFF_SCAN_RATE": False,
+    "EXPAND_PLAYER_NAME_LENGTH": False,
+    "INCREASE_DIGIMON_EXP": ExpYieldConfig.UNCHANGED,
+    "INCREASE_SCAN_RATE": False,
 
     "ROOKIE_RESET_EVENT": RookieResetConfig.UNCHANGED,
     "RANDOMIZE_STARTERS": RandomizeStartersConfig.UNCHANGED,
     "NERF_FIRST_BOSS": False,
     
-    "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters.UNCHANGED,
-    "AREA_ENCOUNTERS_STATS": model.LvlUpMode.RANDOM, 
+    "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS": RandomizeWildEncounters.UNCHANGED,
+    "WILD_ENCOUNTERS_STATS": model.LvlUpMode.RANDOM, 
     
     "RANDOMIZE_FIXED_BATTLES": False,
     "FIXED_BATTLES_DIGIMON_SAME_STAGE": False,  
@@ -31,7 +31,7 @@ test_unchanged_settings = {
     "DIGIVOLUTIONS_SIMILAR_SPECIES": False,
     
     "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions.UNCHANGED,
-    "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": False,    
+    "DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": False,    
 }
 
 PATH_SOURCE_DAWN = "C:/Workspace/digimon_stuffs/rom_files/1421 - Digimon World - Dawn (USA).nds"

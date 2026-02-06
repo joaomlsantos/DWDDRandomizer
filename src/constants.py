@@ -1,111 +1,127 @@
 
+HEADER_VALUES = {
+    "4453325f5553415f4455534b4136524541460000090000000000000000000000": "DUSK_US",
+    "4453325f5553415f4441574e4133564541460000090000000000000000000000": "DAWN_US",
+    "4453544f5259325f4d4f4f4e4136524a41460000090000000000000000000000": "DUSK_JP",
+    "4453544f5259325f53554e5f4133564a41460000090000000000000000000000": "DAWN_JP",
+    "4453544f5259325f53554e5f4133564a41460000090000000000000000000100": "DAWN_JP_REV1"
+}
+
+IMPLEMENTED_HEADERS = ["DUSK_US", "DAWN_US"]
+
+
 TEXT_SPEED_OFFSET = {
-    "DUSK": 0x40328,
-    "DAWN": 0x40314
+    "DUSK_US": 0x40328,
+    "DAWN_US": 0x40314
 }
 
 MOVEMENT_SPEED_OFFSET = {
-    "DUSK": 0x66AC4,
-    "DAWN": 0x66A54
+    "DUSK_US": 0x66AC4,
+    "DAWN_US": 0x66A54
 }
 
 # this corresponds to the asm code line that defines the base value for in-training digimon; for each subsequent stage, this value decreases by 5
 BASE_SCAN_RATE_OFFSET = {
-    "DUSK": 0x17FA74,
-    "DAWN": 0x17F874
+    "DUSK_US": 0x17FA74,
+    "DAWN_US": 0x17F874
+}
+
+HABITATS_WORLDMAP_OFFSET = {
+    "DUSK_US": (0x0011FFE8, 0x001201C8),
+    "DAWN_US": (0x0011FE44, 0x00120024)
 }
 
 STAT_CAPS_OFFSET = {
-    "DUSK": 0x00059B30,
-    "DAWN": 0x00059B14
+    "DUSK_US": 0x00059B30,
+    "DAWN_US": 0x00059B14
 }
 
 STARTER_PACK_OFFSET = {
-    "DUSK": 0x0027FF90,
-    "DAWN": 0x0027FDEC
+    "DUSK_US": 0x0027FF90,
+    "DAWN_US": 0x0027FDEC
 }
 
 BASE_DIGIMON_OFFSETS = {
-    "DUSK": (0x01F55200, 0x01F6D600),
-    "DAWN": (0x01F55000, 0x01F6D400)
+    "DUSK_US": (0x01F55200, 0x01F6D600),
+    "DAWN_US": (0x01F55000, 0x01F6D400)
 }
 
 # these are (offset_start, offset_end); offset_end corresponds to the last area, content that follows it should still be analyzed
 AREA_ENCOUNTER_OFFSETS = {
-    "DUSK": (0x01F6D800, 0x01F76A00),
-    "DAWN": (0X01F6D600, 0x01F76800)
+    "DUSK_US": (0x01F6D800, 0x01F76A00),
+    "DAWN_US": (0X01F6D600, 0x01F76800)
 }
 
 ENCOUNTER_REWARD_OFFSETS = {
-    "DUSK": (0x01F77600, 0x01F78800),
-    "DAWN": (0x01F77400, 0X01F78600)
+    "DUSK_US": (0x01F77600, 0x01F78800),
+    "DAWN_US": (0x01F77400, 0X01F78600)
 }
 
 ENEMY_DIGIMON_OFFSETS = {
-    "DUSK": (0x01F78800, 0x01F90C00),
-    "DAWN": (0X01F78600, 0x01F90A00)
+    "DUSK_US": (0x01F78800, 0x01F90C00),
+    "DAWN_US": (0X01F78600, 0x01F90A00)
 }
 
 QUEST_DATA_OFFSETS = {
-    "DUSK": (0x001426AC, 0x0014402C),
-    "DAWN": (0X0014248C, 0X00143E0C)
+    "DUSK_US": (0x001426AC, 0x0014402C),
+    "DAWN_US": (0X0014248C, 0X00143E0C)
 }
 
 LVLUP_TYPE_TABLE_OFFSET = {
-    "DUSK": 0x00122458,
-    "DAWN": 0x00122298
+    "DUSK_US": 0x00122458,
+    "DAWN_US": 0x00122298
 }
 
 
 MOVE_DATA_OFFSETS = {
-    "DUSK": (0x000F9578, 0x000FCE04),
-    "DAWN": (0x000F947C, 0x000FCD08)
+    "DUSK_US": (0x000F9578, 0x000FCE04),
+    "DAWN_US": (0x000F947C, 0x000FCD08)
 }
 
 
 SPRITE_MAPPING_TABLE_OFFSET = {
-    "DUSK": (0x000FCE04, 0x00100834),
-    "DAWN": (0x000FCD08, 0x00100738)
+    "DUSK_US": (0x000FCE04, 0x00100834),
+    "DAWN_US": (0x000FCD08, 0x00100738)
 }
 
 STRING_BATTLE_TABLE_OFFSET = {
-    "DUSK": (0x00116A94, 0x00117920),
-    "DAWN": (0X00116998, 0x00117824)
+    "DUSK_US": (0x00116A94, 0x00117920),
+    "DAWN_US": (0X00116998, 0x00117824)
 }
 
 FARM_TERRAINS_START_OFFSET = {
-    "DUSK": 0x001310A8,
-    "DAWN": 0x00130EE8
+    "DUSK_US": 0x001310A8,
+    "DAWN_US": 0x00130EE8
 }
 
 ROOKIE_RESET_KEEPING_EVO = {
-    "DUSK": [0x000D034C, 0x000D0358, 0x000D0370, 0x000D037C, 0x000D0388],
-    "DAWN": [0x000D0254, 0x000D0260, 0x000D0278, 0x000D0284, 0x000D0390]
+    "DUSK_US": [0x000D034C, 0x000D0358, 0x000D0370, 0x000D037C, 0x000D0388],
+    "DAWN_US": [0x000D0254, 0x000D0260, 0x000D0278, 0x000D0284, 0x000D0390]
 }
 
 ROOKIE_RESET_CANCEL = {
-    "DUSK": 0x000327E4,
-    "DAWN": 0x000327DC
+    "DUSK_US": 0x000327E4,
+    "DAWN_US": 0x000327DC
 }
 
 VERSION_EXCLUSIVE_AREA_UNLOCKS = {
-    "DUSK": [
+    "DUSK_US": [
         (0x001200FA, 0xCBA, "Task Canyon unlocked alongside Magnet Mine")
     ],
-    "DAWN": [
+    "DAWN_US": [
         (0x0011FF0E, 0XCBD, "Magnet Mine unlocked alongside Task Canyon"),
         (0x0011FF9E, 0xCBE, "Process Factory unlocked alongside Pallette Amazon")
     ]
 }
 
 ARMOR_DIGIVOLUTIONS_OFFSETS = {
-    "DUSK": (0x0024EBC0, 0x0024EE80),
-    "DAWN": (0x0024E9C0, 0x0024EC80)
+    "DUSK_US": (0x0024EBC0, 0x0024EE80),
+    "DAWN_US": (0x0024E9C0, 0x0024EC80)
 }
 
 DNA_DIGIVOLUTIONS_OFFSETS = {
-    "DUSK": (0x0024EE80, 0x00258BDC),
-    "DAWN": (0x0024EC80, 0x002589DC)
+    "DUSK_US": (0x0024EE80, 0x00258BDC),
+    "DAWN_US": (0x0024EC80, 0x002589DC)
 }
 
 
@@ -999,7 +1015,7 @@ DIGIVOLUTION_AMOUNT_DISTRIBUTION = {
 }
 
 DIGIVOLUTION_ADDRESSES = {
-    "DUSK":
+    "DUSK_US":
     {
         0x40: 0x327c020,
         0x41: 0x327c090,
@@ -1432,7 +1448,7 @@ DIGIVOLUTION_ADDRESSES = {
         0x1f4: 0x327b9d8,
         0x1f5: 0x327ba48
     },
-    "DAWN":
+    "DAWN_US":
     {
         0x40: 0x327be20,
         0x41: 0x327be90,
@@ -1867,6 +1883,57 @@ DIGIVOLUTION_ADDRESSES = {
     }
 }
 
+# location ID corresponds to hex value of list index
+LOCATION_LIST = [
+    "SunshineCITY",
+    "DarkmoonCITY",
+    "DigiColiseum",
+    "Chip Forest",
+    "Sunken Tunnel",
+    "Chaos Brain",
+    "Thriller Ruins",
+    "Login Mountain",
+    "Magnet Mine",
+    "Limit Valley",
+    "ResistorJungle",
+    "Task Canyon",
+    "PaletteAmazon",
+    "Loop Swamp",
+    "ProcessFactory",
+    "Proxy Island",
+    "HighlightHaven",
+    "AccessGlacier",
+    "Macro Sea",
+    "Shadow Abyss",
+    "Transfield"
+]
+
+# use this to track which area we are currently at
+# in the iterator, get current offset, subtract base offset and check which 
+LOCATION_OFFSETS_TO_NAMES = {
+    0x0000: "Unknown",
+    0x0400: "Login Mountain",
+    0x0A00: "Sunken Tunnel",
+    0x1000: "Chip Forest",
+    0x1800: "ResistorJungle",
+    0x2000: "Limit Valley",
+    0x2800: "Magnet Mine",
+    0x3000: "Loop Swamp",
+    0x3400: "PaletteAmazon",
+    0x3A00: "Task Canyon",
+    0x4200: "ProcessFactory",
+    0x4A00: "AccessGlacier",
+    0x5200: "Macro Sea",
+    0x5800: "Proxy Island",
+    0x6000: "HighlightHaven",
+    0x6800: "Shadow Abyss",
+    0x7000: "Chaos Brain",
+    0x7600: "Transfield",
+    0x8000: "Thriller Ruins",
+    0x8800: "Unknown"
+}
+
+
 
 ITEM_TYPE_IDS = {
     "FARM_ITEM": (0x0, 0x4d),
@@ -1881,7 +1948,7 @@ ITEM_TYPE_IDS = {
 
 # these correspond to each overworld chest item's address and original value
 OVERWORLD_ITEM_ADDRESSES = {
-    "DUSK": {
+    "DUSK_US": {
         0x1b7a84: 0x144,
         0x1cea48: 0x56,
         0x1ceb4c: 0xb4,
@@ -2082,7 +2149,7 @@ OVERWORLD_ITEM_ADDRESSES = {
         0x20cb50: 0x1,
         0x20cb5c: 0x0
     },
-    "DAWN":
+    "DAWN_US":
     {
         0x1b7696: 0x144,
         0x1ce694: 0x56,
@@ -2291,7 +2358,7 @@ OVERWORLD_ITEM_ADDRESSES = {
 # these addresses correspond to the MOV instructions that control each delay in battle, and the corresponding value to overwrite
 # the addresses for DUSK are equivalent to the addresses of DAWN + 0x200
 BATTLE_FRAME_ADDRESSES = {
-    "DUSK": {
+    "DUSK_US": {
         0x0015C270: 0x01,
         0x0015C73C: 0x01,
         0x001793F4: 0x08,
@@ -2307,7 +2374,7 @@ BATTLE_FRAME_ADDRESSES = {
         0x00171B9C: 0x08,
         0x00171BA0: 0x1E
     },
-    "DAWN": {
+    "DAWN_US": {
         0x0015C070: 0x01,
         0x0015C53C: 0x01,
         0x001791F4: 0x08,
@@ -4792,7 +4859,7 @@ TRAITS_SUPPORT_BY_STAGE = {
 # The following is mapped as [address]: [value to replace in given address]
 # For this instance we assume 0x2135A00 as the new target address for Dusk, 0x2135840 as the new target address for Dawn, and 0xC as the new name length
 PLAYERNAME_EXTENSION_ADDRESSES = {
-    "DUSK":
+    "DUSK_US":
     {
         0x38204: 0x2135a00, 
         0x382EC: 0x2135a00, 
@@ -4820,7 +4887,7 @@ PLAYERNAME_EXTENSION_ADDRESSES = {
         0xe09bc: 0xe3a02000,
         0xe09d4: 0xe3a02000
     },
-    "DAWN":
+    "DAWN_US":
     {
         0x381F0: 0x02135840, 
         0x382D8: 0x02135840, 

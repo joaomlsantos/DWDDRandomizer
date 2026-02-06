@@ -220,13 +220,13 @@ class TestExecuteQolChanges:
         rom = rom_both
 
         # Ensure all QoL settings are disabled
-        rom.config_manager.set("CHANGE_TEXT_SPEED", False)
-        rom.config_manager.set("CHANGE_MOVEMENT_SPEED", False)
-        rom.config_manager.set("CHANGE_ENCOUNTER_RATE", False)
-        rom.config_manager.set("EXTEND_PLAYERNAME_SIZE", False)
-        rom.config_manager.set("BUFF_SCAN_RATE", False)
-        rom.config_manager.set("CHANGE_FARM_EXP", False)
-        rom.config_manager.set("ENABLE_VERSION_EXCLUSIVE_AREAS", False)
+        rom.config_manager.set("INCREASE_TEXT_SPEED", False)
+        rom.config_manager.set("INCREASE_MOVEMENT_SPEED", False)
+        rom.config_manager.set("REDUCE_WILD_ENCOUNTER_RATE", False)
+        rom.config_manager.set("EXPAND_PLAYER_NAME_LENGTH", False)
+        rom.config_manager.set("INCREASE_SCAN_RATE", False)
+        rom.config_manager.set("INCREASE_FARM_EXP", False)
+        rom.config_manager.set("UNLOCK_VERSION_EXCLUSIVE_AREAS", False)
 
         original_data = bytes(rom.rom_data)
 
@@ -240,13 +240,13 @@ class TestExecuteQolChanges:
         rom = rom_both
 
         # Enable all QoL settings
-        rom.config_manager.set("CHANGE_TEXT_SPEED", True)
-        rom.config_manager.set("CHANGE_MOVEMENT_SPEED", True)
-        rom.config_manager.set("CHANGE_ENCOUNTER_RATE", True)
-        rom.config_manager.set("EXTEND_PLAYERNAME_SIZE", True)
-        rom.config_manager.set("BUFF_SCAN_RATE", True)
-        rom.config_manager.set("CHANGE_FARM_EXP", True)
-        rom.config_manager.set("ENABLE_VERSION_EXCLUSIVE_AREAS", True)
+        rom.config_manager.set("INCREASE_TEXT_SPEED", True)
+        rom.config_manager.set("INCREASE_MOVEMENT_SPEED", True)
+        rom.config_manager.set("REDUCE_WILD_ENCOUNTER_RATE", True)
+        rom.config_manager.set("EXPAND_PLAYER_NAME_LENGTH", True)
+        rom.config_manager.set("INCREASE_SCAN_RATE", True)
+        rom.config_manager.set("INCREASE_FARM_EXP", True)
+        rom.config_manager.set("UNLOCK_VERSION_EXCLUSIVE_AREAS", True)
 
         original_data = bytes(rom.rom_data)
 
@@ -260,13 +260,13 @@ class TestExecuteQolChanges:
         rom = rom_both
 
         # Enable some, disable others
-        rom.config_manager.set("CHANGE_TEXT_SPEED", True)
-        rom.config_manager.set("CHANGE_MOVEMENT_SPEED", False)
-        rom.config_manager.set("CHANGE_ENCOUNTER_RATE", True)
-        rom.config_manager.set("EXTEND_PLAYERNAME_SIZE", False)
-        rom.config_manager.set("BUFF_SCAN_RATE", True)
-        rom.config_manager.set("CHANGE_FARM_EXP", False)
-        rom.config_manager.set("ENABLE_VERSION_EXCLUSIVE_AREAS", True)
+        rom.config_manager.set("INCREASE_TEXT_SPEED", True)
+        rom.config_manager.set("INCREASE_MOVEMENT_SPEED", False)
+        rom.config_manager.set("REDUCE_WILD_ENCOUNTER_RATE", True)
+        rom.config_manager.set("EXPAND_PLAYER_NAME_LENGTH", False)
+        rom.config_manager.set("INCREASE_SCAN_RATE", True)
+        rom.config_manager.set("INCREASE_FARM_EXP", False)
+        rom.config_manager.set("UNLOCK_VERSION_EXCLUSIVE_AREAS", True)
 
         # Should not raise any exceptions
         rom.executeQolChanges()
@@ -328,12 +328,12 @@ class TestRomHeaderIntegrity:
         original_header = bytes(rom.rom_data[:HEADER_SIZE])
 
         # Enable all QoL changes
-        rom.config_manager.set("CHANGE_TEXT_SPEED", True)
-        rom.config_manager.set("CHANGE_MOVEMENT_SPEED", True)
-        rom.config_manager.set("CHANGE_ENCOUNTER_RATE", True)
-        rom.config_manager.set("EXTEND_PLAYERNAME_SIZE", True)
-        rom.config_manager.set("BUFF_SCAN_RATE", True)
-        rom.config_manager.set("CHANGE_FARM_EXP", True)
+        rom.config_manager.set("INCREASE_TEXT_SPEED", True)
+        rom.config_manager.set("INCREASE_MOVEMENT_SPEED", True)
+        rom.config_manager.set("REDUCE_WILD_ENCOUNTER_RATE", True)
+        rom.config_manager.set("EXPAND_PLAYER_NAME_LENGTH", True)
+        rom.config_manager.set("INCREASE_SCAN_RATE", True)
+        rom.config_manager.set("INCREASE_FARM_EXP", True)
 
         rom.executeQolChanges()
 

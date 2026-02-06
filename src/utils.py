@@ -48,6 +48,13 @@ def getAllDigimonPairs():
     return digimon_pairs
 
 
+def get_digimon_names():
+    """Get list of all Digimon names sorted by ID."""
+    # Sort by ID (keys), then return the names (values)
+    sorted_items = sorted(constants.DIGIMON_ID_TO_STR.items(), key=lambda x: x[0])
+    return [name for digimon_id, name in sorted_items]
+
+
 
 def loadBaseDigimonInfo(version: str, 
                         rom_data: bytearray):
@@ -306,9 +313,21 @@ def loadBattleStringTable(version: str,
     return battleStringTable
 
 
+def loadHabitatsWorldmap(version: str,
+                          rom_data: bytearray):
     
+    offset_start = constants.HABITATS_WORLDMAP_OFFSET[version][0]
+    offset_end = constants.HABITATS_WORLDMAP_OFFSET[version][1]
 
+    habitatsWorldmapTable = []
+    seek_offset = offset_start
+    
+    while(seek_offset <= offset_end):
+        cur_habitat = model.HabitatWorldmap(rom_data[seek_offset:seek_offset+0x18], seek_offset)
+        habitatsWorldmapTable.append(cur_habitat)
+        seek_offset += 0x18
 
+    return habitatsWorldmapTable
 
 
 def loadLvlupTypeTable(version: str, 
@@ -371,6 +390,16 @@ def generateLvlupStats(lvlupTable: list[list[int, int]],
     return target_digimon
 
 
+def getCurrentLocation(current_offset: int,
+                       version: str):
+    
+    base_offset = constants.AREA_ENCOUNTER_OFFSETS[version][0]
+    relative_offset = current_offset - base_offset
+
+    location_offset = max((offset for offset in constants.LOCATION_OFFSETS_TO_NAMES.keys() 
+                          if offset <= relative_offset), default=0x0000)
+    return constants.LOCATION_OFFSETS_TO_NAMES[location_offset]
+
 def loadDigivolutionInformation(rom_data: bytearray,
                                 offset: int):
     digivolution_hex_info = rom_data[offset:offset+0x70]            # length of digivolution info for a given digimon is always 0x70
@@ -401,7 +430,7 @@ def loadDigivolutionInformation(rom_data: bytearray,
 def generateConditions(s: int, max_conditions: int = 3):
     
     stage = constants.STAGE_NAMES[s]
-    digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x12]    # this should be a constant/setting i think
+    digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x12]    # this should be a constant/setting i think
     condition_amount_distribution = constants.DIGIVOLUTION_CONDITION_AMOUNT_DISTRIBUTION[stage]
     condition_amount = np.random.choice(list(range(1,len(condition_amount_distribution)+1)), p=condition_amount_distribution)
     conditions = []
@@ -434,7 +463,7 @@ def generateBiasedConditions(stage_id: int, bias: float, species: List[model.Spe
     '''
 
     stage = constants.STAGE_NAMES[stage_id]
-    digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x12]    # this should be a constant/setting i think
+    digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x12]    # this should be a constant/setting i think
     species_condition_mapping = {0: 0x9, 1: 0x8, 2: 0x2, 3: 0x3, 4: 0x5, 5: 0x7, 6: 0x4, 7: 0x6}
     species_exp = [species_condition_mapping[x] for x in species if x in species_condition_mapping.keys()]
     other_species_total = len(species_condition_mapping) - len(species)

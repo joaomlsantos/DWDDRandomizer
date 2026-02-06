@@ -88,7 +88,7 @@ class TestStagePreservationInvariants:
 
         # Configure randomization
         randomizer.config_manager.set(
-            "RANDOMIZE_AREA_ENCOUNTERS",
+            "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS",
             RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
         )
 
@@ -325,7 +325,7 @@ class TestNoCrashInvariants:
     def test_wild_encounter_randomization_completes(self, randomizer_both, randomize_option):
         """Test that wild encounter randomization completes for all options."""
         randomizer = randomizer_both
-        randomizer.config_manager.set("RANDOMIZE_AREA_ENCOUNTERS", randomize_option)
+        randomizer.config_manager.set("RANDOMIZE_WILD_DIGIMON_ENCOUNTERS", randomize_option)
 
         set_seed(42)
         randomizer.randomizeAreaEncounters(randomizer.rom_data)

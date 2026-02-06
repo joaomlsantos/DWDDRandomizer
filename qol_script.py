@@ -26,27 +26,27 @@ class DigimonROM:
                  logger: logging.Logger):
         self.fpath = fpath
         self.rom_data = self.loadRom(fpath)
-        self.version = self.checkHeader(self.rom_data[12:16].hex())
+        self.version = self.checkHeader()
         self.config_manager = config_manager
         self.logger = logger
     
 
     def executeQolChanges(self):
-        if(self.config_manager.get("CHANGE_TEXT_SPEED", False)):
+        if(self.config_manager.get("INCREASE_TEXT_SPEED", False)):
             self.changeTextSpeed()
-        if(self.config_manager.get("CHANGE_MOVEMENT_SPEED", False)):
+        if(self.config_manager.get("INCREASE_MOVEMENT_SPEED", False)):
             self.changeMovementSpeed()
-        if(self.config_manager.get("CHANGE_ENCOUNTER_RATE", False)):
+        if(self.config_manager.get("REDUCE_WILD_ENCOUNTER_RATE", False)):
             self.changeEncounterRate()
         if(self.config_manager.get("CHANGE_STAT_CAPS", False)):
             self.changeStatCaps()
-        if(self.config_manager.get("EXTEND_PLAYERNAME_SIZE", False)):
+        if(self.config_manager.get("EXPAND_PLAYER_NAME_LENGTH", False)):
             self.extendPlayerNameSize()
-        if(self.config_manager.get("BUFF_SCAN_RATE", False)):
+        if(self.config_manager.get("INCREASE_SCAN_RATE", False)):
             self.buffScanRate()
-        if(self.config_manager.get("CHANGE_FARM_EXP", False)):
+        if(self.config_manager.get("INCREASE_FARM_EXP", False)):
             self.changeFarmExp()
-        if(self.config_manager.get("ENABLE_VERSION_EXCLUSIVE_AREAS", False)):
+        if(self.config_manager.get("UNLOCK_VERSION_EXCLUSIVE_AREAS", False)):
             self.unlockExclusiveAreas()
         if(self.config_manager.get("IMPROVE_BATTLE_PERFORMANCE", False)):
             self.improveBattlePerformance()
@@ -63,12 +63,16 @@ class DigimonROM:
             f.write(self.rom_data)
         self.logger.info("Created new rom at target path \"" + fpath + "\"")
 
-    def checkHeader(self, header_value):
-        if(header_value == "41365245"):
-            return "DUSK"
-        if(header_value == "41335645"):
-            return "DAWN"
-        raise ValueError("Game not recognized. Please check your rom (file \"" +  os.path.basename(self.fpath) + "\").")
+    def checkHeader(self):
+        header_value = self.rom_data[:0x20].hex()
+        rom_version = constants.HEADER_VALUES.get(header_value)
+        
+        if(rom_version == None):
+            raise ValueError("Game not recognized. Please check your rom (file \"" +  os.path.basename(self.fpath) + "\").")
+        if(rom_version not in constants.IMPLEMENTED_HEADERS):
+            raise ValueError(f"Support for {rom_version} not implemented yet. Supported ROMs: {constants.IMPLEMENTED_HEADERS}")
+
+        return rom_version
     
 
     def changeTextSpeed(self):
@@ -190,6 +194,7 @@ class Randomizer:
         self.lvlupTypeTable = utils.loadLvlupTypeTable(version, rom_data)
         self.spriteMapTable = utils.loadSpriteMapTable(version, rom_data)
         self.battleStrTable = utils.loadBattleStringTable(version, rom_data)
+        self.habitatsWorldmapTable: List[model.HabitatWorldmap] = utils.loadHabitatsWorldmap(version, rom_data)
 
     
     def executeRandomizerFunctions(self, target_rom_data: bytearray = None):
@@ -260,6 +265,20 @@ class Randomizer:
         self.logger.info(f"\n{log_calumon}")
         
         
+    def getStartersArray(self) -> List[List[int]]:
+        cur_offset = constants.STARTER_PACK_OFFSET[self.version]
+        starters_array = []
+
+        for pack_ix in range(4):
+            cur_pack = []
+            for starter_ix in range(3):
+                digimon_id = int.from_bytes(self.rom_data[cur_offset:cur_offset+2], byteorder="little")
+                digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"Unknown (ID: {digimon_id})")
+                cur_pack.append(digimon_name)
+                cur_offset += 8
+            starters_array.append(cur_pack)
+
+        return starters_array
 
     
     def randomizeStarters(self, 
@@ -269,7 +288,7 @@ class Randomizer:
         if(self.config_manager.get("RANDOMIZE_STARTERS") == RandomizeStartersConfig.UNCHANGED):
             return
 
-        if(self.config_manager.get("FORCE_STARTER_W_ROOKIE")):
+        if(self.config_manager.get("FORCE_STARTER_W_ROOKIE_STAGE")):
             digimon_ids_w_rookie = {
                 *constants.DIGIMON_IDS["IN-TRAINING"].values(),
                 *constants.DIGIMON_IDS["ROOKIE"].values()
@@ -283,6 +302,33 @@ class Randomizer:
         
         self.logger.info("\n==================== STARTER PACKS ====================")
         cur_offset = constants.STARTER_PACK_OFFSET[self.version]
+
+        # custom starter packs scenario; instead of going into the loop we will set each pack directly and then return
+        if(self.config_manager.get("RANDOMIZE_STARTERS") == RandomizeStartersConfig.CUSTOM):
+            custom_starters = self.config_manager.get("CUSTOM_STARTER_PACKS",[])
+
+            # starters array loading uses constants.DIGIMON_ID_TO_STR; 
+            # inverting the dict would be faster than individual lookup search, but cycling is more correct/prevents issues better imo
+
+            for pack_ix, pack_data in enumerate(custom_starters):
+                for starter_ix, starter_name in enumerate(pack_data):
+                    custom_starter_id = next((k for k, v in constants.DIGIMON_ID_TO_STR.items() if v == starter_name), None)
+                    if(custom_starter_id == None):
+                        cur_offset += 8
+                        continue
+
+                    rom_data[cur_offset:cur_offset+2] = (custom_starter_id).to_bytes(2, byteorder="little")    # write new digimon id
+
+                    previous_starter_level = int.from_bytes(rom_data[cur_offset+2:cur_offset+4], byteorder="little")
+                    target_digimon_lvl = self.baseDigimonInfo[custom_starter_id].aptitude
+                    if(target_digimon_lvl < previous_starter_level):                                              # check if digimon's aptitude is lower than starter lvl
+                        rom_data[cur_offset+2:cur_offset+4] = (target_digimon_lvl).to_bytes(2, byteorder="little")    # set lvl to max aptitude
+                    cur_offset += 8
+                    
+                self.logger.info("Starter Pack " + str(pack_ix + 1) + ": " + ", ".join(pack_data))
+
+            return
+
         for spack_i in range(4):            # there are 4 starter packs
             new_starter_pack = []
             for starter_i in range(3):       # 3 starters
@@ -306,7 +352,7 @@ class Randomizer:
                     self.logger.error("No RANDOMIZE_STARTERS compatible option, escaping to full randomization")
                     cur_digimon_pool = utils.getAllDigimonPairs()
 
-                if self.config_manager.get("FORCE_STARTER_W_ROOKIE"):
+                if self.config_manager.get("FORCE_STARTER_W_ROOKIE_STAGE"):
                     cur_digimon_pool = [(name, id_) for name, id_ in cur_digimon_pool if id_ in digimon_ids_w_rookie]
 
                 randomized_digimon = random.choice(list(cur_digimon_pool))
@@ -355,7 +401,7 @@ class Randomizer:
         
         previousEnemyDigimonInfo = copy.deepcopy(self.enemyDigimonInfo)
 
-        if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") == RandomizeWildEncounters.UNCHANGED):
+        if(self.config_manager.get("RANDOMIZE_WILD_DIGIMON_ENCOUNTERS") == RandomizeWildEncounters.UNCHANGED):
             return
         
         offset_start = constants.AREA_ENCOUNTER_OFFSETS[self.version][0]
@@ -364,13 +410,13 @@ class Randomizer:
         options_same_stage = [RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE]
         options_completely_random = [RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY]
 
-        if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") in options_same_stage):
+        if(self.config_manager.get("RANDOMIZE_WILD_DIGIMON_ENCOUNTERS") in options_same_stage):
             digimon_stage_pool = copy.deepcopy(constants.DIGIMON_IDS)
             #if(self.config_manager.get("WILD_DIGIMON_EXCLUDE_CALUMON", False)):
             #    digimon_stage_pool["IN-TRAINING"].pop("Calumon")
         
         # if completely random, digimon_pool is mixed between all digimon
-        if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") in options_completely_random):
+        if(self.config_manager.get("RANDOMIZE_WILD_DIGIMON_ENCOUNTERS") in options_completely_random):
             digimon_ids_by_stage = copy.deepcopy(constants.DIGIMON_IDS)
             digimon_pool = {}
             for stage in digimon_ids_by_stage:
@@ -380,12 +426,32 @@ class Randomizer:
 
         randomized_digimon_history = {}
 
+        # this is used to change the species in habitat preview in the worldmap
+        location_species_tracker = {}
+
+        # this is used to change the habitats in the digimon gallery
+        original_habitats = {}
+        for digimon_id in self.baseDigimonInfo.keys():
+            original_habitats[digimon_id] = self.baseDigimonInfo[digimon_id].dex_habitat
+
+
         self.logger.info("\n==================== WILD DIGIMON ====================")
         area_i = 1                      # this is only used for logging; should be replaced when we have labels for each area
         area_offset = offset_start
+        current_location = utils.getCurrentLocation(area_offset, self.version)
+        previous_location = current_location
         while(area_offset <= offset_end):    # <=  to include offset_end
             cur_offset = area_offset + 16   # skip area header
             new_area_digimon = []
+
+            # get location, update tracker if it did not exist yet
+            current_location = utils.getCurrentLocation(area_offset, self.version)
+            location_species_tracker.setdefault(current_location, 0x00)
+
+            # reset area counter
+            if current_location != previous_location:
+                area_i = 1
+                previous_location = current_location
             
             cur_digimon_id = int.from_bytes(rom_data[cur_offset:cur_offset+2], byteorder="little")
             while(cur_digimon_id != 0 and cur_offset <= area_offset + 0x200):
@@ -403,12 +469,12 @@ class Randomizer:
                     continue
 
                 # this randomizes by stage
-                if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") in options_same_stage):
+                if(self.config_manager.get("RANDOMIZE_WILD_DIGIMON_ENCOUNTERS") in options_same_stage):
                     picked_digimon_name = random.choice(list(digimon_stage_pool[digimon_stage].keys()))
                     randomized_digimon_id = digimon_stage_pool[digimon_stage].pop(picked_digimon_name)     # this ensures there are no repeated digimon
 
                 # this randomizes completely
-                if(self.config_manager.get("RANDOMIZE_AREA_ENCOUNTERS") in options_completely_random):
+                if(self.config_manager.get("RANDOMIZE_WILD_DIGIMON_ENCOUNTERS") in options_completely_random):
                     picked_digimon_name = random.choice(list(digimon_pool.keys()))
                     randomized_digimon_id = digimon_pool.pop(picked_digimon_name)     # this ensures there are no repeated digimon
 
@@ -423,8 +489,9 @@ class Randomizer:
                 # compare to previousEnemyDigimonInfo in order to maintain coherency w previous data
                 prev_digimon_data = previousEnemyDigimonInfo[cur_digimon_id]
                 encounter_level = prev_digimon_data.level
+                randomized_digimon_data = self.baseDigimonInfo[randomized_digimon_id]
 
-                base_digimon_leveled = utils.generateLvlupStats(self.lvlupTypeTable, self.baseDigimonInfo[randomized_digimon_id], encounter_level, self.config_manager.get("AREA_ENCOUNTERS_STATS"))
+                base_digimon_leveled = utils.generateLvlupStats(self.lvlupTypeTable, randomized_digimon_data, encounter_level, self.config_manager.get("WILD_ENCOUNTERS_STATS"))
                 enemy_digimon_offset = self.enemyDigimonInfo[randomized_digimon_id].offset
                 
                 enemy_digimon_to_update = self.enemyDigimonInfo[randomized_digimon_id]
@@ -443,22 +510,41 @@ class Randomizer:
                 utils.writeRomBytes(rom_data, base_digimon_leveled.spirit, enemy_digimon_offset+0xe, 2)
                 utils.writeRomBytes(rom_data, base_digimon_leveled.speed, enemy_digimon_offset+0x10, 2)
 
+                # also write new habitat
+                self.baseDigimonInfo[randomized_digimon_id].dex_habitat = original_habitats[cur_digimon_id]
+                utils.writeRomBytes(rom_data, self.baseDigimonInfo[randomized_digimon_id].dex_habitat, self.baseDigimonInfo[randomized_digimon_id].offset+0x39, 1)
+
+                # update location tracker w/ randomized digimon's species
+                location_species_tracker[current_location] |= (1 << randomized_digimon_data.species) if randomized_digimon_data.species < 8 else 0
 
                 cur_offset += 24        # skip 24 bytes to get next encounter
                 cur_digimon_id = int.from_bytes(rom_data[cur_offset:cur_offset+2], byteorder="little")
 
-            self.logger.info("Area " + str(area_i) + ": " + ", ".join(new_area_digimon))
+            self.logger.info(f"{current_location} Area {area_i}: " + ", ".join(new_area_digimon))
             area_offset += 0x200
             area_i += 1
 
+        # update habitat species worldmap preview
+        for location in location_species_tracker.keys():
+            if location in constants.LOCATION_LIST:
+                location_ix = constants.LOCATION_LIST.index(location)
+                self.habitatsWorldmapTable[location_ix].species_living = location_species_tracker[location]
+                utils.writeRomBytes(rom_data, location_species_tracker[location], self.habitatsWorldmapTable[location_ix].offset + 0x4, 2)
+            
+        # update dex habitats for digimon who had a habitat and do not anymore
+        randomized_digimon_ids = {digimon_id for _, digimon_id in randomized_digimon_history.values()}
 
+        for cur_digimon_id in randomized_digimon_history.keys():
+            if cur_digimon_id not in randomized_digimon_ids and original_habitats[cur_digimon_id] is not None:
+                self.baseDigimonInfo[cur_digimon_id].dex_habitat = 0x4b
+                utils.writeRomBytes(rom_data, self.baseDigimonInfo[cur_digimon_id].dex_habitat, self.baseDigimonInfo[cur_digimon_id].offset+0x39, 1)
 
 
 
     # patches wild encounters only; tamer digimon are not changed
     def expPatchFlat(self, rom_data: bytearray):
 
-        exp_yield_opt = self.config_manager.get("APPLY_EXP_PATCH_FLAT")
+        exp_yield_opt = self.config_manager.get("INCREASE_DIGIMON_EXP")
         if exp_yield_opt == ExpYieldConfig.UNCHANGED:
             return
         
@@ -539,11 +625,11 @@ class Randomizer:
 
     def changeEncounterRewardData(self,
                                   rom_data: bytearray):
-        buff_wild_encounter_money = self.config_manager.get("BUFF_WILD_ENCOUNTER_MONEY", False)
+        INCREASE_WILD_ENCOUNTER_MONEY = self.config_manager.get("INCREASE_WILD_ENCOUNTER_MONEY", False)
         randomize_wild_encounter_items = self.config_manager.get("RANDOMIZE_WILD_ENCOUNTER_ITEMS", RandomizeItems.UNCHANGED)
 
         # check this first, then do 1 cycle through all reward data for each operation
-        if(not (buff_wild_encounter_money or (randomize_wild_encounter_items != RandomizeItems.UNCHANGED))):
+        if(not (INCREASE_WILD_ENCOUNTER_MONEY or (randomize_wild_encounter_items != RandomizeItems.UNCHANGED))):
             return
 
         item_lookup_table = {
@@ -560,7 +646,7 @@ class Randomizer:
 
             prev_rewards_str = cur_encounter_reward.getRewardReprString()
 
-            if(buff_wild_encounter_money):
+            if(INCREASE_WILD_ENCOUNTER_MONEY):
                 cur_encounter_reward.multiplyMoney(self.config_manager.get("ENCOUNTER_MONEY_MULTIPLIER"))
             
             if(randomize_wild_encounter_items != RandomizeItems.UNCHANGED):
@@ -599,11 +685,11 @@ class Randomizer:
                             rom_data: bytearray):
         
         enable_legendary_tamer_quest = self.config_manager.get("ENABLE_LEGENDARY_TAMER_QUEST", False)
-        unlock_main_quests_sequence = self.config_manager.get("UNLOCK_MAIN_QUESTS_SEQUENCE", False)
-        randomize_quest_reward_items = self.config_manager.get("RANDOMIZE_QUEST_REWARD_ITEMS", RandomizeItems.UNCHANGED)
+        UNLOCK_MAIN_QUESTS_IN_SEQUENCE = self.config_manager.get("UNLOCK_MAIN_QUESTS_IN_SEQUENCE", False)
+        randomize_quest_reward_items = self.config_manager.get("RANDOMIZE_QUEST_ITEM_REWARDS", RandomizeItems.UNCHANGED)
         
         # check this first, then do 1 cycle through all quests for each operation
-        if(not (enable_legendary_tamer_quest or unlock_main_quests_sequence or (randomize_quest_reward_items != RandomizeItems.UNCHANGED))):
+        if(not (enable_legendary_tamer_quest or UNLOCK_MAIN_QUESTS_IN_SEQUENCE or (randomize_quest_reward_items != RandomizeItems.UNCHANGED))):
             return
         
         item_lookup_table = {
@@ -624,7 +710,7 @@ class Randomizer:
                 cur_quest.unlock_condition_online = 0
                 utils.writeRomBytes(rom_data, 0, cur_quest.offset + 0x3e, 2)
 
-            if(unlock_main_quests_sequence):
+            if(UNLOCK_MAIN_QUESTS_IN_SEQUENCE):
                 cur_quest.unlock_condition_numquests = 0
                 utils.writeRomBytes(rom_data, 0, cur_quest.offset + 0x38, 2)
 
@@ -653,7 +739,7 @@ class Randomizer:
         if(enable_legendary_tamer_quest):
             self.logger.info("Set quest \"The Legendary Tamer\" to unlock without online connection")
 
-        if(unlock_main_quests_sequence):
+        if(UNLOCK_MAIN_QUESTS_IN_SEQUENCE):
             self.logger.info("Set main quests to unlock in sequence")
 
 
@@ -740,7 +826,7 @@ class Randomizer:
                 self.lvlupTypeTable,
                 self.baseDigimonInfo[randomized_digimon_id],
                 original_level,
-                self.config_manager.get("AREA_ENCOUNTERS_STATS", model.LvlUpMode.RANDOM)
+                self.config_manager.get("WILD_ENCOUNTERS_STATS", model.LvlUpMode.RANDOM)
             )
 
             original_base_total = (
@@ -805,7 +891,7 @@ class Randomizer:
             enemy_digimon_to_update.water_res = base_digimon.water_res
             enemy_digimon_to_update.thunder_res = base_digimon.thunder_res
 
-            exp_yield_opt = self.config_manager.get("APPLY_EXP_PATCH_FLAT", ExpYieldConfig.UNCHANGED)
+            exp_yield_opt = self.config_manager.get("INCREASE_DIGIMON_EXP", ExpYieldConfig.UNCHANGED)
             exp_denominator = 7
             if exp_yield_opt == ExpYieldConfig.INCREASE_HALVED:
                 exp_denominator = 14
@@ -1523,7 +1609,7 @@ class Randomizer:
                         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") or evo_digi_id not in generated_conditions.keys()):
                             # generate conditions for evo digimon
                             # no need to override w/ hasPreDigivolution here
-                            if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
+                            if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")):
                                 conditions_evo = utils.generateBiasedConditions(s+1, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [self.baseDigimonInfo[evo_digi_id].species])
                             else:
                                 conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
@@ -1548,7 +1634,7 @@ class Randomizer:
                 # if conditions do not exist for current digimon, generate them
                 # NOTE: right now this is inefficient, will randomize up to three times unecessarily in order to account for generatedConditions already being filled at the start if Digimon Conditions is left unchanged
                 if(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") or digimon_id not in generated_conditions.keys()):
-                    if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
+                    if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")):
                         conditions_cur = utils.generateBiasedConditions(s, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [self.baseDigimonInfo[digimon_id].species])
                     else:
                         conditions_cur = utils.generateConditions(s)
@@ -1675,7 +1761,7 @@ class Randomizer:
                     if(len(base_conditions) > 0):
                         if(evo_digimon_id in generated_conditions.keys()):
                             conditions_evo = generated_conditions[evo_digimon_id]
-                        elif(self.config_manager.get("DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")):
+                        elif(self.config_manager.get("DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")):
                             conditions_evo = utils.generateBiasedConditions(evo_stage_int, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [digivolution_baseinfo.species], max_conditions=len(base_conditions))
                             generated_conditions[evo_digimon_id] = conditions_evo
                         else:
@@ -1777,7 +1863,7 @@ class Randomizer:
                                      self.baseDigimonInfo[dnaDigivolutionObj.digimon_2_id].species,
                                      self.baseDigimonInfo[dnaDigivolutionObj.dna_evolution_id].species]
 
-                    conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage)
+                    conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage)
                     conditions_evo += [[0, 0]] * (3 - len(conditions_evo))  # pad w/ empty conditions/values if result does not have 3 conditions
 
                     # set conditions
@@ -1792,7 +1878,7 @@ class Randomizer:
                                  self.baseDigimonInfo[dnaDigivolutionObj.digimon_2_id].species,
                                  self.baseDigimonInfo[dnaDigivolutionObj.dna_evolution_id].species]
 
-                conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage)
+                conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage)
                 conditions_evo += [[0, 0]] * (3 - len(conditions_evo))  # pad w/ empty conditions/values if result does not have 3 conditions
 
                 # set conditions

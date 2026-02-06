@@ -147,8 +147,8 @@ def test_digivolutionConditionsOnly(randomizer_dawn, randomizer_dusk):
     randomizer_dusk.config_manager.configs["RANDOMIZE_DIGIVOLUTIONS"] = RandomizeDigivolutions.UNCHANGED
     randomizer_dawn.config_manager.configs["RANDOMIZE_DIGIVOLUTION_CONDITIONS"] = RandomizeDigivolutionConditions.RANDOMIZE
     randomizer_dusk.config_manager.configs["RANDOMIZE_DIGIVOLUTION_CONDITIONS"] = RandomizeDigivolutionConditions.RANDOMIZE
-    randomizer_dawn.config_manager.configs["DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP"] = False
-    randomizer_dusk.config_manager.configs["DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP"] = False
+    randomizer_dawn.config_manager.configs["DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP"] = False
+    randomizer_dusk.config_manager.configs["DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP"] = False
     randomizer_dawn.randomizeDigivolutionConditionsOnly(randomizer_dawn.rom_data)
     randomizer_dusk.randomizeDigivolutionConditionsOnly(randomizer_dusk.rom_data)
     
@@ -157,8 +157,8 @@ def test_digivolutionConditionsOnlyAvoidDiffSpecies(randomizer_dawn, randomizer_
     randomizer_dusk.config_manager.configs["RANDOMIZE_DIGIVOLUTIONS"] = RandomizeDigivolutions.UNCHANGED
     randomizer_dawn.config_manager.configs["RANDOMIZE_DIGIVOLUTION_CONDITIONS"] = RandomizeDigivolutionConditions.RANDOMIZE
     randomizer_dusk.config_manager.configs["RANDOMIZE_DIGIVOLUTION_CONDITIONS"] = RandomizeDigivolutionConditions.RANDOMIZE
-    randomizer_dawn.config_manager.configs["DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP"] = True
-    randomizer_dusk.config_manager.configs["DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP"] = True
+    randomizer_dawn.config_manager.configs["DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP"] = True
+    randomizer_dusk.config_manager.configs["DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP"] = True
     randomizer_dawn.randomizeDigivolutionConditionsOnly(randomizer_dawn.rom_data)
     randomizer_dusk.randomizeDigivolutionConditionsOnly(randomizer_dusk.rom_data)
     
@@ -166,44 +166,44 @@ def test_digivolutionConditionsOnlyAvoidDiffSpecies(randomizer_dawn, randomizer_
 # Wild Encounter Randomization Tests
 
 def test_areaEncountersUnchanged(randomizer_dawn, randomizer_dusk):
-    randomizer_dawn.config_manager.configs["RANDOMIZE_AREA_ENCOUNTERS"] = RandomizeWildEncounters.UNCHANGED
-    randomizer_dusk.config_manager.configs["RANDOMIZE_AREA_ENCOUNTERS"] = RandomizeWildEncounters.UNCHANGED
+    randomizer_dawn.config_manager.configs["RANDOMIZE_WILD_DIGIMON_ENCOUNTERS"] = RandomizeWildEncounters.UNCHANGED
+    randomizer_dusk.config_manager.configs["RANDOMIZE_WILD_DIGIMON_ENCOUNTERS"] = RandomizeWildEncounters.UNCHANGED
     randomizer_dawn.randomizeAreaEncounters(randomizer_dawn.rom_data)
     randomizer_dusk.randomizeAreaEncounters(randomizer_dusk.rom_data)
         
 def test_areaEncountersRandomSameStage(randomizer_dawn, randomizer_dusk):
-    randomizer_dawn.config_manager.configs["RANDOMIZE_AREA_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
-    randomizer_dusk.config_manager.configs["RANDOMIZE_AREA_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
+    randomizer_dawn.config_manager.configs["RANDOMIZE_WILD_DIGIMON_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
+    randomizer_dusk.config_manager.configs["RANDOMIZE_WILD_DIGIMON_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
     randomizer_dawn.randomizeAreaEncounters(randomizer_dawn.rom_data)
     randomizer_dusk.randomizeAreaEncounters(randomizer_dusk.rom_data)
 
 def test_areaEncountersRandomCompletely(randomizer_dawn, randomizer_dusk):
-    randomizer_dawn.config_manager.configs["RANDOMIZE_AREA_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY
-    randomizer_dusk.config_manager.configs["RANDOMIZE_AREA_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY
+    randomizer_dawn.config_manager.configs["RANDOMIZE_WILD_DIGIMON_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY
+    randomizer_dusk.config_manager.configs["RANDOMIZE_WILD_DIGIMON_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY
     randomizer_dawn.randomizeAreaEncounters(randomizer_dawn.rom_data)
     randomizer_dusk.randomizeAreaEncounters(randomizer_dusk.rom_data)
 
 def test_areaEncountersStats(randomizer_dawn, randomizer_dusk):
-    randomizer_dawn.config_manager.configs["RANDOMIZE_AREA_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
-    randomizer_dusk.config_manager.configs["RANDOMIZE_AREA_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
+    randomizer_dawn.config_manager.configs["RANDOMIZE_WILD_DIGIMON_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
+    randomizer_dusk.config_manager.configs["RANDOMIZE_WILD_DIGIMON_ENCOUNTERS"] = RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
 
-    randomizer_dawn.config_manager.configs["AREA_ENCOUNTERS_STATS"] = model.LvlUpMode.RANDOM
-    randomizer_dusk.config_manager.configs["AREA_ENCOUNTERS_STATS"] = model.LvlUpMode.RANDOM
+    randomizer_dawn.config_manager.configs["WILD_ENCOUNTERS_STATS"] = model.LvlUpMode.RANDOM
+    randomizer_dusk.config_manager.configs["WILD_ENCOUNTERS_STATS"] = model.LvlUpMode.RANDOM
     randomizer_dawn.randomizeAreaEncounters(randomizer_dawn.rom_data)
     randomizer_dusk.randomizeAreaEncounters(randomizer_dusk.rom_data)
 
-    randomizer_dawn.config_manager.configs["AREA_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_MIN
-    randomizer_dusk.config_manager.configs["AREA_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_MIN
+    randomizer_dawn.config_manager.configs["WILD_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_MIN
+    randomizer_dusk.config_manager.configs["WILD_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_MIN
     randomizer_dawn.randomizeAreaEncounters(randomizer_dawn.rom_data)
     randomizer_dusk.randomizeAreaEncounters(randomizer_dusk.rom_data)
 
-    randomizer_dawn.config_manager.configs["AREA_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_AVG
-    randomizer_dusk.config_manager.configs["AREA_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_AVG
+    randomizer_dawn.config_manager.configs["WILD_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_AVG
+    randomizer_dusk.config_manager.configs["WILD_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_AVG
     randomizer_dawn.randomizeAreaEncounters(randomizer_dawn.rom_data)
     randomizer_dusk.randomizeAreaEncounters(randomizer_dusk.rom_data)
 
-    randomizer_dawn.config_manager.configs["AREA_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_MAX
-    randomizer_dusk.config_manager.configs["AREA_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_MAX
+    randomizer_dawn.config_manager.configs["WILD_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_MAX
+    randomizer_dusk.config_manager.configs["WILD_ENCOUNTERS_STATS"] = model.LvlUpMode.FIXED_MAX
     randomizer_dawn.randomizeAreaEncounters(randomizer_dawn.rom_data)
     randomizer_dusk.randomizeAreaEncounters(randomizer_dusk.rom_data)
 
@@ -211,19 +211,19 @@ def test_areaEncountersStats(randomizer_dawn, randomizer_dusk):
 # Exp Patch Tests
 
 def test_expPatchUnchanged(randomizer_dawn, randomizer_dusk):
-    randomizer_dawn.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.UNCHANGED
-    randomizer_dusk.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.UNCHANGED
+    randomizer_dawn.config_manager.configs["INCREASE_DIGIMON_EXP"] = ExpYieldConfig.UNCHANGED
+    randomizer_dusk.config_manager.configs["INCREASE_DIGIMON_EXP"] = ExpYieldConfig.UNCHANGED
     randomizer_dawn.expPatchFlat(randomizer_dawn.rom_data)
     randomizer_dusk.expPatchFlat(randomizer_dusk.rom_data)
 
 def test_expPatchHalved(randomizer_dawn, randomizer_dusk):
-    randomizer_dawn.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.INCREASE_HALVED
-    randomizer_dusk.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.INCREASE_HALVED
+    randomizer_dawn.config_manager.configs["INCREASE_DIGIMON_EXP"] = ExpYieldConfig.INCREASE_HALVED
+    randomizer_dusk.config_manager.configs["INCREASE_DIGIMON_EXP"] = ExpYieldConfig.INCREASE_HALVED
     randomizer_dawn.expPatchFlat(randomizer_dawn.rom_data)
     randomizer_dusk.expPatchFlat(randomizer_dusk.rom_data)
 
 def test_expPatchFull(randomizer_dawn, randomizer_dusk):
-    randomizer_dawn.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.INCREASE_FULL
-    randomizer_dusk.config_manager.configs["APPLY_EXP_PATCH_FLAT"] = ExpYieldConfig.INCREASE_FULL
+    randomizer_dawn.config_manager.configs["INCREASE_DIGIMON_EXP"] = ExpYieldConfig.INCREASE_FULL
+    randomizer_dusk.config_manager.configs["INCREASE_DIGIMON_EXP"] = ExpYieldConfig.INCREASE_FULL
     randomizer_dawn.expPatchFlat(randomizer_dawn.rom_data)
     randomizer_dusk.expPatchFlat(randomizer_dusk.rom_data)

@@ -98,6 +98,36 @@ class BattleStringEntry:
         self.value = value
 
 
+class HabitatWorldmap:
+    offset: int
+    x_coordinate: int
+    y_coordinate: int
+    species_living: int
+    map_preview_id: int
+    location_text_id: int
+    location_available_flag: int
+    location_visited_flag: int
+    unknown_0x0e: int
+    unknown_0x10: int
+    unknown_0x12: int
+    location_destination_id: int
+    spawn_position_flag: int
+
+    def __init__(self, habitat_data: bytearray, offset: int):
+        self.offset = offset
+        self.x_coordinate = int.from_bytes(habitat_data[0:2], byteorder="little")
+        self.y_coordinate = int.from_bytes(habitat_data[2:4], byteorder="little")
+        self.species_living = int.from_bytes(habitat_data[4:6], byteorder="little")
+        self.map_preview_id = int.from_bytes(habitat_data[6:8], byteorder="little")
+        self.location_text_id = int.from_bytes(habitat_data[8:0xa], byteorder="little")
+        self.location_available_flag = int.from_bytes(habitat_data[0xa:0xc], byteorder="little")
+        self.location_visited_flag = int.from_bytes(habitat_data[0xc:0xe], byteorder="little")
+        self.unknown_0x0e = int.from_bytes(habitat_data[0xe:0x10], byteorder="little")
+        self.unknown_0x10 = int.from_bytes(habitat_data[0x10:0x12], byteorder="little")
+        self.unknown_0x12 = int.from_bytes(habitat_data[0x12:0x14], byteorder="little")
+        self.location_destination_id = int.from_bytes(habitat_data[0x14:0x16], byteorder="little")
+        self.spawn_position_flag = int.from_bytes(habitat_data[0x16:0x18], byteorder="little")
+
 
 class MoveData:
     offset: int
@@ -177,7 +207,9 @@ class BaseDataDigimon:
     move_3: int
     move_4: int
     unknown_0x38: int
+    dex_habitat: int
     unknown_0x3A: int
+    is_scannable: int
     exp_curve: int
 
     def __init__(self, digimon_data: bytearray, offset: int):
@@ -214,8 +246,10 @@ class BaseDataDigimon:
             self.move_2 = int.from_bytes(digimon_data[0x32:0x34], byteorder="little")
             self.move_3 = int.from_bytes(digimon_data[0x34:0x36], byteorder="little")
             self.move_4 = int.from_bytes(digimon_data[0x36:0x38], byteorder="little")
-            self.unknown_0x38 = int.from_bytes(digimon_data[0x38:0x3a], byteorder="little")
-            self.unknown_0x3A = int.from_bytes(digimon_data[0x3a:0x3c], byteorder="little")
+            self.unknown_0x38 = digimon_data[0x38]
+            self.dex_habitat = digimon_data[0x39]
+            self.unknown_0x3A = digimon_data[0x3a]
+            self.is_scannable = digimon_data[0x3b]
             self.exp_curve = int.from_bytes(digimon_data[0x3c:0x40], byteorder="little")             # this is 0 by default for all digimon, can also be 1 or 2 logically
         except:
             print("Exception on BaseDataDigimon call")
@@ -330,8 +364,10 @@ class BaseDataDigimon:
         digimon_data_out[0x32:0x34] = self.move_2.to_bytes(2, byteorder="little")
         digimon_data_out[0x34:0x36] = self.move_3.to_bytes(2, byteorder="little")
         digimon_data_out[0x36:0x38] = self.move_4.to_bytes(2, byteorder="little")
-        digimon_data_out[0x38:0x3a] = self.unknown_0x38.to_bytes(2, byteorder="little")
-        digimon_data_out[0x3a:0x3c] = self.unknown_0x3A.to_bytes(2, byteorder="little")
+        digimon_data_out[0x38] = self.unknown_0x38
+        digimon_data_out[0x39] = self.dex_habitat
+        digimon_data_out[0x3a] = self.unknown_0x3A
+        digimon_data_out[0x3b] = self.is_scannable
         digimon_data_out[0x3c:0x40] = self.exp_curve.to_bytes(4, byteorder="little")
 
         return digimon_data_out

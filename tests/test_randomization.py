@@ -97,7 +97,7 @@ class TestWildEncounterRandomization:
     def test_unchanged_preserves_data(self, randomizer_both):
         """UNCHANGED option should preserve encounter data."""
         randomizer = randomizer_both
-        randomizer.config_manager.set("RANDOMIZE_AREA_ENCOUNTERS", RandomizeWildEncounters.UNCHANGED)
+        randomizer.config_manager.set("RANDOMIZE_WILD_DIGIMON_ENCOUNTERS", RandomizeWildEncounters.UNCHANGED)
 
         # Store a sample of original enemy data
         sample_enemies = list(randomizer.enemyDigimonInfo.items())[:10]
@@ -117,7 +117,7 @@ class TestWildEncounterRandomization:
         """Same stage wild encounter randomization should complete."""
         randomizer = randomizer_both
         randomizer.config_manager.set(
-            "RANDOMIZE_AREA_ENCOUNTERS",
+            "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS",
             RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
         )
 
@@ -129,7 +129,7 @@ class TestWildEncounterRandomization:
         """Completely random wild encounter randomization should complete."""
         randomizer = randomizer_both
         randomizer.config_manager.set(
-            "RANDOMIZE_AREA_ENCOUNTERS",
+            "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS",
             RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY
         )
 
@@ -146,10 +146,10 @@ class TestWildEncounterRandomization:
         """Test all stat generation modes for encounters."""
         randomizer = randomizer_both
         randomizer.config_manager.set(
-            "RANDOMIZE_AREA_ENCOUNTERS",
+            "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS",
             RandomizeWildEncounters.RANDOMIZE_1_TO_1_SAME_STAGE
         )
-        randomizer.config_manager.set("AREA_ENCOUNTERS_STATS", stat_mode)
+        randomizer.config_manager.set("WILD_ENCOUNTERS_STATS", stat_mode)
 
         set_seed(42)
         randomizer.randomizeAreaEncounters(randomizer.rom_data)
@@ -466,7 +466,7 @@ class TestExpPatch:
     def test_unchanged_preserves_exp(self, randomizer_both):
         """UNCHANGED should not modify exp values."""
         randomizer = randomizer_both
-        randomizer.config_manager.set("APPLY_EXP_PATCH_FLAT", ExpYieldConfig.UNCHANGED)
+        randomizer.config_manager.set("INCREASE_DIGIMON_EXP", ExpYieldConfig.UNCHANGED)
 
         set_seed(42)
         randomizer.expPatchFlat(randomizer.rom_data)
@@ -474,7 +474,7 @@ class TestExpPatch:
     def test_halved_runs(self, randomizer_both):
         """Halved exp patch should complete."""
         randomizer = randomizer_both
-        randomizer.config_manager.set("APPLY_EXP_PATCH_FLAT", ExpYieldConfig.INCREASE_HALVED)
+        randomizer.config_manager.set("INCREASE_DIGIMON_EXP", ExpYieldConfig.INCREASE_HALVED)
 
         set_seed(42)
         randomizer.expPatchFlat(randomizer.rom_data)
@@ -482,7 +482,7 @@ class TestExpPatch:
     def test_full_runs(self, randomizer_both):
         """Full exp patch should complete."""
         randomizer = randomizer_both
-        randomizer.config_manager.set("APPLY_EXP_PATCH_FLAT", ExpYieldConfig.INCREASE_FULL)
+        randomizer.config_manager.set("INCREASE_DIGIMON_EXP", ExpYieldConfig.INCREASE_FULL)
 
         set_seed(42)
         randomizer.expPatchFlat(randomizer.rom_data)

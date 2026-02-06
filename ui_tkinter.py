@@ -1,6 +1,13 @@
+from collections import OrderedDict
 import copy
+from datetime import datetime
+import json
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+from typing import List
+
+import toml
+from src import utils
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
@@ -15,17 +22,43 @@ import logging
 from io import StringIO
 from ui.LabelledSlider import LabelledSlider
 
-
+APP_VERSION = "0.1.1"
 
 class AppState:
     def __init__(self):
         self.config_manager: ConfigManager = ConfigManager()
-        self.current_rom: DigimonROM = None  
-        self.target_rom: DigimonROM = None  
+        self.current_rom: DigimonROM = None
+        self.target_rom: DigimonROM = None
         self.randomizer: Randomizer = None
         self.log_stream: StringIO = StringIO()
         self.logger: logging.Logger = self.setLogger()
         self.seed: int = -1
+        self.last_rom_dir: str = None
+        self.custom_starters_packs = []
+        self.load_preferences()
+
+    def _get_preferences_path(self):
+        if getattr(sys, 'frozen', False):
+            app_dir = os.path.dirname(sys.executable)
+        else:
+            app_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(app_dir, "preferences.json")
+
+    def load_preferences(self):
+        try:
+            with open(self._get_preferences_path(), 'r') as f:
+                preferences = json.load(f)
+                self.last_rom_dir = preferences.get("last_rom_dir")
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass  
+
+    def save_preferences(self):
+        preferences = {"last_rom_dir": self.last_rom_dir}
+        try:
+            with open(self._get_preferences_path(), 'w') as f:
+                json.dump(preferences, f, indent=2)
+        except Exception:
+            pass  
 
     def setLogger(self):
         logger = logging.getLogger(__name__)
@@ -53,33 +86,39 @@ else:  # Running as a script
 icon_png_path = os.path.join(bundle_dir, "public", "dusk_transparent.png")      # fixing issue w linux icons, making icon universal
 
 
-# this function is called when writing the patched/randomized rom; serves as the equivalent to main() for qol_script
-def execute_rom_changes(save_path):
 
+def get_patcher_config_options():
+    
     patcher_config_options = {
-        "CHANGE_TEXT_SPEED": change_text_speed_var,
-        "CHANGE_MOVEMENT_SPEED": change_movement_speed_var,
-        "CHANGE_ENCOUNTER_RATE": change_wild_encounter_rate_var,
+        "INCREASE_TEXT_SPEED": change_text_speed_var,
+        "INCREASE_MOVEMENT_SPEED": change_movement_speed_var,
+        "EXPAND_PLAYER_NAME_LENGTH": expand_player_name_var,
         "IMPROVE_BATTLE_PERFORMANCE": improve_battle_performance_var,
         #"CHANGE_STAT_CAPS": increase_stat_caps_var,
-        "EXTEND_PLAYERNAME_SIZE": expand_player_name_var,
 
-        "APPLY_EXP_PATCH_FLAT": ExpYieldConfig.INCREASE_HALVED if exp_wild_digimon_var else ExpYieldConfig.UNCHANGED,
-        "BUFF_SCAN_RATE": increase_flat_scan_rate_var,
-        "CHANGE_FARM_EXP": change_farm_exp_var,
-        "ENABLE_VERSION_EXCLUSIVE_AREAS": unlock_version_exclusive_areas_var,
+        "REDUCE_WILD_ENCOUNTER_RATE": change_wild_encounter_rate_var,
+        "INCREASE_SCAN_RATE": increase_flat_scan_rate_var,
+        "INCREASE_DIGIMON_EXP": ExpYieldConfig.INCREASE_HALVED if exp_wild_digimon_var.get() else ExpYieldConfig.UNCHANGED,
+        "INCREASE_WILD_ENCOUNTER_MONEY": buff_wild_encounter_money_var,
+        "INCREASE_FARM_EXP": change_farm_exp_var,
         "BALANCE_CALUMON_STATS": balance_calumon_var,
     
-        "RANDOMIZE_STARTERS": RandomizeStartersConfig(starters_option_var.get()),  # RandomizeStartersConfig(starters_option_var) might have to be initialized like this
-        "ROOKIE_RESET_EVENT": RookieResetConfig(rookie_reset_option_var.get()),
-        "NERF_FIRST_BOSS": nerf_first_boss_var,
-        "FORCE_STARTER_W_ROOKIE": force_starter_w_rookie_var,
-        
-        "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters(wild_digimon_option_var.get()),
-        "AREA_ENCOUNTERS_STATS": stat_gen_option_var,
+        "ENABLE_LEGENDARY_TAMER_QUEST": quests_enable_legendary_tamer_var,
+        "UNLOCK_MAIN_QUESTS_IN_SEQUENCE": quests_unlock_main_in_sequence_var,
+        "UNLOCK_VERSION_EXCLUSIVE_AREAS": unlock_version_exclusive_areas_var,
 
-        "BUFF_WILD_ENCOUNTER_MONEY": buff_wild_encounter_money_var,
+        "RANDOMIZE_STARTERS": RandomizeStartersConfig(starters_option_var.get()),  # RandomizeStartersConfig(starters_option_var) might have to be initialized like this
+        "CUSTOM_STARTER_PACKS": get_custom_starters_data(),
+        "NERF_FIRST_BOSS": nerf_first_boss_var,
+        "FORCE_STARTER_W_ROOKIE_STAGE": force_starter_w_rookie_var,
+        "ROOKIE_RESET_EVENT": RookieResetConfig(rookie_reset_option_var.get()),
+        
+        "RANDOMIZE_OVERWORLD_ITEMS": RandomizeItems(overworld_items_option_var.get()),
+        "RANDOMIZE_QUEST_ITEM_REWARDS": RandomizeItems(quest_rewards_option_var.get()),
+
+        "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS": RandomizeWildEncounters(wild_digimon_option_var.get()),
         "RANDOMIZE_WILD_ENCOUNTER_ITEMS": RandomizeItems(wild_encounter_items_option_var.get()),
+        "WILD_ENCOUNTERS_STATS": stat_gen_option_var,
         "RANDOMIZE_FIXED_BATTLES": RandomizeEnemyDigimonEncounters(enemy_digimon_option_var.get()),
 
         "RANDOMIZE_DIGIMON_SPECIES": RandomizeSpeciesConfig(species_option_var.get()),
@@ -103,20 +142,24 @@ def execute_rom_changes(save_path):
 
         "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions(digivolutions_option_var.get()),
         "DIGIVOLUTIONS_SIMILAR_SPECIES": digivolution_similar_species_var,
-
         "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions(digivolution_conditions_option_var.get()),
-        "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": digivolution_conditions_species_exp_var,
+        "DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": digivolution_conditions_species_exp_var,
 
         "RANDOMIZE_DNADIGIVOLUTIONS": RandomizeDnaDigivolutions(dna_digivolutions_option_var.get()),
         #"FORCE_RARE_DNADIGIVOLUTIONS": dna_digivolution_force_rare_var,
         "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions(dna_digivolution_conditions_option_var.get()),
-        "DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": dna_digivolution_conditions_species_exp_var,
-
-        "RANDOMIZE_OVERWORLD_ITEMS": RandomizeItems(overworld_items_option_var.get()),
-        "RANDOMIZE_QUEST_REWARD_ITEMS": RandomizeItems(quest_rewards_option_var.get()),
-        "ENABLE_LEGENDARY_TAMER_QUEST": quests_enable_legendary_tamer_var,
-        "UNLOCK_MAIN_QUESTS_SEQUENCE": quests_unlock_main_in_sequence_var
+        "DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": dna_digivolution_conditions_species_exp_var,
     }
+    
+    return patcher_config_options
+
+
+
+
+# this function is called when writing the patched/randomized rom; serves as the equivalent to main() for qol_script
+def execute_rom_changes(save_path):
+
+    patcher_config_options = get_patcher_config_options()
 
 
     if(app_state.seed == -1):
@@ -141,8 +184,10 @@ def execute_rom_changes(save_path):
 
 def enable_buttons():
     
-    # Enable Save Changes button
+    # Enable Save/Import/Export
     save_changes_button.configure(state="normal")
+    import_settings_button.configure(state="normal")
+    export_settings_button.configure(state="normal")
 
     # Enable qol checkboxes
     textSpeedCheckbox.configure(state="normal")
@@ -170,6 +215,7 @@ def enable_buttons():
     starters_unchanged_rb.configure(state="normal")
     starters_same_stage_rb.configure(state="normal")
     starters_completely_random_rb.configure(state="normal")
+    starters_custom_rb.configure(state="normal")
     rookie_reset_unchanged_rb.configure(state="normal")
     rookie_reset_same_stage_rb.configure(state="normal")
     rookie_reset_cancel_rb.configure(state="normal")
@@ -266,11 +312,20 @@ def enable_buttons():
 
 
 
+def load_starters():
+    """Load current starter pack values from ROM."""
+    starters_array = app_state.randomizer.getStartersArray()
+
+    for pack_ix in range(len(starters_array)):
+        for starter_ix in range(len(starters_array[pack_ix])):
+            app_state.custom_starters_packs[pack_ix][starter_ix].set(starters_array[pack_ix][starter_ix])
+            
 
 def open_rom():
     file_path = filedialog.askopenfilename(
         title="Open ROM",
-        filetypes=[("ROM Files", "*.nds"), ("All Files", "*.*")]
+        filetypes=[("ROM Files", "*.nds"), ("All Files", "*.*")],
+        initialdir=app_state.last_rom_dir
     )
     if file_path:
         try:
@@ -278,15 +333,29 @@ def open_rom():
             app_state.target_rom = copy.deepcopy(app_state.current_rom)
             app_state.target_rom.config_manager = app_state.config_manager
             app_state.randomizer = Randomizer(app_state.target_rom.version, app_state.target_rom.rom_data, app_state.config_manager, app_state.logger)
-        except ValueError:
-            messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
+        except ValueError as e:
+            messagebox.showerror("Error", e.args[0])
+            #messagebox.showerror("Error","Game not recognized. Please check your rom (file \"" +  os.path.basename(file_path) + "\").")
             return
-        rom_name_label.config(text=f"ROM Name: {file_path.split('/')[-1]}")
+
+        # Remember the ROM directory for next time
+        app_state.last_rom_dir = os.path.dirname(file_path)
+        app_state.save_preferences()
+
+
+        filename = os.path.basename(file_path)
+        max_chars = 56
+        if len(filename) > max_chars:
+            filename = filename[:max_chars-3] + "..."
+        rom_name_label.config(text=f"ROM Name: {filename}")
+        #rom_name_label.config(text=f"ROM Name: {file_path.split('/')[-1]}")
         #rom_size_label.config(text=f"ROM Size: {os.path.getsize(file_path) / 1024:.2f} KB")
         rom_version_label.config(text=f"ROM Version: {app_state.current_rom.version}")
         #rom_path_label.config(text=f"ROM Path: {file_path}")
-        
+
         rom_status_label.config(text="Status: Loaded")
+
+        load_starters()
 
         # Enable interface
         enable_buttons()
@@ -310,11 +379,155 @@ def save_changes():
             messagebox.showerror("Error", f"Failed to save changes: {e}")
 
 
-def import_settings():
-    return
-
 def export_settings():
-    return
+    patcher_config_options = get_patcher_config_options()
+    toml_data = OrderedDict()
+
+    toml_data["app_data"] = OrderedDict()
+    toml_data["app_data"]["APP_VERSION"] = APP_VERSION
+    toml_data["app_data"]["ROM_VERSION"] = app_state.current_rom.version
+
+
+    toml_data["randomizer_options"] = OrderedDict()
+
+    # enum case, tkinter var case, bool/int case
+    for key, value in patcher_config_options.items():
+        if hasattr(value, 'value'):
+            toml_data["randomizer_options"][key] = value.value
+        elif hasattr(value, 'get'):
+            toml_data["randomizer_options"][key] = value.get()
+        else:
+            toml_data["randomizer_options"][key] = value
+
+    if getattr(sys, 'frozen', False):
+        app_dir = os.path.dirname(sys.executable)
+    else:
+        app_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    configs_dir = os.path.join(app_dir, "configs")
+    os.makedirs(configs_dir, exist_ok=True)
+
+
+    toml_path = filedialog.asksaveasfilename(
+        title="Export Settings",
+        defaultextension=".toml",
+        filetypes=[("TOML Files", "*.toml"), ("All Files", "*.*")],
+        initialdir=configs_dir
+    )
+
+
+    if toml_path:
+        try:
+            with open(toml_path, 'w') as f:
+                f.write("# DWDDRandomizer Settings Export\n")
+                f.write(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+                toml.dump(toml_data, f)
+            messagebox.showinfo("Success", f"Settings exported to:\n{toml_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export settings:\n{str(e)}")
+
+
+def import_settings():
+    # Mapping from config keys to tkinter variables
+    # BooleanVar mappings
+    bool_var_mapping = {
+        "INCREASE_TEXT_SPEED": change_text_speed_var,
+        "INCREASE_MOVEMENT_SPEED": change_movement_speed_var,
+        "EXPAND_PLAYER_NAME_LENGTH": expand_player_name_var,
+        "IMPROVE_BATTLE_PERFORMANCE": improve_battle_performance_var,
+        "REDUCE_WILD_ENCOUNTER_RATE": change_wild_encounter_rate_var,
+        "INCREASE_SCAN_RATE": increase_flat_scan_rate_var,
+        "INCREASE_WILD_ENCOUNTER_MONEY": buff_wild_encounter_money_var,
+        "INCREASE_FARM_EXP": change_farm_exp_var,
+        "BALANCE_CALUMON_STATS": balance_calumon_var,
+        "ENABLE_LEGENDARY_TAMER_QUEST": quests_enable_legendary_tamer_var,
+        "UNLOCK_MAIN_QUESTS_IN_SEQUENCE": quests_unlock_main_in_sequence_var,
+        "UNLOCK_VERSION_EXCLUSIVE_AREAS": unlock_version_exclusive_areas_var,
+        "NERF_FIRST_BOSS": nerf_first_boss_var,
+        "FORCE_STARTER_W_ROOKIE_STAGE": force_starter_w_rookie_var,
+        "SPECIES_ALLOW_UNKNOWN": species_allow_unknown_var,
+        "KEEP_SPECIES_RESISTANCE_COHERENCE": elemental_res_keep_coherence_var,
+        "BASESTATS_STATTYPE_BIAS": base_stats_bias_type_var,
+        "MOVESETS_LEVEL_BIAS": movesets_level_bias_var,
+        "REGULAR_MOVE_POWER_BIAS": movesets_power_bias_var,
+        "SIGNATURE_MOVE_POWER_BIAS": movesets_signature_power_bias_var,
+        "MOVESETS_SIGNATURE_MOVES_POOL": movesets_signature_moves_var,
+        "MOVESETS_GUARANTEE_BASIC_MOVE": movesets_guarantee_basic_move_var,
+        "TRAITS_FORCE_FOUR": traits_force_four_var,
+        "TRAITS_ENABLE_UNUSED": traits_enable_unused_var,
+        "DIGIVOLUTIONS_SIMILAR_SPECIES": digivolution_similar_species_var,
+        "DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": digivolution_conditions_species_exp_var,
+        "DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": dna_digivolution_conditions_species_exp_var,
+    }
+
+    # IntVar mappings (for radio button options)
+    int_var_mapping = {
+        "RANDOMIZE_STARTERS": starters_option_var,
+        "ROOKIE_RESET_EVENT": rookie_reset_option_var,
+        "RANDOMIZE_OVERWORLD_ITEMS": overworld_items_option_var,
+        "RANDOMIZE_QUEST_ITEM_REWARDS": quest_rewards_option_var,
+        "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS": wild_digimon_option_var,
+        "RANDOMIZE_WILD_ENCOUNTER_ITEMS": wild_encounter_items_option_var,
+        "WILD_ENCOUNTERS_STATS": stat_gen_option_var,
+        "RANDOMIZE_FIXED_BATTLES": enemy_digimon_option_var,
+        "RANDOMIZE_DIGIMON_SPECIES": species_option_var,
+        "RANDOMIZE_ELEMENTAL_RESISTANCES": elemental_res_option_var,
+        "RANDOMIZE_BASE_STATS": base_stats_option_var,
+        "RANDOMIZE_DIGIMON_STATTYPE": digimon_type_option_var,
+        "RANDOMIZE_MOVESETS": movesets_option_var,
+        "RANDOMIZE_TRAITS": traits_option_var,
+        "RANDOMIZE_DIGIVOLUTIONS": digivolutions_option_var,
+        "RANDOMIZE_DIGIVOLUTION_CONDITIONS": digivolution_conditions_option_var,
+        "RANDOMIZE_DNADIGIVOLUTIONS": dna_digivolutions_option_var,
+        "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": dna_digivolution_conditions_option_var,
+    }
+
+    if getattr(sys, 'frozen', False):
+        app_dir = os.path.dirname(sys.executable)
+    else:
+        app_dir = os.path.dirname(os.path.abspath(__file__))
+
+    configs_dir = os.path.join(app_dir, "configs")
+
+    toml_path = filedialog.askopenfilename(
+        title="Import Settings",
+        defaultextension=".toml",
+        filetypes=[("TOML Files", "*.toml"), ("All Files", "*.*")],
+        initialdir=configs_dir
+    )
+
+    if toml_path:
+        try:
+            with open(toml_path, 'r') as f:
+                toml_data = toml.load(f)
+
+
+            randomizer_options = toml_data.get("randomizer_options")
+
+            for key, value in randomizer_options.items():
+                if key in bool_var_mapping:
+                    bool_var_mapping[key].set(value)
+                elif key in int_var_mapping:
+                    int_var_mapping[key].set(value)
+                elif key == "INCREASE_DIGIMON_EXP":
+                    exp_wild_digimon_var.set(value > 0)
+
+            # load starters
+            custom_starters_data = randomizer_options.get("CUSTOM_STARTER_PACKS")
+            if custom_starters_data:
+                for pack_idx, pack in enumerate(custom_starters_data):
+                    if pack_idx >= len(app_state.custom_starters_packs):
+                        continue        
+                    for starter_idx, digimon_name in enumerate(pack):
+                        if starter_idx >= len(app_state.custom_starters_packs[pack_idx]):
+                            continue
+                        combo = app_state.custom_starters_packs[pack_idx][starter_idx]
+                        combo.set(digimon_name)
+
+            messagebox.showinfo("Success", f"Settings imported from:\n{toml_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to import settings:\n{str(e)}")
+
 
 def set_random_seed():
 
@@ -418,7 +631,7 @@ def show_about_popup():
 
     version_label = tk.Label(
         about_window,
-        text="Version 0.1.0",
+        text=f"Version {APP_VERSION}",
         justify="center",
         anchor="center"
     )
@@ -531,7 +744,7 @@ root = tk.Tk()
 root.title("Digimon World Dawn/Dusk Randomizer")
 root.geometry("")
 #root.minsize(800, 600) 
-root.minsize(800, 700) 
+root.minsize(800, 705) 
 #root.iconbitmap(icon_path)
 root.iconphoto(False, tk.PhotoImage(file=icon_png_path))
 
@@ -558,7 +771,7 @@ rom_info_frame = ttk.LabelFrame(rom_frame, text="ROM Information", padding=10)
 rom_info_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 # Add some labels to display ROM info (placeholders for now)
-rom_name_label = ttk.Label(rom_info_frame, text="ROM Name: Not Loaded")
+rom_name_label = ttk.Label(rom_info_frame, text="ROM Name: Not Loaded", width=64, anchor="w")
 rom_name_label.pack(anchor="w", pady=2)
 
 #rom_size_label = ttk.Label(rom_info_frame, text="ROM Size: N/A")
@@ -578,10 +791,10 @@ rom_status_label.pack(anchor="w", pady=2)
 settings_buttons_frame = ttk.Frame(rom_frame)
 settings_buttons_frame.pack(side="right", fill="both", padx=10)
 
-import_settings_button = ttk.Button(settings_buttons_frame, text="Import Settings", command=import_settings)
+import_settings_button = ttk.Button(settings_buttons_frame, text="Import Settings", command=import_settings, state="disabled")
 import_settings_button.pack(fill="x", pady=5, ipadx=30)
 
-export_settings_button = ttk.Button(settings_buttons_frame, text="Export Settings", command=export_settings)
+export_settings_button = ttk.Button(settings_buttons_frame, text="Export Settings", command=export_settings, state="disabled")
 export_settings_button.pack(fill="x", pady=5)
 
 premade_seed_button = ttk.Button(settings_buttons_frame, text="Set Random Seed", command=set_random_seed)
@@ -767,8 +980,11 @@ notebook.add(starters_items_quests_tab, text="Starters, Items & Quests")
 starters_frame = ttk.LabelFrame(starters_items_quests_tab, text="Starter Packs", padding=10)
 starters_frame.pack(side="top", fill="x", padx=10, pady=5)
 
+# Top row container for the three side-by-side frames
+starters_top_row = ttk.Frame(starters_frame)
+starters_top_row.pack(side="top", fill="x")
 
-starters_radio_frame = ttk.Frame(starters_frame)
+starters_radio_frame = ttk.Frame(starters_top_row)
 starters_radio_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 starters_option_var = tk.IntVar(value=RandomizeStartersConfig.UNCHANGED.value)
@@ -784,8 +1000,12 @@ starters_completely_random_rb = tk.Radiobutton(starters_radio_frame, text="Rando
 starters_completely_random_tooltip = CreateToolTip(starters_completely_random_rb, "Randomizes each starter digimon pack completely.")
 starters_completely_random_rb.pack(anchor="w")
 
+starters_custom_rb = tk.Radiobutton(starters_radio_frame, text="Custom", variable=starters_option_var, value=RandomizeStartersConfig.CUSTOM.value, state="disabled")
+starters_custom_tooltip = CreateToolTip(starters_custom_rb, "Enables customization of each digimon starter pack.")
+starters_custom_rb.pack(anchor="w")
 
-starters_misc_frame = ttk.Frame(starters_frame)
+
+starters_misc_frame = ttk.Frame(starters_top_row)
 starters_misc_frame.pack(side="left", fill="both", expand=True, padx=10)
 
 nerf_first_boss_var = tk.BooleanVar(value=False)
@@ -802,7 +1022,7 @@ forceStarterWRookieTootip = CreateToolTip(forceStarterWRookieCheckbox, "Guarante
 
 # Right side: Rookie Reset Event
 
-rookie_reset_frame = ttk.LabelFrame(starters_frame, text="Rookie Reset Event", padding=10)
+rookie_reset_frame = ttk.LabelFrame(starters_top_row, text="Rookie Reset Event", padding=10)
 rookie_reset_frame.pack(side="right", fill="y", padx=10, pady=5)
 
 rookie_reset_option_var = tk.IntVar(value=RookieResetConfig.UNCHANGED.value)    # Default to UNCHANGED
@@ -834,6 +1054,53 @@ starters_completely_random_rb.pack(anchor="w")
 
 
 
+# Custom Starters
+
+custom_starters_frame = ttk.LabelFrame(starters_frame, text="Customize Starter Packs", padding=10)
+custom_starters_frame.pack(side="top", fill="x", padx=10, pady=5)
+
+for pack_idx in range(4):
+    pack_frame = ttk.Frame(custom_starters_frame)
+    pack_frame.grid(row=pack_idx, column=0, columnspan=12, pady=5, padx=5, sticky="ew")
+    
+    pack_number_label = ttk.Label(pack_frame, text=f"{str(pack_idx + 1)}.")
+    pack_number_label.grid(row=0, column=0, padx=(0, 8), sticky="w")
+    
+    pack_digimon_combos = []
+    for starter_idx in range(3):
+        col_offset = starter_idx * 4
+
+        digimon_var = tk.StringVar()
+        digimon_combo = ttk.Combobox(
+            pack_frame,
+            textvariable=digimon_var,
+            values=utils.get_digimon_names(),
+            state="disabled",
+            width=25
+        )
+        digimon_combo.grid(row=0, column=col_offset, padx=(25, 2), pady=2, sticky="w")
+        pack_digimon_combos.append(digimon_combo)
+
+    app_state.custom_starters_packs.append(pack_digimon_combos)
+
+def update_custom_starters_state(*_):
+    is_custom = starters_option_var.get() == RandomizeStartersConfig.CUSTOM.value
+    new_state = "readonly" if is_custom else "disabled"
+
+    for pack in app_state.custom_starters_packs:
+        for combo in pack:
+            combo.config(state=new_state)
+
+def get_custom_starters_data() -> List[List[str]]:
+    packs = []
+    for pack in app_state.custom_starters_packs:
+        packs.append([combo.get() for combo in pack])
+    return packs
+
+starters_option_var.trace_add("write", update_custom_starters_state)
+update_custom_starters_state()
+
+    
 
 
 items_quests_container = ttk.Frame(starters_items_quests_tab)

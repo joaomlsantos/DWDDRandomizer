@@ -67,27 +67,27 @@ PATH_SOURCE_DAWN, PATH_SOURCE_DUSK = get_rom_paths()
 
 DEFAULT_TEST_SETTINGS = {
     # QoL settings
-    "CHANGE_TEXT_SPEED": False,
-    "CHANGE_MOVEMENT_SPEED": False,
-    "CHANGE_ENCOUNTER_RATE": False,
+    "INCREASE_TEXT_SPEED": False,
+    "INCREASE_MOVEMENT_SPEED": False,
+    "REDUCE_WILD_ENCOUNTER_RATE": False,
     "CHANGE_STAT_CAPS": False,
-    "EXTEND_PLAYERNAME_SIZE": False,
-    "APPLY_EXP_PATCH_FLAT": ExpYieldConfig.UNCHANGED,
-    "BUFF_SCAN_RATE": False,
-    "CHANGE_FARM_EXP": False,
-    "ENABLE_VERSION_EXCLUSIVE_AREAS": False,
+    "EXPAND_PLAYER_NAME_LENGTH": False,
+    "INCREASE_DIGIMON_EXP": ExpYieldConfig.UNCHANGED,
+    "INCREASE_SCAN_RATE": False,
+    "INCREASE_FARM_EXP": False,
+    "UNLOCK_VERSION_EXCLUSIVE_AREAS": False,
 
     # Starters
     "RANDOMIZE_STARTERS": RandomizeStartersConfig.UNCHANGED,
     "ROOKIE_RESET_EVENT": RookieResetConfig.UNCHANGED,
     "NERF_FIRST_BOSS": False,
-    "FORCE_STARTER_W_ROOKIE": False,
+    "FORCE_STARTER_W_ROOKIE_STAGE": False,
 
     # Wild encounters
-    "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters.UNCHANGED,
+    "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS": RandomizeWildEncounters.UNCHANGED,
     "BALANCE_CALUMON_STATS": False,
-    "AREA_ENCOUNTERS_STATS": model.LvlUpMode.FIXED_AVG,
-    "BUFF_WILD_ENCOUNTER_MONEY": False,
+    "WILD_ENCOUNTERS_STATS": model.LvlUpMode.FIXED_AVG,
+    "INCREASE_WILD_ENCOUNTER_MONEY": False,
     "RANDOMIZE_WILD_ENCOUNTER_ITEMS": RandomizeItems.UNCHANGED,
 
     # Fixed battles
@@ -122,21 +122,21 @@ DEFAULT_TEST_SETTINGS = {
     "DIGIVOLUTIONS_SIMILAR_SPECIES": False,
     "DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS": 0.9,
     "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions.UNCHANGED,
-    "DIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": False,
+    "DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": False,
     "DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS": 0.2,
 
     # DNA Digivolutions
     "RANDOMIZE_DNADIGIVOLUTIONS": RandomizeDnaDigivolutions.UNCHANGED,
     "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions.UNCHANGED,
-    "DNADIGIVOLUTION_CONDITIONS_AVOID_DIFF_SPECIES_EXP": False,
+    "DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": False,
 
     # Items
     "RANDOMIZE_OVERWORLD_ITEMS": RandomizeItems.UNCHANGED,
-    "RANDOMIZE_QUEST_REWARD_ITEMS": RandomizeItems.UNCHANGED,
+    "RANDOMIZE_QUEST_ITEM_REWARDS": RandomizeItems.UNCHANGED,
 
     # Quests
     "ENABLE_LEGENDARY_TAMER_QUEST": False,
-    "UNLOCK_MAIN_QUESTS_SEQUENCE": False,
+    "UNLOCK_MAIN_QUESTS_IN_SEQUENCE": False,
 
     # Internal settings
     "MOVEMENT_SPEED_MULTIPLIER": 1.5,
@@ -236,12 +236,12 @@ def rom_dusk():
     return DigimonROM(PATH_SOURCE_DUSK, config, logger)
 
 
-@pytest.fixture(params=["DAWN", "DUSK"])
+@pytest.fixture(params=["DAWN_US", "DUSK_US"])
 def rom_both(request) -> Generator:
     """Parametrized fixture that runs tests against both Dawn and Dusk ROMs."""
     from qol_script import DigimonROM
 
-    path = PATH_SOURCE_DAWN if request.param == "DAWN" else PATH_SOURCE_DUSK
+    path = PATH_SOURCE_DAWN if request.param == "DAWN_US" else PATH_SOURCE_DUSK
 
     if not os.path.exists(path):
         pytest.skip(f"{request.param} ROM not found at {path}")
@@ -346,7 +346,7 @@ def config_all_random() -> ConfigManager:
     """ConfigManager with all randomization settings enabled."""
     settings = {
         "RANDOMIZE_STARTERS": RandomizeStartersConfig.RAND_FULL,
-        "RANDOMIZE_AREA_ENCOUNTERS": RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY,
+        "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS": RandomizeWildEncounters.RANDOMIZE_1_TO_1_COMPLETELY,
         "RANDOMIZE_FIXED_BATTLES": RandomizeEnemyDigimonEncounters.RANDOMIZE_1_TO_1_COMPLETELY,
         "RANDOMIZE_DIGIMON_SPECIES": RandomizeSpeciesConfig.RANDOM,
         "RANDOMIZE_ELEMENTAL_RESISTANCES": RandomizeElementalResistances.RANDOM,
@@ -359,7 +359,7 @@ def config_all_random() -> ConfigManager:
         "RANDOMIZE_DNADIGIVOLUTIONS": RandomizeDnaDigivolutions.RANDOMIZE_COMPLETELY,
         "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions.RANDOMIZE,
         "RANDOMIZE_OVERWORLD_ITEMS": RandomizeItems.RANDOMIZE_COMPLETELY,
-        "RANDOMIZE_QUEST_REWARD_ITEMS": RandomizeItems.RANDOMIZE_COMPLETELY,
+        "RANDOMIZE_QUEST_ITEM_REWARDS": RandomizeItems.RANDOMIZE_COMPLETELY,
         "RANDOMIZE_WILD_ENCOUNTER_ITEMS": RandomizeItems.RANDOMIZE_COMPLETELY,
     }
     return create_config_manager(settings)
