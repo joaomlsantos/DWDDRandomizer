@@ -1,5 +1,8 @@
 from enum import Enum
+from typing import Any, Dict
 from src import model
+
+APP_VERSION = "0.1.1"
 
 
 class RookieResetConfig(Enum):
@@ -104,13 +107,43 @@ class ConfigManager:
     def get(self, key, default=None):
         return self.configs.get(key, default)
 
+    ENUM_KEYS = {
+        "INCREASE_DIGIMON_EXP": ExpYieldConfig,
+        "ROOKIE_RESET_EVENT": RookieResetConfig,
+        "RANDOMIZE_STARTERS": RandomizeStartersConfig,
+        "RANDOMIZE_OVERWORLD_ITEMS": RandomizeItems,
+        "RANDOMIZE_QUEST_ITEM_REWARDS": RandomizeItems,
+        "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS": RandomizeWildEncounters,
+        "RANDOMIZE_WILD_ENCOUNTER_ITEMS": RandomizeItems,
+        "WILD_ENCOUNTERS_STATS": model.LvlUpMode,
+        "RANDOMIZE_FIXED_BATTLES": RandomizeEnemyDigimonEncounters,
+        "RANDOMIZE_DIGIMON_SPECIES": RandomizeSpeciesConfig,
+        "RANDOMIZE_ELEMENTAL_RESISTANCES": RandomizeElementalResistances,
+        "RANDOMIZE_BASE_STATS": RandomizeBaseStats,
+        "RANDOMIZE_DIGIMON_STATTYPE": RandomizeDigimonStatType,
+        "RANDOMIZE_MOVESETS": RandomizeMovesets,
+        "RANDOMIZE_TRAITS": RandomizeTraits,
+        "RANDOMIZE_DIGIVOLUTIONS": RandomizeDigivolutions,
+        "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions,
+        "RANDOMIZE_DNADIGIVOLUTIONS": RandomizeDnaDigivolutions,
+        "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions,
+    }
+
     def update_from_ui(self, ui_variables):
         for key, tk_var in ui_variables.items():
             if hasattr(tk_var, "get"):
                 self.set(key, tk_var.get())
             else:
                 self.set(key, tk_var)
-            
+
+    def update_from_toml(self, toml_data: Dict[str, Any]):
+        randomizer_options = toml_data.get("randomizer_options", {})
+
+        for key, value in randomizer_options.items():
+            if key in self.ENUM_KEYS and isinstance(value, int):
+                value = self.ENUM_KEYS[key](value)
+            self.set(key, value)
+
 
 # QoL settings
 

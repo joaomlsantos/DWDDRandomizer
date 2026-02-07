@@ -217,7 +217,7 @@ class BaseDataDigimon:
             self.offset = offset
             self.id = int.from_bytes(digimon_data[0:2], byteorder="little")
             self.level = digimon_data[2]
-            self.species = digimon_data[3]
+            self.species = Species(digimon_data[3])
             self.hp = int.from_bytes(digimon_data[4:6], byteorder="little")
             self.mp = int.from_bytes(digimon_data[8:0xa], byteorder="little")
             self.attack = int.from_bytes(digimon_data[0xa:0xc], byteorder="little")
@@ -334,7 +334,7 @@ class BaseDataDigimon:
 
         digimon_data_out[0:2] = self.id.to_bytes(2, byteorder="little")
         digimon_data_out[2] = self.level
-        digimon_data_out[3] = self.species
+        digimon_data_out[3] = self.species.value
         digimon_data_out[4:6] = self.hp.to_bytes(2, byteorder="little")
         # bytes 6:8 are always 0
         digimon_data_out[8:0xa] = self.mp.to_bytes(2, byteorder="little")
@@ -427,7 +427,7 @@ class EnemyDataDigimon:
             self.offset = offset
             self.id = int.from_bytes(digimon_data[0:2], byteorder="little")
             self.level = digimon_data[2]
-            self.species = digimon_data[3]
+            self.species = Species(digimon_data[3])
             self.hp = int.from_bytes(digimon_data[4:6], byteorder="little")
             self.mp = int.from_bytes(digimon_data[8:0xa], byteorder="little")
             self.attack = int.from_bytes(digimon_data[0xa:0xc], byteorder="little")

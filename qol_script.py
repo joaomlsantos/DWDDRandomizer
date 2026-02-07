@@ -515,7 +515,7 @@ class Randomizer:
                 utils.writeRomBytes(rom_data, self.baseDigimonInfo[randomized_digimon_id].dex_habitat, self.baseDigimonInfo[randomized_digimon_id].offset+0x39, 1)
 
                 # update location tracker w/ randomized digimon's species
-                location_species_tracker[current_location] |= (1 << randomized_digimon_data.species) if randomized_digimon_data.species < 8 else 0
+                location_species_tracker[current_location] |= (1 << randomized_digimon_data.species.value) if randomized_digimon_data.species.value < 8 else 0
 
                 cur_offset += 24        # skip 24 bytes to get next encounter
                 cur_digimon_id = int.from_bytes(rom_data[cur_offset:cur_offset+2], byteorder="little")

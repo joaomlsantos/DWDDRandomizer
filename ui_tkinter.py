@@ -11,7 +11,7 @@ from src import utils
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeMovesets, RandomizeItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeTraits, RandomizeEnemyDigimonEncounters
+from configs import APP_VERSION, ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeMovesets, RandomizeItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeTraits, RandomizeEnemyDigimonEncounters
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -21,8 +21,6 @@ import numpy as np
 import logging
 from io import StringIO
 from ui.LabelledSlider import LabelledSlider
-
-APP_VERSION = "0.1.1"
 
 class AppState:
     def __init__(self):
@@ -386,6 +384,7 @@ def export_settings():
     toml_data["app_data"] = OrderedDict()
     toml_data["app_data"]["APP_VERSION"] = APP_VERSION
     toml_data["app_data"]["ROM_VERSION"] = app_state.current_rom.version
+    toml_data["app_data"]["SEED"] = app_state.seed
 
 
     toml_data["randomizer_options"] = OrderedDict()
@@ -498,22 +497,38 @@ def import_settings():
 
     if toml_path:
         try:
+            warning_str = ""
+
             with open(toml_path, 'r') as f:
                 toml_data = toml.load(f)
 
+            app_data = toml_data.get("app_data", None)
+            if app_data:
+                app_version = app_data.get("APP_VERSION", None)
+                rom_version = app_data.get("ROM_VERSION", None)
+                seed = app_data.get("SEED", None)
+                if(app_version and app_version != APP_VERSION):
+                    warning_str += f"\nWarning: current app version {APP_VERSION} does not match config file's expected app version {app_version}."
+                if(rom_version and rom_version != app_state.current_rom.version):
+                    warning_str += f"\nWarning: loaded rom ({app_state.current_rom.version}) does not match config file's expected rom ({rom_version}). Settings such as custom starters may have inadvertently been altered."
+                if(seed):
+                    app_state.seed = seed
 
-            randomizer_options = toml_data.get("randomizer_options")
+            randomizer_options = toml_data.get("randomizer_options", None)
 
-            for key, value in randomizer_options.items():
-                if key in bool_var_mapping:
-                    bool_var_mapping[key].set(value)
-                elif key in int_var_mapping:
-                    int_var_mapping[key].set(value)
-                elif key == "INCREASE_DIGIMON_EXP":
-                    exp_wild_digimon_var.set(value > 0)
+            if randomizer_options:
+                for key, value in randomizer_options.items():
+                    if key in bool_var_mapping:
+                        bool_var_mapping[key].set(value)
+                    elif key in int_var_mapping:
+                        int_var_mapping[key].set(value)
+                    elif key == "INCREASE_DIGIMON_EXP":
+                        exp_wild_digimon_var.set(value > 0)
+            else:
+                warning_str += f"\nWarning: [randomizer_options] not found in config file. Randomizer settings may not have been loaded properly."
 
             # load starters
-            custom_starters_data = randomizer_options.get("CUSTOM_STARTER_PACKS")
+            custom_starters_data = randomizer_options.get("CUSTOM_STARTER_PACKS", None)
             if custom_starters_data:
                 for pack_idx, pack in enumerate(custom_starters_data):
                     if pack_idx >= len(app_state.custom_starters_packs):
@@ -524,7 +539,7 @@ def import_settings():
                         combo = app_state.custom_starters_packs[pack_idx][starter_idx]
                         combo.set(digimon_name)
 
-            messagebox.showinfo("Success", f"Settings imported from:\n{toml_path}")
+            messagebox.showinfo("Success", f"Settings imported from:\n{toml_path}\n{warning_str}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to import settings:\n{str(e)}")
 
