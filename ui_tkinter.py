@@ -21,6 +21,7 @@ import numpy as np
 import logging
 from io import StringIO
 from ui.LabelledSlider import LabelledSlider
+from ui import autoUpdater
 
 class AppState:
     def __init__(self):
@@ -1740,6 +1741,8 @@ dnaDigivolutionConditionsSpeciesExpTootip = CreateToolTip(dnaDigivolutionConditi
 button_frame = tk.Frame(root, pady=10)
 button_frame.pack()
 
+# autoupdater version check
+autoUpdater.mainThreadCheck(root, APP_VERSION, app_state._get_preferences_path())
 
 # Run the Tkinter event loop
 root.mainloop()
