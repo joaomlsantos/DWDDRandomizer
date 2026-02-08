@@ -929,7 +929,7 @@ def show_about_popup():
 
     copyright_label = tk.Label(
         about_window,
-        text="Copyright © 2024-2025 João Santos\nLicensed under the GPL-3.0 license",
+        text="Copyright © 2024-2026 João Santos\nLicensed under the GPL-3.0 license",
         justify="center",
         anchor="center"
     )

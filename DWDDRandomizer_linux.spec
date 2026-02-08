@@ -29,25 +29,24 @@ exe = EXE(
     upx=False,
     console=False,
     disable_windowed_traceback=False,
-    argv_emulation=True,
+    argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
     icon="public/dusk_transparent.png",
 )
-coll = BUNDLE(
+coll = COLLECT(
     exe,
     a.binaries,
     a.datas,
     strip=False,
     upx=False,
     upx_exclude=[],
-    icon='public/dusk_transparent.ico',
-    name='DWDDRandomizer.app',
+    name='DWDDRandomizer',
 )
 
-# Copy configs folder alongside the .app bundle
-dist_configs = os.path.join(DISTPATH, 'configs')
+# Copy configs folder to dist root (alongside the exe)
+dist_configs = os.path.join(DISTPATH, 'DWDDRandomizer', 'configs')
 if os.path.exists(dist_configs):
     shutil.rmtree(dist_configs)
 shutil.copytree('configs', dist_configs)

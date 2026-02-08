@@ -3,7 +3,7 @@ from typing import Any, Dict
 from src import model
 from src import constants
 
-APP_VERSION = "0.1.1"
+APP_VERSION = "0.2.0"
 
 
 class RookieResetConfig(Enum):

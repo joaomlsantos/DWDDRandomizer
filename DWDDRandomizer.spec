@@ -1,5 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+import shutil
+import os
 
 a = Analysis(
     ['ui_tkinter.py'],
@@ -32,7 +33,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon="public/dusk_transparent.png",
+    icon="public/dusk_transparent.ico",
     version="version_info.txt"
 )
 coll = COLLECT(
@@ -44,3 +45,9 @@ coll = COLLECT(
     upx_exclude=[],
     name='DWDDRandomizer',
 )
+
+# Copy configs folder to dist root (alongside the exe)
+dist_configs = os.path.join(DISTPATH, 'DWDDRandomizer', 'configs')
+if os.path.exists(dist_configs):
+    shutil.rmtree(dist_configs)
+shutil.copytree('configs', dist_configs)
