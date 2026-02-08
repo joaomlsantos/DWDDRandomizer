@@ -427,10 +427,11 @@ def loadDigivolutionInformation(rom_data: bytearray,
 
 
 
-def generateConditions(s: int, max_conditions: int = 3):
-    
+def generateConditions(s: int, max_conditions: int = 3, conditions_pool: List[int] = None, conditions_values: dict = None):
+
     stage = constants.STAGE_NAMES[s]
-    digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x12]    # this should be a constant/setting i think
+    digivolution_conditions_pool = list(conditions_pool) if conditions_pool else [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x12]
+    conditions_values_ref = conditions_values if conditions_values else constants.DIGIVOLUTION_CONDITIONS_VALUES
     condition_amount_distribution = constants.DIGIVOLUTION_CONDITION_AMOUNT_DISTRIBUTION[stage]
     condition_amount = np.random.choice(list(range(1,len(condition_amount_distribution)+1)), p=condition_amount_distribution)
     conditions = []
@@ -441,8 +442,8 @@ def generateConditions(s: int, max_conditions: int = 3):
             cur_condition = random.choice(digivolution_conditions_pool)
             digivolution_conditions_pool.remove(cur_condition)
 
-        min_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][s][0]
-        max_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][s][1]
+        min_val = conditions_values_ref[cur_condition][s][0]
+        max_val = conditions_values_ref[cur_condition][s][1]
         conditions.append([cur_condition, random.randint(min_val, max_val)])
         if(len(conditions) == max_conditions):
             break
@@ -450,7 +451,7 @@ def generateConditions(s: int, max_conditions: int = 3):
 
 
 
-def generateBiasedConditions(stage_id: int, bias: float, species: List[model.Species], max_conditions: int = 3):
+def generateBiasedConditions(stage_id: int, bias: float, species: List[model.Species], max_conditions: int = 3, conditions_pool: List[int] = None, conditions_values: dict = None):
     '''
     0x2: "DRAGON EXP",                      HOLY = 0
     0x3: "BEAST EXP",                       DARK = 1
@@ -463,7 +464,8 @@ def generateBiasedConditions(stage_id: int, bias: float, species: List[model.Spe
     '''
 
     stage = constants.STAGE_NAMES[stage_id]
-    digivolution_conditions_pool = [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x12]    # this should be a constant/setting i think
+    digivolution_conditions_pool = list(conditions_pool) if conditions_pool else [0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x12]
+    conditions_values_ref = conditions_values if conditions_values else constants.DIGIVOLUTION_CONDITIONS_VALUES
     species_condition_mapping = {0: 0x9, 1: 0x8, 2: 0x2, 3: 0x3, 4: 0x5, 5: 0x7, 6: 0x4, 7: 0x6}
     species_exp = [species_condition_mapping[x] for x in species if x in species_condition_mapping.keys()]
     other_species_total = len(species_condition_mapping) - len(species)
@@ -497,8 +499,8 @@ def generateBiasedConditions(stage_id: int, bias: float, species: List[model.Spe
             cur_condition = int(np.random.choice(digivolution_conditions_pool, p=prob_distribution_conditions))
             digivolution_conditions_pool.remove(cur_condition)
 
-        min_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][stage_id][0]
-        max_val = constants.DIGIVOLUTION_CONDITIONS_VALUES[cur_condition][stage_id][1]
+        min_val = conditions_values_ref[cur_condition][stage_id][0]
+        max_val = conditions_values_ref[cur_condition][stage_id][1]
         conditions.append([cur_condition, random.randint(min_val, max_val)])
 
         if(len(conditions) == max_conditions):
@@ -561,20 +563,17 @@ def checkAptitudeDeadlockTuple(conditions_evo, aptitude: int):
 
 
 def filterMovesByLevel(move: model.MoveData,
-                       movepool: List[model.MoveData]) -> List[model.MoveData]:
-    # the level range should be configurable
-    CONFIG_MOVE_LEVEL_RANGE = 5
-    filtered_movepool = [m for m in movepool if (m.level_learned >= move.level_learned - CONFIG_MOVE_LEVEL_RANGE and m.level_learned <= move.level_learned + CONFIG_MOVE_LEVEL_RANGE)]
+                       movepool: List[model.MoveData],
+                       level_range: int = 5) -> List[model.MoveData]:
+    filtered_movepool = [m for m in movepool if (m.level_learned >= move.level_learned - level_range and m.level_learned <= move.level_learned + level_range)]
 
     return filtered_movepool if len(filtered_movepool) > 0 else movepool
 
 
 def filterMovesByPower(move: model.MoveData,
-                       movepool: List[model.MoveData]) -> List[model.MoveData]:
-    # the power range should be configurable
-    CONFIG_MOVE_POWER_RANGE = 8
-
-    filtered_movepool = [m for m in movepool if (m.primary_value >= move.primary_value - CONFIG_MOVE_POWER_RANGE and m.primary_value <= move.primary_value + CONFIG_MOVE_POWER_RANGE)]
+                       movepool: List[model.MoveData],
+                       power_range: int = 8) -> List[model.MoveData]:
+    filtered_movepool = [m for m in movepool if (m.primary_value >= move.primary_value - power_range and m.primary_value <= move.primary_value + power_range)]
 
     return filtered_movepool if len(filtered_movepool) > 0 else movepool
 

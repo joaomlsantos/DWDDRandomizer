@@ -548,13 +548,9 @@ class Randomizer:
         if exp_yield_opt == ExpYieldConfig.UNCHANGED:
             return
         
-        stage_exp_ref = constants.EXP_FLAT_BY_STAGE
+        stage_exp_ref = self.config_manager.get("EXP_FLAT_BY_STAGE", constants.EXP_FLAT_BY_STAGE)
 
-        exp_denominator = 7
-
-        if(exp_yield_opt == ExpYieldConfig.INCREASE_HALVED):
-            exp_denominator = 14
-
+        exp_denominator = self.config_manager.get("EXP_DENOMINATOR", 14)
 
         # update for every digimon_id (will update only the wild encounters and not the tamers)
         # exp calc: (base_exp * lvl) / 7
@@ -575,9 +571,8 @@ class Randomizer:
                 utils.writeRomBytes(rom_data, enemy_digimon.aquan_exp, enemy_digimon.offset+0x54, 4) 
                 utils.writeRomBytes(rom_data, enemy_digimon.insectplant_exp, enemy_digimon.offset+0x58, 4)
 
-        str_logger_exp = "halved" if exp_yield_opt == ExpYieldConfig.INCREASE_HALVED else "full"
 
-        self.logger.info("Applied exp patch (" + str_logger_exp + ")")
+        self.logger.info("Applied exp patch")
 
 
 
@@ -844,7 +839,7 @@ class Randomizer:
             )
 
             # check if generated stats are within acceptable range
-            stat_tolerance = 0.20
+            stat_tolerance = self.config_manager.get("FIXED_BATTLE_STAT_TOLERANCE", 0.20)
             lower_bound = original_base_total * (1 - stat_tolerance)
             upper_bound = original_base_total * (1 + stat_tolerance)
 
@@ -892,13 +887,12 @@ class Randomizer:
             enemy_digimon_to_update.thunder_res = base_digimon.thunder_res
 
             exp_yield_opt = self.config_manager.get("INCREASE_DIGIMON_EXP", ExpYieldConfig.UNCHANGED)
-            exp_denominator = 7
-            if exp_yield_opt == ExpYieldConfig.INCREASE_HALVED:
-                exp_denominator = 14
+            exp_denominator = self.config_manager.get("EXP_DENOMINATOR", 14)
 
             randomized_stage = utils.getDigimonStage(randomized_digimon_id)
-            if randomized_stage in constants.EXP_FLAT_BY_STAGE:
-                stage_exp_base = constants.EXP_FLAT_BY_STAGE[randomized_stage]
+            exp_flat_by_stage = self.config_manager.get("EXP_FLAT_BY_STAGE", constants.EXP_FLAT_BY_STAGE)
+            if randomized_stage in exp_flat_by_stage:
+                stage_exp_base = exp_flat_by_stage[randomized_stage]
                 new_exp_yield = round((stage_exp_base * base_digimon_leveled.level) / exp_denominator)
                 enemy_digimon_to_update.updateExpYieldBySpecies(new_exp_yield)
 
@@ -1268,7 +1262,7 @@ class Randomizer:
     def randomizeDigimonMovesets(self,
                                  rom_data: bytearray):
         randomize_movesets = self.config_manager.get("RANDOMIZE_MOVESETS", RandomizeMovesets.UNCHANGED)
-        MOVESET_SPECIES_BIAS = 0.9
+        MOVESET_SPECIES_BIAS = self.config_manager.get("MOVESET_SPECIES_BIAS", 0.9)
 
 
         if(randomize_movesets == RandomizeMovesets.UNCHANGED):
@@ -1315,16 +1309,16 @@ class Randomizer:
                     continue
 
                 if(moveset_level_bias):     # filter by level
-                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool 
+                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool
                         previous_move = self.moveDataArray[move_id]
                         # if no moves pass the filter, filterMovesByLevel() returns the received movepool
-                        possible_movepool = utils.filterMovesByLevel(previous_move, possible_movepool)
+                        possible_movepool = utils.filterMovesByLevel(previous_move, possible_movepool, self.config_manager.get("CONFIG_MOVE_LEVEL_RANGE", 5))
 
                 if(regular_move_power_bias):    # filter by move power
-                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool 
+                    if(move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool
                         previous_move = self.moveDataArray[move_id]
-                        # if no moves pass the filter, filterMovesByLevel() returns the received movepool
-                        possible_movepool = utils.filterMovesByPower(previous_move, possible_movepool)
+                        # if no moves pass the filter, filterMovesByPower() returns the received movepool
+                        possible_movepool = utils.filterMovesByPower(previous_move, possible_movepool, self.config_manager.get("CONFIG_MOVE_POWER_RANGE", 8))
                     
 
                 if(randomize_movesets == RandomizeMovesets.RANDOM_SPECIES_BIAS):
@@ -1362,8 +1356,8 @@ class Randomizer:
             if(signature_move_power_bias):    # filter by move power
                 if(prev_signature_move_id < len(self.moveDataArray)):     # if move does not exist, then keep the original movepool (move is still randomized into a legitimate one)
                     previous_move = self.moveDataArray[prev_signature_move_id]
-                    # if no moves pass the filter, filterMovesByLevel() returns the received movepool
-                    possible_signature_movepool = utils.filterMovesByPower(previous_move, possible_signature_movepool)
+                    # if no moves pass the filter, filterMovesByPower() returns the received movepool
+                    possible_signature_movepool = utils.filterMovesByPower(previous_move, possible_signature_movepool, self.config_manager.get("CONFIG_MOVE_POWER_RANGE", 8))
 
             if(randomize_movesets == RandomizeMovesets.RANDOM_SPECIES_BIAS):
                 probability_array = []
@@ -1576,7 +1570,7 @@ class Randomizer:
             stage = constants.STAGE_NAMES[s]
             logger_dict = {v: k for k, v in digimon_to_randomize[stage].items()}
             stage_ids = list(digimon_to_randomize[stage].values())
-            evo_amount_distribution = constants.DIGIVOLUTION_AMOUNT_DISTRIBUTION[stage]
+            evo_amount_distribution = self.config_manager.get("DIGIVOLUTION_AMOUNT_DISTRIBUTION", constants.DIGIVOLUTION_AMOUNT_DISTRIBUTION)[stage]
 
             self.logger.info("\n==================== " + stage + " ====================")
             random.shuffle(stage_ids)
@@ -1610,9 +1604,9 @@ class Randomizer:
                             # generate conditions for evo digimon
                             # no need to override w/ hasPreDigivolution here
                             if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")):
-                                conditions_evo = utils.generateBiasedConditions(s+1, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [self.baseDigimonInfo[evo_digi_id].species])
+                                conditions_evo = utils.generateBiasedConditions(s+1, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [self.baseDigimonInfo[evo_digi_id].species], conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES"))
                             else:
-                                conditions_evo = utils.generateConditions(s+1)    # [[condition id (hex), value (int)], ...]
+                                conditions_evo = utils.generateConditions(s+1, conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES"))    # [[condition id (hex), value (int)], ...]
                             generated_conditions[evo_digi_id] = conditions_evo
                             evo_conditions_debug.append(conditions_evo)
 
@@ -1635,9 +1629,9 @@ class Randomizer:
                 # NOTE: right now this is inefficient, will randomize up to three times unecessarily in order to account for generatedConditions already being filled at the start if Digimon Conditions is left unchanged
                 if(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") or digimon_id not in generated_conditions.keys()):
                     if(self.config_manager.get("DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")):
-                        conditions_cur = utils.generateBiasedConditions(s, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [self.baseDigimonInfo[digimon_id].species])
+                        conditions_cur = utils.generateBiasedConditions(s, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [self.baseDigimonInfo[digimon_id].species], conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES"))
                     else:
-                        conditions_cur = utils.generateConditions(s)
+                        conditions_cur = utils.generateConditions(s, conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES"))
 
                     # check hasPreDigivolution here since we do not know
                     # if it does not have a predigivolution (and it does have at least a digivolution), change one of them randomly to match aptitude level
@@ -1762,10 +1756,10 @@ class Randomizer:
                         if(evo_digimon_id in generated_conditions.keys()):
                             conditions_evo = generated_conditions[evo_digimon_id]
                         elif(self.config_manager.get("DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")):
-                            conditions_evo = utils.generateBiasedConditions(evo_stage_int, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [digivolution_baseinfo.species], max_conditions=len(base_conditions))
+                            conditions_evo = utils.generateBiasedConditions(evo_stage_int, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), [digivolution_baseinfo.species], max_conditions=len(base_conditions), conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES"))
                             generated_conditions[evo_digimon_id] = conditions_evo
                         else:
-                            conditions_evo = utils.generateConditions(evo_stage_int, max_conditions=len(base_conditions))
+                            conditions_evo = utils.generateConditions(evo_stage_int, max_conditions=len(base_conditions), conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES"))
                             generated_conditions[evo_digimon_id] = conditions_evo
 
                         log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_evo]
@@ -1863,7 +1857,7 @@ class Randomizer:
                                      self.baseDigimonInfo[dnaDigivolutionObj.digimon_2_id].species,
                                      self.baseDigimonInfo[dnaDigivolutionObj.dna_evolution_id].species]
 
-                    conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage)
+                    conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array, conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES")) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage, conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES"))
                     conditions_evo += [[0, 0]] * (3 - len(conditions_evo))  # pad w/ empty conditions/values if result does not have 3 conditions
 
                     # set conditions
@@ -1871,14 +1865,14 @@ class Randomizer:
 
 
         if(dna_digivolution_conditions_var == RandomizeDnaDigivolutionConditions.RANDOMIZE):
-            
+
             for dnaDigivolutionObj in self.dnaDigivolutions:
                 cur_dnadigivolution_stage = constants.STAGE_NAMES.index(utils.getDigimonStage(dnaDigivolutionObj.dna_evolution_id))
                 species_array = [self.baseDigimonInfo[dnaDigivolutionObj.digimon_1_id].species,
                                  self.baseDigimonInfo[dnaDigivolutionObj.digimon_2_id].species,
                                  self.baseDigimonInfo[dnaDigivolutionObj.dna_evolution_id].species]
 
-                conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage)
+                conditions_evo = utils.generateBiasedConditions(cur_dnadigivolution_stage, self.config_manager.get("DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS"), species_array, conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES")) if(self.config_manager.get("DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP")) else utils.generateConditions(cur_dnadigivolution_stage, conditions_pool=self.config_manager.get("DIGIVOLUTION_CONDITIONS_POOL"), conditions_values=self.config_manager.get("DIGIVOLUTION_CONDITIONS_VALUES"))
                 conditions_evo += [[0, 0]] * (3 - len(conditions_evo))  # pad w/ empty conditions/values if result does not have 3 conditions
 
                 # set conditions

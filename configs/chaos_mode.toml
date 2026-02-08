@@ -1,5 +1,5 @@
 # DWDDRandomizer Settings Export
-# Generated: 2026-02-06 22:32:54
+# Generated: 2026-02-08 05:13:25
 
 [app_data]
 APP_VERSION = "0.1.1"
@@ -7,50 +7,221 @@ ROM_VERSION = "DUSK_US"
 SEED = -1
 
 [randomizer_options]
+# Increase dialogue text speed
 INCREASE_TEXT_SPEED = true
+
+# Increase overworld movement speed
 INCREASE_MOVEMENT_SPEED = true
+
+# Allow longer player names
 EXPAND_PLAYER_NAME_LENGTH = true
+
+# Improve battle performance by removing visual effects
 IMPROVE_BATTLE_PERFORMANCE = true
+
+# Reduce the wild encounter rate
 REDUCE_WILD_ENCOUNTER_RATE = true
+
+# Increase the base digimon scan rate
 INCREASE_SCAN_RATE = true
+
+# Increase exp yield from battles (0 = unchanged, 1 = halved, 2 = full)
 INCREASE_DIGIMON_EXP = 1
+
+# Increase money earned from wild encounters
 INCREASE_WILD_ENCOUNTER_MONEY = true
+
+# Increase farm exp gain
 INCREASE_FARM_EXP = true
+
+# Balance Calumon's base stats
 BALANCE_CALUMON_STATS = true
+
+# Enable Legendary Tamer quest
 ENABLE_LEGENDARY_TAMER_QUEST = true
+
+# Unlock main quests in sequence
 UNLOCK_MAIN_QUESTS_IN_SEQUENCE = true
+
+# Unlock version-exclusive areas
 UNLOCK_VERSION_EXCLUSIVE_AREAS = true
+
+# Randomize starter packs (0 = unchanged, 1 = same stage, 2 = fully random, 3 = custom)
 RANDOMIZE_STARTERS = 2
-CUSTOM_STARTER_PACKS = [ [ "MachGaogamon", "Lunamon", "Clockmon",], [ "SkullGreymon", "Lunamon", "WarGarurumon(Black)",], [ "Megakabuterimon(Blue)", "Lunamon", "Kurisarimon",], [ "Pandamon", "Lunamon", "Lillymon",],]
+
+CUSTOM_STARTER_PACKS = [["MachGaogamon", "Lunamon", "Clockmon"], ["SkullGreymon", "Lunamon", "WarGarurumon(Black)"], ["Megakabuterimon(Blue)", "Lunamon", "Kurisarimon"], ["Pandamon", "Lunamon", "Lillymon"]]
+
+# Nerf first boss to compensate for randomized starters
 NERF_FIRST_BOSS = false
+
+# Force at least one starter to be a Rookie
 FORCE_STARTER_W_ROOKIE_STAGE = false
+
+# Rookie reset event behavior (0 = unchanged, 1 = reset keeping evo, 2 = do not reset)
 ROOKIE_RESET_EVENT = 2
+
+# Randomize overworld items (0 = unchanged, 1 = keep category, 2 = completely)
 RANDOMIZE_OVERWORLD_ITEMS = 2
+
+# Randomize quest item rewards (0 = unchanged, 1 = keep category, 2 = completely)
 RANDOMIZE_QUEST_ITEM_REWARDS = 2
+
+# Randomize wild digimon encounters (0 = unchanged, 1 = same stage, 2 = completely)
 RANDOMIZE_WILD_DIGIMON_ENCOUNTERS = 2
+
+# Randomize wild encounter item drops (0 = unchanged, 1 = keep category, 2 = completely)
 RANDOMIZE_WILD_ENCOUNTER_ITEMS = 2
+
+# Stat generation mode for randomized wild encounters
 WILD_ENCOUNTERS_STATS = 3
+
+# Randomize fixed battle encounters (0 = unchanged, 1 = same stage, 2 = completely)
 RANDOMIZE_FIXED_BATTLES = 2
+
+# Randomize digimon species (0 = unchanged, 1 = random)
 RANDOMIZE_DIGIMON_SPECIES = 1
+
+# Allow Unknown species in randomization
 SPECIES_ALLOW_UNKNOWN = true
+
+# Randomize elemental resistances (0 = unchanged, 1 = shuffle, 2 = random)
 RANDOMIZE_ELEMENTAL_RESISTANCES = 2
+
+# Keep elemental resistances coherent with species
 KEEP_SPECIES_RESISTANCE_COHERENCE = false
+
+# Randomize base stats (0 = unchanged, 1 = shuffle, 2 = random sanity, 3 = random completely)
 RANDOMIZE_BASE_STATS = 3
+
+# Bias base stat randomization towards digimon type
 BASESTATS_STATTYPE_BIAS = false
+
+# Randomize digimon stat type (0 = unchanged, 1 = randomize)
 RANDOMIZE_DIGIMON_STATTYPE = 1
+
+# Randomize movesets (0 = unchanged, 1 = species bias, 2 = completely)
 RANDOMIZE_MOVESETS = 2
+
+# Filter randomized moves by level proximity
 MOVESETS_LEVEL_BIAS = false
+
+# Filter randomized regular moves by power proximity
 REGULAR_MOVE_POWER_BIAS = false
+
+# Filter randomized signature moves by power proximity
 SIGNATURE_MOVE_POWER_BIAS = false
+
+# Include signature moves in the randomization pool
 MOVESETS_SIGNATURE_MOVES_POOL = true
+
+# Guarantee at least one basic (no MP cost) move
 MOVESETS_GUARANTEE_BASIC_MOVE = false
+
+# Randomize traits (0 = unchanged, 1 = stage bias, 2 = completely)
 RANDOMIZE_TRAITS = 2
+
+# Force all digimon to have four traits
 TRAITS_FORCE_FOUR = true
+
+# Include unused traits in the randomization pool
 TRAITS_ENABLE_UNUSED = true
+
+# Randomize digivolution trees (0 = unchanged, 1 = randomize)
 RANDOMIZE_DIGIVOLUTIONS = 1
+
+# Bias digivolutions towards similar species
 DIGIVOLUTIONS_SIMILAR_SPECIES = false
+
+# Randomize digivolution conditions (0 = unchanged, 1 = randomize)
 RANDOMIZE_DIGIVOLUTION_CONDITIONS = 1
+
+# Bias conditions towards matching species exp
 DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP = false
+
+# Randomize DNA digivolutions (0 = unchanged, 1 = same stage, 2 = completely)
 RANDOMIZE_DNADIGIVOLUTIONS = 2
+
+# Randomize DNA digivolution conditions (0 = unchanged, 1 = randomize, 2 = removed)
 RANDOMIZE_DNADIGIVOLUTION_CONDITIONS = 1
+
+# Bias DNA conditions towards matching species exp
 DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP = false
+
+[advanced_settings]
+# Multiplier for wild encounter rate
+ENCOUNTER_RATE_MULTIPLIER = 0.5
+
+# Base scan rate for in-training digimon as normal rank tamer; -5 per stage
+NEW_BASE_SCAN_RATE = 25
+
+# Multiplier for farm exp
+FARM_EXP_MODIFIER = 10
+
+# Multiplier for money earned in wild encounters
+ENCOUNTER_MONEY_MULTIPLIER = 4
+
+# Denominator in exp formula: (base_exp * lvl) / denominator
+EXP_DENOMINATOR = 14
+
+# Weight for same-element moves when randomizing movesets with species bias
+MOVESET_SPECIES_BIAS = 0.9
+
+# Pool of allowed digivolution condition types
+DIGIVOLUTION_CONDITIONS_POOL = ["DRAGON EXP", "BEAST EXP", "AQUAN EXP", "BIRD EXP", "INSECTPLANT EXP", "MACHINE EXP", "DARK EXP", "HOLY EXP", "SPECIES EXP", "ATK STAT", "DEF STAT", "SPEED STAT", "SPIRIT STAT", "FRIENDSHIP % STAT"]
+
+# Range for filtering moves by level when randomizing movesets
+CONFIG_MOVE_LEVEL_RANGE = 5
+
+# Range for filtering moves by power when randomizing movesets
+CONFIG_MOVE_POWER_RANGE = 8
+
+# Weight for same-species digivolutions; remaining (1 - bias) split among other species
+DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS = 0.9
+
+# Multiplier reducing probability of off-species exp conditions (0.2 = 5x less likely)
+DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS = 0.2
+
+# In fixed battles, stats are rescaled if they deviate more than this fraction from original
+FIXED_BATTLE_STAT_TOLERANCE = 0.2
+
+# Multiplier for overworld movement speed
+MOVEMENT_SPEED_MULTIPLIER = 1.5
+
+# Base exp value per stage used in exp yield formula: (base * lvl) / denominator
+[advanced_settings.EXP_FLAT_BY_STAGE]
+IN-TRAINING = 40
+ROOKIE = 80
+CHAMPION = 120
+ULTIMATE = 160
+MEGA = 300
+
+# Condition -> [min, max] value ranges per stage (IN-TRAINING, ROOKIE, CHAMPION, ULTIMATE, MEGA)
+[advanced_settings.DIGIVOLUTION_CONDITIONS_VALUES]
+NONE = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+LEVEL = [[1, 5], [7, 16], [17, 30], [32, 45], [46, 65]]
+"DRAGON EXP" = [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]]
+"BEAST EXP" = [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]]
+"AQUAN EXP" = [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]]
+"BIRD EXP" = [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]]
+"INSECTPLANT EXP" = [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]]
+"MACHINE EXP" = [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]]
+"DARK EXP" = [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]]
+"HOLY EXP" = [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]]
+"SPECIES EXP" = [[0, 0], [300, 1500], [1000, 3000], [4500, 20000], [15000, 90000]]
+"ATK STAT" = [[0, 0], [50, 90], [90, 150], [130, 225], [200, 400]]
+"DEF STAT" = [[0, 0], [50, 90], [90, 150], [130, 225], [200, 400]]
+"SPEED STAT" = [[0, 0], [50, 90], [90, 150], [130, 225], [200, 400]]
+"SPIRIT STAT" = [[0, 0], [50, 90], [90, 150], [130, 225], [200, 400]]
+"APTITUDE STAT" = [[0, 0], [15, 25], [25, 40], [40, 50], [50, 65]]
+"FRIENDSHIP % STAT" = [[0, 0], [50, 70], [60, 70], [70, 80], [90, 100]]
+"DIGIMON ID IN PARTY" = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+"BEFRIENDED DIGIMON ID" = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+
+# Probability distribution for evolutions per stage: [0 evos, 1 evo, 2 evos, 3 evos]
+[advanced_settings.DIGIVOLUTION_AMOUNT_DISTRIBUTION]
+IN-TRAINING = [0.0, 0.2, 0.4, 0.4]
+ROOKIE = [0.0, 0.25, 0.55, 0.2]
+CHAMPION = [0.25, 0.4, 0.3, 0.05]
+ULTIMATE = [0.3, 0.5, 0.18, 0.02]
+MEGA = [1, 0, 0, 0]
+

@@ -1,8 +1,10 @@
 import json
+import re
 import threading
 import webbrowser
 from tkinter import messagebox
 
+import toml
 import urllib.request
 
 GITHUB_REPO = "joaomlsantos/DWDDRandomizer"
@@ -55,24 +57,25 @@ def showUpdateDialog(root, message, release_url, latest_version, preferences_pat
 def _load_skipped_version(preferences_path):
     try:
         with open(preferences_path, 'r') as f:
-            preferences = json.load(f)
+            preferences = toml.load(f)
             return preferences.get("skipped_update_version")
-    except (FileNotFoundError, json.JSONDecodeError):
+    except (FileNotFoundError, toml.TomlDecodeError):
         return None
 
 
 def _save_skipped_version(preferences_path, version):
+    """Update skipped_update_version via text replacement to preserve TOML formatting/comments."""
+    new_line = f'skipped_update_version = "{version}"'
     try:
         with open(preferences_path, 'r') as f:
-            preferences = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        preferences = {}
-
-    preferences["skipped_update_version"] = version
-
-    try:
+            text = f.read()
+        if re.search(r'^skipped_update_version\s*=', text, re.MULTILINE):
+            text = re.sub(r'^skipped_update_version\s*=.*$', new_line, text, count=1, flags=re.MULTILINE)
+        else:
+            # insert after first line (after last_rom_dir) or at top
+            text = new_line + '\n' + text
         with open(preferences_path, 'w') as f:
-            json.dump(preferences, f, indent=2)
+            f.write(text)
     except Exception:
         pass
 

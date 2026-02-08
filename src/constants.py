@@ -970,6 +970,35 @@ DIGIVOLUTION_CONDITIONS = {
     0x16: "BEFRIENDED DIGIMON ID"
 }
 
+
+
+DIGIVOLUTION_CONDITIONS_STR_TO_ID = {
+    "NONE": 0x0,
+    "LEVEL": 0x1,
+    "DRAGON EXP": 0x2,
+    "BEAST EXP": 0x3,
+    "AQUAN EXP": 0x4,
+    "BIRD EXP": 0x5,
+    "INSECTPLANT EXP": 0x6,
+    "MACHINE EXP": 0x7,
+    "DARK EXP": 0x8,
+    "HOLY EXP": 0x9,
+    "SPECIES EXP": 0xA,
+    "ATK STAT": 0xB,
+    "DEF STAT": 0xC,
+    "SPEED STAT": 0xD,
+    "SPIRIT STAT": 0xE,
+    "APTITUDE STAT": 0xF,
+    "STRESS % STAT": 0x10,             # unused
+    "STRESS % STAT [2]": 0x11,         # unused
+    "FRIENDSHIP % STAT": 0x12,
+    "FRIENDSHIP % STAT [2]": 0x13,     # unused
+    "ITEM IN INVENTORY": 0x14,         # unused, this doesn't seem to be implemented correctly
+    "DIGIMON ID IN PARTY": 0x15,
+    "BEFRIENDED DIGIMON ID": 0x16
+}
+
+
 # stage -> min, max
 # do not set 0x15 or 0x16 for now
 DIGIVOLUTION_CONDITIONS_VALUES = {

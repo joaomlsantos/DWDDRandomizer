@@ -2,6 +2,7 @@ from collections import OrderedDict
 import copy
 from datetime import datetime
 import json
+import re
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from typing import List
@@ -11,7 +12,7 @@ from src import utils
 from ui.tooltip import CreateToolTip
 import os
 from qol_script import DigimonROM, Randomizer
-from configs import APP_VERSION, ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeMovesets, RandomizeItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeTraits, RandomizeEnemyDigimonEncounters
+from configs import APP_VERSION, ExpYieldConfig, RandomizeDnaDigivolutionConditions, RandomizeDnaDigivolutions, RandomizeMovesets, RandomizeItems, RandomizeSpeciesConfig, RandomizeStartersConfig, RandomizeWildEncounters, RandomizeDigivolutions, RandomizeDigivolutionConditions, ConfigManager, RookieResetConfig, RandomizeElementalResistances, RandomizeBaseStats, RandomizeDigimonStatType, RandomizeTraits, RandomizeEnemyDigimonEncounters, inner_configmanager_settings
 from src.model import LvlUpMode
 from pathlib import Path
 import webbrowser
@@ -36,28 +37,182 @@ class AppState:
         self.custom_starters_packs = []
         self.load_preferences()
 
-    def _get_preferences_path(self):
+    def _get_app_dir(self):
         if getattr(sys, 'frozen', False):
-            app_dir = os.path.dirname(sys.executable)
-        else:
-            app_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.join(app_dir, "preferences.json")
+            return os.path.dirname(sys.executable)
+        return os.path.dirname(os.path.abspath(__file__))
+
+    def _get_preferences_path(self):
+        return os.path.join(self._get_app_dir(), "preferences.toml")
+
+
+    ADVANCED_SETTINGS_DESCRIPTIONS = {
+        "ENCOUNTER_RATE_MULTIPLIER": "Multiplier for wild encounter rate",
+        "NEW_BASE_SCAN_RATE": "Base scan rate for in-training digimon as normal rank tamer; -5 per stage",
+        "FARM_EXP_MODIFIER": "Multiplier for farm exp",
+        "ENCOUNTER_MONEY_MULTIPLIER": "Multiplier for money earned in wild encounters",
+        "EXP_DENOMINATOR": "Denominator in exp formula: (base_exp * lvl) / denominator",
+        "EXP_FLAT_BY_STAGE": "Base exp value per stage used in exp yield formula: (base * lvl) / denominator",
+        "MOVESET_SPECIES_BIAS": "Weight for same-element moves when randomizing movesets with species bias",
+        "DIGIVOLUTION_CONDITIONS_POOL": "Pool of allowed digivolution condition types",
+        "CONFIG_MOVE_LEVEL_RANGE": "Range for filtering moves by level when randomizing movesets",
+        "CONFIG_MOVE_POWER_RANGE": "Range for filtering moves by power when randomizing movesets",
+        "DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS": "Weight for same-species digivolutions; remaining (1 - bias) split among other species",
+        "DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS": "Multiplier reducing probability of off-species exp conditions (0.2 = 5x less likely)",
+        "DIGIVOLUTION_CONDITIONS_VALUES": "Condition -> [min, max] value ranges per stage (IN-TRAINING, ROOKIE, CHAMPION, ULTIMATE, MEGA)",
+        "DIGIVOLUTION_AMOUNT_DISTRIBUTION": "Probability distribution for evolutions per stage: [0 evos, 1 evo, 2 evos, 3 evos]",
+        "FIXED_BATTLE_STAT_TOLERANCE": "In fixed battles, stats are rescaled if they deviate more than this fraction from original",
+        "MOVEMENT_SPEED_MULTIPLIER": "Multiplier for overworld movement speed",
+    }
+
+    @staticmethod
+    def _toml_key(k):
+        """Quote a TOML key if it contains characters beyond A-Za-z0-9_-."""
+        if all(c.isalnum() or c in '-_' for c in str(k)):
+            return str(k)
+        return f'"{k}"'
+
+    @staticmethod
+    def _normalize_list_for_toml(lst):
+        """Ensure arrays are homogeneous for TOML: if mixed int/float, convert all to float."""
+        if not lst:
+            return lst
+        normalized = [AppState._normalize_list_for_toml(x) if isinstance(x, list) else x for x in lst]
+        has_int = any(isinstance(x, int) and not isinstance(x, bool) for x in normalized)
+        has_float = any(isinstance(x, float) for x in normalized)
+        if has_int and has_float:
+            return [float(x) if isinstance(x, (int, float)) and not isinstance(x, bool) else x for x in normalized]
+        return normalized
+
+    @staticmethod
+    def _toml_value(v):
+        """Serialize a Python value as a TOML inline value."""
+        if isinstance(v, bool):
+            return "true" if v else "false"
+        if isinstance(v, (int, float)):
+            return str(v)
+        if isinstance(v, str):
+            return f'"{v}"'
+        if isinstance(v, list):
+            v = AppState._normalize_list_for_toml(v)
+            return json.dumps(v, separators=(', ', ': '))
+        return str(v)
+
+    def _dump_preferences_toml(self, data: dict) -> str:
+        """Format preferences as TOML with descriptive comments for advanced settings."""
+        lines = []
+
+        # top-level simple keys
+        for k, v in data.items():
+            if k == "advanced_settings":
+                continue
+            lines.append(f'{self._toml_key(k)} = {self._toml_value(v)}')
+
+        advanced = data.get("advanced_settings", {})
+        if not advanced:
+            return '\n'.join(lines) + '\n'
+
+        lines.append('')
+        lines.append('[advanced_settings]')
+
+        # separate simple values from dict values (dict values become sub-tables)
+        simple_keys = [k for k in advanced if not isinstance(advanced[k], dict)]
+        dict_keys = [k for k in advanced if isinstance(advanced[k], dict)]
+
+        for k in simple_keys:
+            v = advanced[k]
+            desc = self.ADVANCED_SETTINGS_DESCRIPTIONS.get(k)
+            if desc:
+                lines.append(f'# {desc}')
+            lines.append(f'{self._toml_key(k)} = {self._toml_value(v)}')
+            lines.append('')
+
+        # dict values as sub-tables
+        for k in dict_keys:
+            v = advanced[k]
+            desc = self.ADVANCED_SETTINGS_DESCRIPTIONS.get(k)
+            if desc:
+                lines.append(f'# {desc}')
+            lines.append(f'[advanced_settings.{self._toml_key(k)}]')
+            for sk, sv in v.items():
+                lines.append(f'{self._toml_key(sk)} = {self._toml_value(sv)}')
+            lines.append('')
+
+        return '\n'.join(lines) + '\n'
+
+    @staticmethod
+    def _fix_toml_mixed_arrays(text: str) -> str:
+        """Pre-process TOML text to normalize mixed int/float arrays to all-float.
+        TOML requires homogeneous arrays, so [0.85, 0.15, 0, 0] is invalid.
+        This converts it to [0.85, 0.15, 0.0, 0.0] before parsing."""
+        def fix_flat_array(match):
+            content = match.group(1)
+            if '[' in content:
+                return match.group(0)  # skip nested arrays
+            tokens = content.split(',')
+            has_float = any('.' in t for t in tokens if t.strip() and t.strip().lstrip('-')[0:1].isdigit())
+            if not has_float:
+                return match.group(0)
+            fixed = []
+            for t in tokens:
+                stripped = t.strip()
+                if re.match(r'^-?\d+$', stripped):
+                    fixed.append(t.replace(stripped, stripped + '.0'))
+                else:
+                    fixed.append(t)
+            return '[' + ','.join(fixed) + ']'
+        return re.sub(r'\[([^\[\]]*)\]', fix_flat_array, text)
+
+    def _load_preferences_file(self):
+        """Load preferences from TOML."""
+        toml_path = self._get_preferences_path()
+        try:
+            with open(toml_path, 'r') as f:
+                text = f.read()
+            return toml.loads(self._fix_toml_mixed_arrays(text))
+        except FileNotFoundError:
+            pass
+        return {}
 
     def load_preferences(self):
-        try:
-            with open(self._get_preferences_path(), 'r') as f:
-                preferences = json.load(f)
-                self.last_rom_dir = preferences.get("last_rom_dir")
-        except (FileNotFoundError, json.JSONDecodeError):
-            pass  
+        preferences = self._load_preferences_file()
+        self.last_rom_dir = preferences.get("last_rom_dir")
+        advanced = preferences.get("advanced_settings")
+        if advanced:
+            self.config_manager.update_from_ui(advanced)
 
     def save_preferences(self):
-        preferences = {"last_rom_dir": self.last_rom_dir}
+        # load existing preferences to preserve fields we don't manage (e.g. skipped_update_version)
+        existing = self._load_preferences_file()
+        existing["last_rom_dir"] = self.last_rom_dir
         try:
             with open(self._get_preferences_path(), 'w') as f:
-                json.dump(preferences, f, indent=2)
+                f.write(self._dump_preferences_toml(existing))
         except Exception:
-            pass  
+            pass
+
+    def initialize_advanced_settings(self):
+        """Ensure advanced_settings section exists in preferences.toml with all default keys.
+        Called on first ROM load. Adds any missing keys without overwriting existing user edits."""
+        existing = self._load_preferences_file()
+
+        advanced = existing.get("advanced_settings", {})
+        updated = False
+        for key, default_value in inner_configmanager_settings.items():
+            if key not in advanced:
+                advanced[key] = default_value
+                updated = True
+
+        if updated:
+            existing["advanced_settings"] = advanced
+            try:
+                with open(self._get_preferences_path(), 'w') as f:
+                    f.write(self._dump_preferences_toml(existing))
+            except Exception:
+                pass
+
+        # load the advanced settings into config_manager
+        self.config_manager.update_from_ui(advanced)
 
     def setLogger(self):
         logger = logging.getLogger(__name__)
@@ -341,6 +496,9 @@ def open_rom():
         app_state.last_rom_dir = os.path.dirname(file_path)
         app_state.save_preferences()
 
+        # Initialize advanced settings in preferences.toml (adds missing keys with defaults)
+        app_state.initialize_advanced_settings()
+
 
         filename = os.path.basename(file_path)
         max_chars = 56
@@ -378,6 +536,65 @@ def save_changes():
             messagebox.showerror("Error", f"Failed to save changes: {e}")
 
 
+EXPORT_SETTINGS_DESCRIPTIONS = {
+    # QoL
+    "INCREASE_TEXT_SPEED": "Increase dialogue text speed",
+    "INCREASE_MOVEMENT_SPEED": "Increase overworld movement speed",
+    "EXPAND_PLAYER_NAME_LENGTH": "Allow longer player names",
+    "IMPROVE_BATTLE_PERFORMANCE": "Improve battle performance by removing visual effects",
+    "REDUCE_WILD_ENCOUNTER_RATE": "Reduce the wild encounter rate",
+    "INCREASE_SCAN_RATE": "Increase the base digimon scan rate",
+    "INCREASE_DIGIMON_EXP": "Increase exp yield from battles (0 = unchanged, 1 = halved, 2 = full)",
+    "INCREASE_WILD_ENCOUNTER_MONEY": "Increase money earned from wild encounters",
+    "INCREASE_FARM_EXP": "Increase farm exp gain",
+    "BALANCE_CALUMON_STATS": "Balance Calumon's base stats",
+    "ENABLE_LEGENDARY_TAMER_QUEST": "Enable Legendary Tamer quest",
+    "UNLOCK_MAIN_QUESTS_IN_SEQUENCE": "Unlock main quests in sequence",
+    "UNLOCK_VERSION_EXCLUSIVE_AREAS": "Unlock version-exclusive areas",
+    # Starters
+    "RANDOMIZE_STARTERS": "Randomize starter packs (0 = unchanged, 1 = same stage, 2 = fully random, 3 = custom)",
+    "NERF_FIRST_BOSS": "Nerf first boss to compensate for randomized starters",
+    "FORCE_STARTER_W_ROOKIE_STAGE": "Force at least one starter to be a Rookie",
+    "ROOKIE_RESET_EVENT": "Rookie reset event behavior (0 = unchanged, 1 = reset keeping evo, 2 = do not reset)",
+    # Items
+    "RANDOMIZE_OVERWORLD_ITEMS": "Randomize overworld items (0 = unchanged, 1 = keep category, 2 = completely)",
+    "RANDOMIZE_QUEST_ITEM_REWARDS": "Randomize quest item rewards (0 = unchanged, 1 = keep category, 2 = completely)",
+    # Wild encounters
+    "RANDOMIZE_WILD_DIGIMON_ENCOUNTERS": "Randomize wild digimon encounters (0 = unchanged, 1 = same stage, 2 = completely)",
+    "RANDOMIZE_WILD_ENCOUNTER_ITEMS": "Randomize wild encounter item drops (0 = unchanged, 1 = keep category, 2 = completely)",
+    "WILD_ENCOUNTERS_STATS": "Stat generation mode for randomized wild encounters",
+    "RANDOMIZE_FIXED_BATTLES": "Randomize fixed battle encounters (0 = unchanged, 1 = same stage, 2 = completely)",
+    # Species
+    "RANDOMIZE_DIGIMON_SPECIES": "Randomize digimon species (0 = unchanged, 1 = random)",
+    "SPECIES_ALLOW_UNKNOWN": "Allow Unknown species in randomization",
+    "RANDOMIZE_ELEMENTAL_RESISTANCES": "Randomize elemental resistances (0 = unchanged, 1 = shuffle, 2 = random)",
+    "KEEP_SPECIES_RESISTANCE_COHERENCE": "Keep elemental resistances coherent with species",
+    "RANDOMIZE_BASE_STATS": "Randomize base stats (0 = unchanged, 1 = shuffle, 2 = random sanity, 3 = random completely)",
+    "BASESTATS_STATTYPE_BIAS": "Bias base stat randomization towards digimon type",
+    "RANDOMIZE_DIGIMON_STATTYPE": "Randomize digimon stat type (0 = unchanged, 1 = randomize)",
+    # Movesets
+    "RANDOMIZE_MOVESETS": "Randomize movesets (0 = unchanged, 1 = species bias, 2 = completely)",
+    "MOVESETS_LEVEL_BIAS": "Filter randomized moves by level proximity",
+    "REGULAR_MOVE_POWER_BIAS": "Filter randomized regular moves by power proximity",
+    "SIGNATURE_MOVE_POWER_BIAS": "Filter randomized signature moves by power proximity",
+    "MOVESETS_SIGNATURE_MOVES_POOL": "Include signature moves in the randomization pool",
+    "MOVESETS_GUARANTEE_BASIC_MOVE": "Guarantee at least one basic (no MP cost) move",
+    # Traits
+    "RANDOMIZE_TRAITS": "Randomize traits (0 = unchanged, 1 = stage bias, 2 = completely)",
+    "TRAITS_FORCE_FOUR": "Force all digimon to have four traits",
+    "TRAITS_ENABLE_UNUSED": "Include unused traits in the randomization pool",
+    # Digivolutions
+    "RANDOMIZE_DIGIVOLUTIONS": "Randomize digivolution trees (0 = unchanged, 1 = randomize)",
+    "DIGIVOLUTIONS_SIMILAR_SPECIES": "Bias digivolutions towards similar species",
+    "RANDOMIZE_DIGIVOLUTION_CONDITIONS": "Randomize digivolution conditions (0 = unchanged, 1 = randomize)",
+    "DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": "Bias conditions towards matching species exp",
+    # DNA
+    "RANDOMIZE_DNADIGIVOLUTIONS": "Randomize DNA digivolutions (0 = unchanged, 1 = same stage, 2 = completely)",
+    "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": "Randomize DNA digivolution conditions (0 = unchanged, 1 = randomize, 2 = removed)",
+    "DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": "Bias DNA conditions towards matching species exp",
+}
+
+
 def export_settings():
     patcher_config_options = get_patcher_config_options()
     toml_data = OrderedDict()
@@ -386,7 +603,6 @@ def export_settings():
     toml_data["app_data"]["APP_VERSION"] = APP_VERSION
     toml_data["app_data"]["ROM_VERSION"] = app_state.current_rom.version
     toml_data["app_data"]["SEED"] = app_state.seed
-
 
     toml_data["randomizer_options"] = OrderedDict()
 
@@ -399,14 +615,11 @@ def export_settings():
         else:
             toml_data["randomizer_options"][key] = value
 
-    if getattr(sys, 'frozen', False):
-        app_dir = os.path.dirname(sys.executable)
-    else:
-        app_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    configs_dir = os.path.join(app_dir, "configs")
-    os.makedirs(configs_dir, exist_ok=True)
+    # include current advanced settings
+    toml_data["advanced_settings"] = dict(inner_configmanager_settings)
 
+    configs_dir = os.path.join(app_state._get_app_dir(), "configs")
+    os.makedirs(configs_dir, exist_ok=True)
 
     toml_path = filedialog.asksaveasfilename(
         title="Export Settings",
@@ -415,16 +628,64 @@ def export_settings():
         initialdir=configs_dir
     )
 
-
     if toml_path:
         try:
             with open(toml_path, 'w') as f:
-                f.write("# DWDDRandomizer Settings Export\n")
-                f.write(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-                toml.dump(toml_data, f)
+                f.write(_format_export_toml(toml_data))
             messagebox.showinfo("Success", f"Settings exported to:\n{toml_path}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to export settings:\n{str(e)}")
+
+
+def _format_export_toml(data: dict) -> str:
+    """Format exported settings TOML with descriptive comments."""
+    lines = [
+        "# DWDDRandomizer Settings Export",
+        f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "",
+    ]
+
+    # [app_data]
+    lines.append("[app_data]")
+    for k, v in data.get("app_data", {}).items():
+        lines.append(f'{AppState._toml_key(k)} = {AppState._toml_value(v)}')
+    lines.append("")
+
+    # [randomizer_options] with comments
+    lines.append("[randomizer_options]")
+    for k, v in data.get("randomizer_options", {}).items():
+        desc = EXPORT_SETTINGS_DESCRIPTIONS.get(k)
+        if desc:
+            lines.append(f'# {desc}')
+        lines.append(f'{AppState._toml_key(k)} = {AppState._toml_value(v)}')
+        lines.append('')
+
+    # [advanced_settings] - reuse AppState's formatter logic
+    advanced = data.get("advanced_settings", {})
+    if advanced:
+        lines.append("[advanced_settings]")
+        simple_keys = [k for k in advanced if not isinstance(advanced[k], dict)]
+        dict_keys = [k for k in advanced if isinstance(advanced[k], dict)]
+
+        for k in simple_keys:
+            v = advanced[k]
+            desc = AppState.ADVANCED_SETTINGS_DESCRIPTIONS.get(k)
+            if desc:
+                lines.append(f'# {desc}')
+            lines.append(f'{AppState._toml_key(k)} = {AppState._toml_value(v)}')
+            lines.append('')
+
+        for k in dict_keys:
+            v = advanced[k]
+            desc = AppState.ADVANCED_SETTINGS_DESCRIPTIONS.get(k)
+            if desc:
+                lines.append(f'# {desc}')
+            lines.append(f'[advanced_settings.{AppState._toml_key(k)}]')
+            for sk, sv in v.items():
+                lines.append(f'{AppState._toml_key(sk)} = {AppState._toml_value(sv)}')
+            lines.append('')
+
+    return '\n'.join(lines) + '\n'
 
 
 def import_settings():

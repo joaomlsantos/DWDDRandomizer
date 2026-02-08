@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Any, Dict
 from src import model
+from src import constants
 
 APP_VERSION = "0.1.1"
 
@@ -129,12 +130,22 @@ class ConfigManager:
         "RANDOMIZE_DNADIGIVOLUTION_CONDITIONS": RandomizeDnaDigivolutionConditions,
     }
 
+    @staticmethod
+    def _resolve_condition_names(key, value):
+        """Convert human-readable condition names to internal int IDs."""
+        str_to_id = constants.DIGIVOLUTION_CONDITIONS_STR_TO_ID
+        if key == "DIGIVOLUTION_CONDITIONS_VALUES" and isinstance(value, dict):
+            return {(str_to_id[k] if k in str_to_id else int(k)): v for k, v in value.items()}
+        if key == "DIGIVOLUTION_CONDITIONS_POOL" and isinstance(value, list) and value and isinstance(value[0], str):
+            return [str_to_id[name] for name in value]
+        return value
+
     def update_from_ui(self, ui_variables):
         for key, tk_var in ui_variables.items():
-            if hasattr(tk_var, "get"):
+            if hasattr(tk_var, "get") and not isinstance(tk_var, (dict, list)):
                 self.set(key, tk_var.get())
             else:
-                self.set(key, tk_var)
+                self.set(key, self._resolve_condition_names(key, tk_var))
 
     def update_from_toml(self, toml_data: Dict[str, Any]):
         randomizer_options = toml_data.get("randomizer_options", {})
@@ -143,6 +154,10 @@ class ConfigManager:
             if key in self.ENUM_KEYS and isinstance(value, int):
                 value = self.ENUM_KEYS[key](value)
             self.set(key, value)
+
+        advanced_settings = toml_data.get("advanced_settings", {})
+        for key, value in advanced_settings.items():
+            self.set(key, self._resolve_condition_names(key, value))
 
 
 # QoL settings
@@ -194,14 +209,66 @@ default_configmanager_settings = {
 
 # these settings are initialized upon creating ConfigManager, thus shared w/ all instances
 # at the moment these are not obtainable through the tkinter ui but are needed nonetheless
+# advanced users can edit these values in the "advanced_settings" section of preferences.toml
 inner_configmanager_settings = {
-    "MOVEMENT_SPEED_MULTIPLIER": 1.5,
+
+    # most important
     "ENCOUNTER_RATE_MULTIPLIER": 0.5,
     "NEW_BASE_SCAN_RATE": 25,        # this is the base value for scanning an in-training digimon as normal rank tamer; -5 for each subsequent digivolution
-    "DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS": 0.9,    # the total odds for the same species digimon will be the bias value (in this case it's 0.9), total odds for digimon from other species will be the remaining value (1 - bias)
-    "DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS": 0.2,          # how less likely each exp condition is to be picked (in this case, the probability for each of those exp conditions is multiplied by the bias value; multiplying by 0.2 makes the condition 5 times less likely)
     "FARM_EXP_MODIFIER": 10,             # multiplier for farm exp
     "ENCOUNTER_MONEY_MULTIPLIER": 4,              # multiplier for money earned in wild encounters
+    "EXP_DENOMINATOR": 14,                # denominator in exp formula: (base_exp * lvl) / denominator
+    "EXP_FLAT_BY_STAGE": {               # base exp value per stage used in exp yield formula: (base * lvl) / denominator
+        "IN-TRAINING": 40,
+        "ROOKIE": 80,
+        "CHAMPION": 120,
+        "ULTIMATE": 160,
+        "MEGA": 300
+    },
+
+    # relatively important
+    "MOVESET_SPECIES_BIAS": 0.9,         # when randomizing movesets with species bias, this is the weight for same-element moves
+    "DIGIVOLUTION_CONDITIONS_POOL": ["DRAGON EXP", "BEAST EXP", "AQUAN EXP", "BIRD EXP", "INSECTPLANT EXP", "MACHINE EXP", "DARK EXP", "HOLY EXP", "SPECIES EXP", "ATK STAT", "DEF STAT", "SPEED STAT", "SPIRIT STAT", "FRIENDSHIP % STAT"],
+    "CONFIG_MOVE_LEVEL_RANGE": 5,        # range for filtering moves by level when randomizing movesets
+    "CONFIG_MOVE_POWER_RANGE": 8,        # range for filtering moves by power when randomizing movesets
+    "DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS": 0.9,    # the total odds for the same species digimon will be the bias value (in this case it's 0.9), total odds for digimon from other species will be the remaining value (1 - bias)
+    "DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS": 0.2,          # how less likely each exp condition is to be picked (in this case, the probability for each of those exp conditions is multiplied by the bias value; multiplying by 0.2 makes the condition 5 times less likely)
+
+    # condition name -> [min, max] value ranges per stage (IN-TRAINING, ROOKIE, CHAMPION, ULTIMATE, MEGA)
+    "DIGIVOLUTION_CONDITIONS_VALUES": {
+        "NONE": [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+        "LEVEL": [[1, 5], [7, 16], [17, 30], [32, 45], [46, 65]],
+        "DRAGON EXP": [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]],
+        "BEAST EXP": [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]],
+        "AQUAN EXP": [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]],
+        "BIRD EXP": [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]],
+        "INSECTPLANT EXP": [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]],
+        "MACHINE EXP": [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]],
+        "DARK EXP": [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]],
+        "HOLY EXP": [[0, 0], [100, 500], [300, 1000], [1500, 8000], [5000, 30000]],
+        "SPECIES EXP": [[0, 0], [300, 1500], [1000, 3000], [4500, 20000], [15000, 90000]],
+        "ATK STAT": [[0, 0], [50, 90], [90, 150], [130, 225], [200, 400]],
+        "DEF STAT": [[0, 0], [50, 90], [90, 150], [130, 225], [200, 400]],
+        "SPEED STAT": [[0, 0], [50, 90], [90, 150], [130, 225], [200, 400]],
+        "SPIRIT STAT": [[0, 0], [50, 90], [90, 150], [130, 225], [200, 400]],
+        "APTITUDE STAT": [[0, 0], [15, 25], [25, 40], [40, 50], [50, 65]],
+        "FRIENDSHIP % STAT": [[0, 0], [50, 70], [60, 70], [70, 80], [90, 100]],
+        "DIGIMON ID IN PARTY": [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+        "BEFRIENDED DIGIMON ID": [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+    },
+
+    # probability distribution for number of evolutions per stage: [0 evos, 1 evo, 2 evos, 3 evos]
+    "DIGIVOLUTION_AMOUNT_DISTRIBUTION": {
+        "IN-TRAINING": [0, 0.2, 0.4, 0.4],
+        "ROOKIE": [0, 0.25, 0.55, 0.2],
+        "CHAMPION": [0.25, 0.4, 0.3, 0.05],
+        "ULTIMATE": [0.3, 0.5, 0.18, 0.02],
+        "MEGA": [1, 0, 0, 0]
+    },
+
+    # low priority
+    "FIXED_BATTLE_STAT_TOLERANCE": 0.20,  # in fixed battles, generated stats are rescaled if they deviate more than this fraction from the original
+    "MOVEMENT_SPEED_MULTIPLIER": 1.5,
 }
 
 PATH_SOURCE = "C:/Workspace/digimon_stuffs/rom_files/1421 - Digimon World - Dawn (USA).nds"
