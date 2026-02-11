@@ -358,7 +358,7 @@ def generateLvlupStats(lvlupTable: list[list[int, int]],
     # note: this function is not checking if the aptitude is valid for the given digimon
 
 
-    lvlupRef = lvlupTable[digimon_data.digimon_type]    # pick specific table for this digimon type
+    lvlupRef = lvlupTable[digimon_data.digimon_type.value]    # pick specific table for this digimon type
     target_digimon: model.BaseDataDigimon = copy.copy(digimon_data)     # we do not want to change the original ref, thus the copy
 
     prev_stats = [target_digimon.hp, target_digimon.mp, target_digimon.attack, target_digimon.defense, target_digimon.spirit, target_digimon.speed]

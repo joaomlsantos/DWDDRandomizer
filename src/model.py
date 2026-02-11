@@ -240,7 +240,7 @@ class BaseDataDigimon:
             self.trait_3 = digimon_data[0x2a]
             self.trait_4 = digimon_data[0x2b]
             self.support_trait = digimon_data[0x2c]
-            self.digimon_type = digimon_data[0x2d]
+            self.digimon_type = DigimonType(digimon_data[0x2d])
             self.move_signature = int.from_bytes(digimon_data[0x2e:0x30], byteorder="little")
             self.move_1 = int.from_bytes(digimon_data[0x30:0x32], byteorder="little")
             self.move_2 = int.from_bytes(digimon_data[0x32:0x34], byteorder="little")
@@ -358,7 +358,7 @@ class BaseDataDigimon:
         digimon_data_out[0x2a] = self.trait_3
         digimon_data_out[0x2b] = self.trait_4
         digimon_data_out[0x2c] = self.support_trait
-        digimon_data_out[0x2d] = self.digimon_type
+        digimon_data_out[0x2d] = self.digimon_type.value
         digimon_data_out[0x2e:0x30] = self.move_signature.to_bytes(2, byteorder="little")
         digimon_data_out[0x30:0x32] = self.move_1.to_bytes(2, byteorder="little")
         digimon_data_out[0x32:0x34] = self.move_2.to_bytes(2, byteorder="little")

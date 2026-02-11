@@ -1,3 +1,4 @@
+import math
 import os
 import binascii
 import logging
@@ -44,10 +45,10 @@ class DigimonROM:
             self.extendPlayerNameSize()
         if(self.config_manager.get("INCREASE_SCAN_RATE", False)):
             self.buffScanRate()
-        if(self.config_manager.get("INCREASE_FARM_EXP", False)):
-            self.changeFarmExp()
         if(self.config_manager.get("UNLOCK_VERSION_EXCLUSIVE_AREAS", False)):
             self.unlockExclusiveAreas()
+        if(self.config_manager.get("INCREASE_FARM_EXP", False)):
+            self.changeFarmExp()
         if(self.config_manager.get("IMPROVE_BATTLE_PERFORMANCE", False)):
             self.improveBattlePerformance()
         
@@ -131,12 +132,27 @@ class DigimonROM:
     def changeFarmExp(self):
         cur_offset = constants.FARM_TERRAINS_START_OFFSET[self.version]
         exp_modifier = self.config_manager.get("FARM_EXP_MODIFIER", 1)
+        farm_exp_table = []
+        farm_exp_headers = ["Farm", "HOLY EXP", "DARK EXP", "DRAGON EXP", "BEAST EXP", "BIRD EXP", "MACHINE EXP", "AQUAN EXP", "INSECTPLANT EXP"]
         for t in range(17):         # 17 terrains
             # load terrain memory here? could load earlier if needed for other things
             cur_terrain = model.FarmTerrain(self.rom_data[cur_offset : cur_offset+0x5c], cur_offset)
+            farm_name = constants.FARM_TERRAINS_NAMES[t] if t < len(constants.FARM_TERRAINS_NAMES) else str(t)
             utils.applyFarmExpModifier(self.rom_data, cur_terrain, exp_modifier)
-            self.logger.info(f"Farm {t} EXP: {cur_terrain.holy_exp * exp_modifier} HOLY, {cur_terrain.dark_exp * exp_modifier} DARK, {cur_terrain.dragon_exp * exp_modifier} DRAGON, {cur_terrain.beast_exp * exp_modifier} BEAST, {cur_terrain.bird_exp * exp_modifier} BIRD, {cur_terrain.machine_exp * exp_modifier} MACHINE, {cur_terrain.aquan_exp * exp_modifier} AQUAN, {cur_terrain.insectplant_exp * exp_modifier} INSECTPLANT")
+            farm_exp_table.append([farm_name,
+                                   cur_terrain.holy_exp * exp_modifier, 
+                                   cur_terrain.dark_exp * exp_modifier, 
+                                   cur_terrain.dragon_exp * exp_modifier,
+                                   cur_terrain.beast_exp * exp_modifier,
+                                   cur_terrain.bird_exp * exp_modifier,
+                                   cur_terrain.machine_exp * exp_modifier,
+                                   cur_terrain.aquan_exp * exp_modifier,
+                                   cur_terrain.insectplant_exp * exp_modifier])
+            #self.logger.info(f"{farm_name} Farm EXP: {cur_terrain.holy_exp * exp_modifier} HOLY, {cur_terrain.dark_exp * exp_modifier} DARK, {cur_terrain.dragon_exp * exp_modifier} DRAGON, {cur_terrain.beast_exp * exp_modifier} BEAST, {cur_terrain.bird_exp * exp_modifier} BIRD, {cur_terrain.machine_exp * exp_modifier} MACHINE, {cur_terrain.aquan_exp * exp_modifier} AQUAN, {cur_terrain.insectplant_exp * exp_modifier} INSECTPLANT")
             cur_offset += 0x5c      # advance to next terrain
+
+        self.logger.info("\n==================== FARM TERRAIN EXP ====================")
+        self.logger.info(tabulate(farm_exp_table, headers=farm_exp_headers))
             
 
     def unlockExclusiveAreas(self):
@@ -207,7 +223,6 @@ class Randomizer:
             self.balanceCalumonStats(target_rom_data)
 
         self.rookieResetEvent(target_rom_data)
-        self.randomizeAreaEncounters(target_rom_data)      # returned enemyDigimonInfo is taken into account for the exp patch
         self.nerfFirstBoss(target_rom_data)
         self.randomizeOverworldItems(target_rom_data)
         self.changeEncounterRewardData(target_rom_data)
@@ -216,6 +231,10 @@ class Randomizer:
         # the following function modifies self.baseDigimonInfo; this is needed to propagate base data changes into the randomization
         self.randomizeDigimonSpecies(target_rom_data)
 
+        # call randomizeDigimonStatType first since its result may influence base stat randomization
+        self.randomizeDigimonStatType(target_rom_data)
+        self.randomizeDigimonBaseStats(target_rom_data)
+
         # this function must be called AFTER randomizeDigimonSpecies()
         self.randomizeElementalResistances(target_rom_data)
 
@@ -223,7 +242,11 @@ class Randomizer:
 
         self.randomizeDigimonTraits(target_rom_data)
 
-        # randomizeFixedBattles MUST run AFTER all base randomizations (species, resistances, movesets, traits)
+        self.logBaseDigimonData()
+
+        # randomizeAreaEncounters and randomizeFixedBattles MUST run AFTER all base randomizations (species, resistances, movesets, traits)
+        
+        self.randomizeAreaEncounters(target_rom_data)
         self.randomizeFixedBattles(target_rom_data)
 
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
@@ -231,6 +254,7 @@ class Randomizer:
             self.curUpdatedPreEvos, self.curStandardEvos = self.randomizeDigivolutions(target_rom_data)
         elif(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") not in [None, RandomizeDigivolutionConditions.UNCHANGED]):
             self.randomizeDigivolutionConditionsOnly(target_rom_data)   # this only triggers if randomize digivolutions is not applied
+
 
         self.manageDnaDigivolutions(target_rom_data)
 
@@ -247,6 +271,101 @@ class Randomizer:
         self.expPatchFlat(target_rom_data)
 
 
+    def logBaseDigimonData(self):
+
+        randomize_digimon_species = self.config_manager.get("RANDOMIZE_DIGIMON_SPECIES", RandomizeSpeciesConfig.UNCHANGED) != RandomizeSpeciesConfig.UNCHANGED
+        randomize_stat_type = self.config_manager.get("RANDOMIZE_DIGIMON_STATTYPE", RandomizeDigimonStatType.UNCHANGED) != RandomizeDigimonStatType.UNCHANGED
+        randomize_base_stats = self.config_manager.get("RANDOMIZE_BASE_STATS", RandomizeBaseStats.UNCHANGED) != RandomizeBaseStats.UNCHANGED
+        randomize_elemental_resistances = self.config_manager.get("RANDOMIZE_ELEMENTAL_RESISTANCES", RandomizeElementalResistances.UNCHANGED) != RandomizeElementalResistances.UNCHANGED
+        randomize_movesets = self.config_manager.get("RANDOMIZE_MOVESETS", RandomizeMovesets.UNCHANGED) != RandomizeMovesets.UNCHANGED
+        randomize_traits = self.config_manager.get("RANDOMIZE_TRAITS", RandomizeTraits.UNCHANGED) != RandomizeTraits.UNCHANGED
+
+        # skip logging if all options are disabled
+        if not (randomize_digimon_species
+           or randomize_base_stats
+           or randomize_stat_type
+           or randomize_elemental_resistances
+           or randomize_movesets
+           or randomize_traits):
+            return
+
+        base_data_table = []
+        base_data_headers = ["Digimon"]
+        moves_table = []
+        traits_table = []
+
+        if(randomize_digimon_species):
+            base_data_headers += ["Species"]
+
+        if(randomize_stat_type):
+            base_data_headers += ["StatType"]
+
+        if(randomize_base_stats):
+            base_data_headers += ["HP", "MP", "ATK", "DEF", "SPIRIT", "SPEED", "APT"]
+
+        if(randomize_elemental_resistances):
+            base_data_headers += ["Light Res", "Dark Res", "Fire Res", "Earth Res", "Wind Res", "Steel Res", "Water Res", "Thunder Res"]
+
+        for digimon_id in constants.DIGIMON_ID_TO_STR.keys():
+            cur_digimon = self.baseDigimonInfo[digimon_id]
+            digimon_name = constants.DIGIMON_ID_TO_STR[digimon_id]
+
+            cur_base_entry = [digimon_name]
+
+            if(randomize_digimon_species):
+                species = cur_digimon.species.name
+                cur_base_entry.append(species)
+
+            if(randomize_stat_type):
+                stattype = cur_digimon.digimon_type.name
+                cur_base_entry.append(stattype)
+
+            if(randomize_base_stats):
+                stats = cur_digimon.getBaseStats()        # [hp, mp, atk, def, spr, spd, apt]
+                cur_base_entry += stats
+
+            if(randomize_elemental_resistances):
+                res = cur_digimon.getResistanceValues()   # [light, dark, fire, earth, wind, steel, water, thunder]
+                cur_base_entry += res
+
+            base_data_table.append(cur_base_entry)
+
+            if(randomize_movesets):
+                moves = []
+                for move_id in cur_digimon.getRegularMoves():
+                    moves.append(constants.MOVE_ARRAY_STR[move_id] if move_id < len(constants.MOVE_ARRAY_STR) else "-")
+                signature_move = constants.MOVE_ARRAY_STR[cur_digimon.move_signature] if cur_digimon.move_signature < len(constants.MOVE_ARRAY_STR) else "-"
+                moves_table.append([digimon_name] + moves + [signature_move])
+
+            if(randomize_traits):
+                traits = []
+                for trait_id in cur_digimon.getRegularTraits():
+                    traits.append(constants.TRAIT_ARRAY_STR[trait_id] if trait_id < len(constants.TRAIT_ARRAY_STR) else "-")
+                support_trait = constants.TRAIT_ARRAY_STR[cur_digimon.support_trait] if cur_digimon.support_trait < len(constants.TRAIT_ARRAY_STR) else "-"
+                traits_table.append([digimon_name] + traits + [support_trait])
+
+
+        if (randomize_digimon_species
+           or randomize_base_stats
+           or randomize_stat_type
+           or randomize_elemental_resistances):
+            self.logger.info("\n==================== DIGIMON BASE DATA ====================")
+            self.logger.info("\n" + tabulate(base_data_table, headers=base_data_headers))
+
+        
+        if(randomize_movesets):
+            self.logger.info("\n==================== DIGIMON MOVES ====================")
+            self.logger.info("\n" + tabulate(moves_table, headers=[
+                "Digimon", "Move 1", "Move 2", "Move 3", "Move 4", "Signature Move"
+            ]))
+
+        if(randomize_traits):
+            self.logger.info("\n==================== DIGIMON TRAITS ====================")
+            self.logger.info("\n" + tabulate(traits_table, headers=[
+                "Digimon", "Trait 1", "Trait 2", "Trait 3", "Trait 4", "Support Trait"
+            ]))
+
+
     def balanceCalumonStats(self,
                             rom_data: bytearray):
         # get calumon base obj
@@ -261,8 +380,8 @@ class Randomizer:
         rom_data[calumon_obj.offset:calumon_obj.offset+len(new_bytearray)] = new_bytearray
 
         log_calumon = tabulate([list(constants.CALUMON_ADJUSTED_STATS.values())], headers=list(constants.CALUMON_ADJUSTED_STATS.keys()))
-        self.logger.info("Changed base info for Calumon:")        
-        self.logger.info(f"\n{log_calumon}")
+        self.logger.info("\nAdjusted Calumon's base stats")        
+        #self.logger.info(f"\n{log_calumon}")
         
         
     def getStartersArray(self) -> List[List[int]]:
@@ -442,7 +561,7 @@ class Randomizer:
         previous_location = current_location
         while(area_offset <= offset_end):    # <=  to include offset_end
             cur_offset = area_offset + 16   # skip area header
-            new_area_digimon = []
+            new_area_digimon = []   # this is only used for logging
 
             # get location, update tracker if it did not exist yet
             current_location = utils.getCurrentLocation(area_offset, self.version)
@@ -462,7 +581,7 @@ class Randomizer:
                     cur_digimon_id = int.from_bytes(rom_data[cur_offset:cur_offset+2], byteorder="little")
                     continue
                 if(cur_digimon_id in randomized_digimon_history.keys()):
-                    new_area_digimon.append(randomized_digimon_history[cur_digimon_id][0])
+                    new_area_digimon.append(randomized_digimon_history[cur_digimon_id][0].strip())
                     rom_data[cur_offset:cur_offset+2] = (randomized_digimon_history[cur_digimon_id][1]).to_bytes(2, byteorder="little")
                     cur_offset += 24        # skip 24 bytes to get next encounter
                     cur_digimon_id = int.from_bytes(rom_data[cur_offset:cur_offset+2], byteorder="little")
@@ -481,7 +600,7 @@ class Randomizer:
 
                 randomized_digimon_history[cur_digimon_id] = (picked_digimon_name, randomized_digimon_id)
                 
-                new_area_digimon.append(picked_digimon_name)
+                new_area_digimon.append(picked_digimon_name.strip())
                 rom_data[cur_offset:cur_offset+2] = (randomized_digimon_id).to_bytes(2, byteorder="little")    # write new digimon id
 
 
@@ -492,6 +611,11 @@ class Randomizer:
                 randomized_digimon_data = self.baseDigimonInfo[randomized_digimon_id]
 
                 base_digimon_leveled = utils.generateLvlupStats(self.lvlupTypeTable, randomized_digimon_data, encounter_level, self.config_manager.get("WILD_ENCOUNTERS_STATS"))
+
+                # buff digimon's hp according to stage
+                hp_buff_multiplier = self.config_manager.get("WILD_DIGIMON_HP_BUFF_BY_STAGE",{}).get(digimon_stage, 1)
+                base_digimon_leveled.hp = math.floor(base_digimon_leveled.hp * hp_buff_multiplier)
+
                 enemy_digimon_offset = self.enemyDigimonInfo[randomized_digimon_id].offset
                 
                 enemy_digimon_to_update = self.enemyDigimonInfo[randomized_digimon_id]
@@ -719,6 +843,7 @@ class Randomizer:
                 if(model.ItemType[item_category] in [model.ItemType.KEY_ITEM, model.ItemType.DIGIEGG, model.ItemType.NULL]):
                     continue    
                 
+                prev_item_value = cur_quest.item_reward
                 new_item_value = cur_quest.item_reward
                 if(randomize_quest_reward_items == RandomizeItems.RANDOMIZE_KEEP_CATEGORY):
                     new_item_value = random.randint(*constants.ITEM_TYPE_IDS[item_category])
@@ -728,14 +853,14 @@ class Randomizer:
                     new_item_value = random.choice(non_key_item_ids)
                     cur_quest.item_reward = new_item_value
     
-                self.logger.info(constants.ITEM_ID_TO_STR[cur_quest.item_reward] + " -> " + constants.ITEM_ID_TO_STR[new_item_value])
+                self.logger.info(constants.ITEM_ID_TO_STR[prev_item_value] + " -> " + constants.ITEM_ID_TO_STR[new_item_value])
                 utils.writeRomBytes(rom_data, new_item_value, cur_quest.offset+0x20, 4)
 
         if(enable_legendary_tamer_quest):
-            self.logger.info("Set quest \"The Legendary Tamer\" to unlock without online connection")
+            self.logger.info("\nSet quest \"The Legendary Tamer\" to unlock without online connection")
 
         if(UNLOCK_MAIN_QUESTS_IN_SEQUENCE):
-            self.logger.info("Set main quests to unlock in sequence")
+            self.logger.info("\nSet main quests to unlock in sequence")
 
 
 
@@ -775,6 +900,7 @@ class Randomizer:
 
             original_enemy_data = previousEnemyDigimonInfo[enemy_id]
             original_level = original_enemy_data.level
+            original_stage = ""
 
             # derive current enemy id from sprite info
             if enemy_id < len(self.spriteMapTable):
@@ -823,6 +949,11 @@ class Randomizer:
                 original_level,
                 self.config_manager.get("WILD_ENCOUNTERS_STATS", model.LvlUpMode.RANDOM)
             )
+
+            
+            # buff digimon's hp according to stage
+            hp_buff_multiplier = self.config_manager.get("WILD_DIGIMON_HP_BUFF_BY_STAGE",{}).get(original_stage, 1)
+            base_digimon_leveled.hp = math.floor(base_digimon_leveled.hp * hp_buff_multiplier)
 
             original_base_total = (
                 original_enemy_data.attack +
@@ -976,7 +1107,7 @@ class Randomizer:
             original_stats = f"HP:{original_enemy_data.hp} ATK:{original_enemy_data.attack} DEF:{original_enemy_data.defense} SPR:{original_enemy_data.spirit} SPD:{original_enemy_data.speed}"
             new_stats = f"HP:{base_digimon_leveled.hp} ATK:{base_digimon_leveled.attack} DEF:{base_digimon_leveled.defense} SPR:{base_digimon_leveled.spirit} SPD:{base_digimon_leveled.speed}"
 
-            self.logger.info(f"Enemy {hex(enemy_id)}: {original_name} (Lv{original_level}, {original_stats}) -> {picked_digimon_name} (Lv{base_digimon_leveled.level}, {new_stats})")
+            self.logger.info(f"Enemy {hex(enemy_id)}: {original_name} (Lv{original_level}, {original_stats}) \n\t\t\t\t\t-> {picked_digimon_name} (Lv{base_digimon_leveled.level}, {new_stats})\n")
 
     def nerfFirstBoss(self,
                       rom_data: bytearray):
@@ -999,18 +1130,12 @@ class Randomizer:
         
         # randomize species for all entries in baseDigimonInfo
         if(randomize_digimon_species == RandomizeSpeciesConfig.RANDOM):
-            self.logger.info("\n==================== DIGIMON SPECIES ====================")
             species_pool = [s for s in model.Species]
             if(not self.config_manager.get("SPECIES_ALLOW_UNKNOWN")):
                 species_pool.remove(model.Species.UNKNOWN)
 
             for digimon_id in self.baseDigimonInfo.keys():
-                prev_species = self.baseDigimonInfo[digimon_id].species
                 new_species = random.choice(species_pool)
-
-                digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"ID_{digimon_id}")
-
-                self.logger.info(f"{digimon_name}: {model.Species(prev_species).name} -> {new_species.name}")
 
                 # overwrite species in baseDigimonInfo to propagate for other modules
                 self.baseDigimonInfo[digimon_id].species = new_species
@@ -1050,8 +1175,6 @@ class Randomizer:
 
         if(randomize_elemental_resistances == RandomizeElementalResistances.UNCHANGED):
             return
-        
-        self.logger.info("\n==================== DIGIMON ELEMENTAL RESISTANCES ====================")
         
         # randomize resistances for all entries in baseDigimonInfo
         for digimon_id in self.baseDigimonInfo.keys():
@@ -1099,9 +1222,6 @@ class Randomizer:
                 cur_base_offset += 2
                 cur_enemy_offset += 2
 
-            
-            digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"ID_{digimon_id}")
-            self.logger.info(f"{digimon_name}: {resistance_values} -> {randomized_values}")
 
 
     def randomizeDigimonBaseStats(self,
@@ -1120,8 +1240,6 @@ class Randomizer:
         if(randomize_base_stats == RandomizeBaseStats.UNCHANGED):
             return
         
-        self.logger.info("\n==================== DIGIMON BASE STATS ====================")
-
         for digimon_id in self.baseDigimonInfo.keys():
             previous_basestats = self.baseDigimonInfo[digimon_id].getBaseStats()
             new_basestats = copy.deepcopy(previous_basestats)
@@ -1228,11 +1346,8 @@ class Randomizer:
                 utils.writeRomBytes(rom_data, cur_stat_value, cur_base_offset, 2)
                 cur_base_offset += 2
 
-            digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"ID_{digimon_id}")
-            self.logger.info(f"{digimon_name}: {previous_basestats} -> {new_basestats}")
 
-        
-    
+
     def randomizeDigimonStatType(self,
                                  rom_data: bytearray):
         randomize_stat_type = self.config_manager.get("RANDOMIZE_DIGIMON_STATTYPE", RandomizeDigimonStatType.UNCHANGED)
@@ -1241,11 +1356,8 @@ class Randomizer:
             return
         
         if(randomize_stat_type == RandomizeDigimonStatType.RANDOMIZE):
-            self.logger.info("\n==================== DIGIMON STAT TYPES ====================")
-            
             # randomize stat type for all entries in baseDigimonInfo
             for digimon_id in self.baseDigimonInfo.keys():
-                current_type = copy.deepcopy(self.baseDigimonInfo[digimon_id].digimon_type)
                 randomized_type_ix = random.randrange(len(model.DigimonType))
 
                 # update baseDigimonInfo with new StatType
@@ -1255,8 +1367,6 @@ class Randomizer:
                 cur_offset = self.baseDigimonInfo[digimon_id].offset + 0x2d
                 utils.writeRomBytes(rom_data, randomized_type_ix, cur_offset, 1)
 
-                digimon_name = constants.DIGIMON_ID_TO_STR.get(digimon_id, f"ID_{digimon_id}")
-                self.logger.info(f"{digimon_name}: {current_type.name} -> {self.baseDigimonInfo[digimon_id].digimon_type.name}")
 
 
     def randomizeDigimonMovesets(self,
@@ -1398,21 +1508,6 @@ class Randomizer:
         if(self.config_manager.get("MOVESETS_GUARANTEE_BASIC_MOVE", False)):
             self.guaranteeBasicMove(rom_data)
 
-        # print logs
-        self.logger.info("\n==================== MOVESETS ====================")
-        updated_move_table = []
-
-        for digimon_id in constants.DIGIMON_ID_TO_STR.keys():
-            cur_digimon_basedata = self.baseDigimonInfo[digimon_id]
-            cur_digimon_log = []
-            cur_digimon_log.append(constants.DIGIMON_ID_TO_STR[digimon_id])
-            for move_id in cur_digimon_basedata.getRegularMoves():
-                cur_digimon_log.append(constants.MOVE_ARRAY_STR[move_id] if move_id < len(constants.MOVE_ARRAY_STR) else "-")
-            cur_digimon_log.append(constants.MOVE_ARRAY_STR[cur_digimon_basedata.move_signature] if cur_digimon_basedata.move_signature < len(constants.MOVE_ARRAY_STR) else "-")
-            updated_move_table.append(cur_digimon_log)
-        
-        log_table = tabulate(updated_move_table, headers=["Digimon", "Move 1", "Move 2", "Move 3", "Move 4", "Signature Move"])
-        self.logger.info(f"\n{log_table}")
 
     
     def randomizeDigimonTraits(self,
@@ -1485,21 +1580,6 @@ class Randomizer:
             utils.writeRomBytes(rom_data, new_support_trait, self.baseDigimonInfo[digimon_id].offset + 0x2c, 1)
                 
 
-        # print logs
-        self.logger.info("\n==================== TRAITS ====================")
-        updated_trait_table = []
-
-        for digimon_id in constants.DIGIMON_ID_TO_STR.keys():
-            cur_digimon_basedata = self.baseDigimonInfo[digimon_id]
-            cur_digimon_log = []
-            cur_digimon_log.append(constants.DIGIMON_ID_TO_STR[digimon_id])
-            for trait_id in cur_digimon_basedata.getRegularTraits():
-                cur_digimon_log.append(constants.TRAIT_ARRAY_STR[trait_id] if trait_id < len(constants.TRAIT_ARRAY_STR) else "-")
-            cur_digimon_log.append(constants.TRAIT_ARRAY_STR[cur_digimon_basedata.support_trait] if cur_digimon_basedata.support_trait < len(constants.TRAIT_ARRAY_STR) else "-")
-            updated_trait_table.append(cur_digimon_log)
-        
-        log_table = tabulate(updated_trait_table, headers=["Digimon", "Trait 1", "Trait 2", "Trait 3", "Trait 4", "Support Trait"])
-        self.logger.info(f"\n{log_table}")
             
 
 

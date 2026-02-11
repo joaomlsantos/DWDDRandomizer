@@ -226,6 +226,14 @@ inner_configmanager_settings = {
         "MEGA": 300
     },
 
+    "WILD_DIGIMON_HP_BUFF_BY_STAGE": {
+        "IN-TRAINING": 1,
+        "ROOKIE": 1,
+        "CHAMPION": 3,
+        "ULTIMATE": 4,
+        "MEGA": 5
+    },
+
     # relatively important
     "MOVESET_SPECIES_BIAS": 0.9,         # when randomizing movesets with species bias, this is the weight for same-element moves
     "DIGIVOLUTION_CONDITIONS_POOL": ["DRAGON EXP", "BEAST EXP", "AQUAN EXP", "BIRD EXP", "INSECTPLANT EXP", "MACHINE EXP", "DARK EXP", "HOLY EXP", "SPECIES EXP", "ATK STAT", "DEF STAT", "SPEED STAT", "SPIRIT STAT", "FRIENDSHIP % STAT"],

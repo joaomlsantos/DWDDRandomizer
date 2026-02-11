@@ -1962,6 +1962,25 @@ LOCATION_OFFSETS_TO_NAMES = {
     0x8800: "Unknown"
 }
 
+FARM_TERRAINS_NAMES = [
+    "Basic",
+    "Marble",
+    "Volcano",
+    "Coral",
+    "Grassland",
+    "Tropical Zone",
+    "Machine",
+    "Desert",
+    "Eerie",
+    "Glass Castle",
+    "Glass Coral",
+    "Magma Coral",
+    "Magma Castle",
+    "Night Jungle",
+    "Jungle Panel",
+    "Desert Panel",
+    "Night Desert"
+]
 
 
 ITEM_TYPE_IDS = {
