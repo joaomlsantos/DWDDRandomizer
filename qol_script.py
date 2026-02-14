@@ -5,6 +5,7 @@ import logging
 import random
 import time
 from typing import Dict, List
+from src.digivolution_tree_logger import DigivolutionTreeLogger
 from src import constants, utils, model
 import numpy as np
 import copy
@@ -211,6 +212,9 @@ class Randomizer:
         self.spriteMapTable = utils.loadSpriteMapTable(version, rom_data)
         self.battleStrTable = utils.loadBattleStringTable(version, rom_data)
         self.habitatsWorldmapTable: List[model.HabitatWorldmap] = utils.loadHabitatsWorldmap(version, rom_data)
+        self.curUpdatedPreEvos = {}
+        self.curStandardEvos = {}
+        self.curDigivolutionConditions = {}
 
     
     def executeRandomizerFunctions(self, target_rom_data: bytearray = None):
@@ -251,10 +255,11 @@ class Randomizer:
 
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
-            self.curUpdatedPreEvos, self.curStandardEvos = self.randomizeDigivolutions(target_rom_data)
+            self.curUpdatedPreEvos, self.curStandardEvos, self.curDigivolutionConditions = self.randomizeDigivolutions(target_rom_data)
         elif(self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS") not in [None, RandomizeDigivolutionConditions.UNCHANGED]):
-            self.randomizeDigivolutionConditionsOnly(target_rom_data)   # this only triggers if randomize digivolutions is not applied
+            self.curDigivolutionConditions = self.randomizeDigivolutionConditionsOnly(target_rom_data)   # this only triggers if randomize digivolutions is not applied
 
+        self.logDigivolutions()
 
         self.manageDnaDigivolutions(target_rom_data)
 
@@ -364,6 +369,24 @@ class Randomizer:
             self.logger.info("\n" + tabulate(traits_table, headers=[
                 "Digimon", "Trait 1", "Trait 2", "Trait 3", "Trait 4", "Support Trait"
             ]))
+
+
+    def logDigivolutions(self):
+        
+        randomize_digivolutions = self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS", RandomizeDigivolutions.UNCHANGED) != RandomizeDigivolutions.UNCHANGED
+        randomize_conditions = self.config_manager.get("RANDOMIZE_DIGIVOLUTION_CONDITIONS", RandomizeDigivolutionConditions.UNCHANGED) != RandomizeDigivolutionConditions.UNCHANGED
+
+        if not (randomize_digivolutions or randomize_conditions):
+            return
+        
+        tree_logger = DigivolutionTreeLogger(  
+            logger=self.logger,
+            generated_evolutions=self.curStandardEvos,
+            generated_conditions=self.curDigivolutionConditions,
+            pre_evos=self.curUpdatedPreEvos,
+            base_digimon_info=self.baseDigimonInfo
+        )
+        tree_logger.log_all_trees()
 
 
     def balanceCalumonStats(self,
@@ -1645,25 +1668,25 @@ class Randomizer:
                     for k in digivolution_info.keys():
                         generated_conditions[k] = digivolution_info[k]
 
-        self.logger.info("\n==================== DIGIVOLUTIONS ====================")
+        #self.logger.info("\n==================== DIGIVOLUTIONS ====================")
         for s in range(len(constants.STAGE_NAMES)):
             stage = constants.STAGE_NAMES[s]
             logger_dict = {v: k for k, v in digimon_to_randomize[stage].items()}
             stage_ids = list(digimon_to_randomize[stage].values())
             evo_amount_distribution = self.config_manager.get("DIGIVOLUTION_AMOUNT_DISTRIBUTION", constants.DIGIVOLUTION_AMOUNT_DISTRIBUTION)[stage]
 
-            self.logger.info("\n==================== " + stage + " ====================")
+            #self.logger.info("\n==================== " + stage + " ====================")
             random.shuffle(stage_ids)
             for digimon_id in stage_ids:
 
                 log_digimon_name = logger_dict[digimon_id]
-                self.logger.info("\n" + log_digimon_name)
+                #self.logger.info("\n" + log_digimon_name)
                 hex_addr = constants.DIGIVOLUTION_ADDRESSES[self.version][digimon_id]
                 evos_amount = np.random.choice(list(range(len(evo_amount_distribution))), p=evo_amount_distribution)
                 
                 hasPreDigivolution = digimon_id in pre_evos.keys()      # hotfix to avoid deadlocking due to lvl requirement higher than aptitude
                 
-                self.logger.info("Digivolutions: %d", evos_amount)
+                #self.logger.info("Digivolutions: %d", evos_amount)
                 #log_evo_names = []
                 evo_ids = []
                 evo_conditions_debug = []             # setting this here to avoid lvl requirement deadlocking
@@ -1719,8 +1742,8 @@ class Randomizer:
                     if(not hasPreDigivolution):
                         log_deadlock = utils.checkAptitudeDeadlockTuple(evo_conditions_debug, self.baseDigimonInfo[digimon_id].aptitude)
                         # no need to return anything other than log, conditions_evo changes are propagated by reference
-                        if(log_deadlock != ""):
-                            self.logger.info(log_deadlock)
+                        #if(log_deadlock != ""):
+                            #self.logger.info(log_deadlock)
 
                     generated_conditions[digimon_id] = conditions_cur
 
@@ -1734,10 +1757,10 @@ class Randomizer:
                     conditions_cur = generated_conditions[pre_evos[digimon_id]]
 
                     # write log for pre-digivolution
-                    self.logger.info("Pre-digivolution: " +  constants.DIGIMON_ID_TO_STR[pre_evos[digimon_id]])
+                    #self.logger.info("Pre-digivolution: " +  constants.DIGIMON_ID_TO_STR[pre_evos[digimon_id]])
 
                     log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_cur]
-                    self.logger.info(" | ".join(log_conditions))
+                    #self.logger.info(" | ".join(log_conditions))
 
                     for i in range(3):  # write conditions
                         if(len(conditions_cur) > i):
@@ -1762,9 +1785,9 @@ class Randomizer:
                         conditions_cur = generated_conditions[cur_evo_id]
 
                         # write log for digivolution
-                        self.logger.info("Digivolution " + str(i+1) + ": " +  constants.DIGIMON_ID_TO_STR[cur_evo_id])
+                        #self.logger.info("Digivolution " + str(i+1) + ": " +  constants.DIGIMON_ID_TO_STR[cur_evo_id])
                         log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_cur]
-                        self.logger.info(" | ".join(log_conditions))
+                        #self.logger.info(" | ".join(log_conditions))
 
                         for j in range(3):  # write conditions
                             if(len(conditions_cur) > j):
@@ -1782,7 +1805,7 @@ class Randomizer:
                 generated_evolutions[digimon_id] = evo_ids
                 #self.logger.info(log_digimon_name + " -> " + str(log_evo_names))
 
-        return pre_evos, generated_evolutions
+        return pre_evos, generated_evolutions, generated_conditions
 
     def randomizeDigivolutionConditionsOnly(self,
                                             rom_data: bytearray):
@@ -1798,12 +1821,12 @@ class Randomizer:
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             return
 
-        self.logger.info("\n==================== DIGIVOLUTIONS ====================")
+        #self.logger.info("\n==================== DIGIVOLUTIONS ====================")
         generated_conditions = {}
         for stage in constants.DIGIMON_IDS:
-            self.logger.info("\n==================== " + stage + " ====================")
+            #self.logger.info("\n==================== " + stage + " ====================")
             for digimon_name in constants.DIGIMON_IDS[stage]:
-                self.logger.info("\n" + digimon_name)
+                #self.logger.info("\n" + digimon_name)
                 digimon_id = constants.DIGIMON_IDS[stage][digimon_name]
                 hex_addr = constants.DIGIVOLUTION_ADDRESSES[self.version][digimon_id]
                 hasPreDigivolution = True           # hotfix to avoid deadlocking due to lvl requirement higher than aptitude
@@ -1845,8 +1868,8 @@ class Randomizer:
                         log_conditions = [constants.DIGIVOLUTION_CONDITIONS[cond_el[0]] + ": " + str(cond_el[1]) for cond_el in conditions_evo]
                         prepend_info = "Pre-digivolution: " if n == 0 else "Digivolution " + str(n) + ": "
 
-                        self.logger.info(prepend_info + constants.DIGIMON_ID_TO_STR[evo_digimon_id])
-                        self.logger.info(" | ".join(log_conditions))
+                        #self.logger.info(prepend_info + constants.DIGIMON_ID_TO_STR[evo_digimon_id])
+                        #self.logger.info(" | ".join(log_conditions))
 
                         # write conditions_evo in the corresponding memory
                         cur_pointer = 16 + (24*n)   # no need for (8*c) here; we'll increase the pointer as we go
@@ -1864,8 +1887,8 @@ class Randomizer:
 
                 if not hasPreDigivolution:
                     data_to_write, log_deadlock = utils.checkAptitudeDeadlockDict(data_to_write, self.baseDigimonInfo[digimon_id].aptitude)
-                    if(log_deadlock != ""):
-                        self.logger.info(log_deadlock)
+                    #if(log_deadlock != ""):
+                    #    self.logger.info(log_deadlock)
 
                 for condition in data_to_write:
                     utils.writeRomBytes(rom_data, condition["condition_id"], condition["base_addr"], 4)
@@ -1887,25 +1910,25 @@ class Randomizer:
 
         # map digimon ids between same stage
         if(dna_digivolutions_var == RandomizeDnaDigivolutions.RANDOMIZE_SAME_STAGE):
-            self.logger.info("\n==================== DNA DIGIMON MAPPING ====================")
+            self.logger.debug("\n==================== DNA DIGIMON MAPPING ====================")
             for stage in constants.DIGIMON_IDS:
                 cur_digimon_sorted = list(copy.deepcopy(constants.DIGIMON_IDS[stage]).items())
                 random.shuffle(cur_digimon_sorted)
                 ix = 0
                 for d_name, d_id in constants.DIGIMON_IDS[stage].items():
                     mapping_digimon_ids[d_id] = cur_digimon_sorted[ix][1]
-                    self.logger.info(f"{d_name} -> {cur_digimon_sorted[ix][0]}")
+                    self.logger.debug(f"{d_name} -> {cur_digimon_sorted[ix][0]}")
                     ix += 1
 
         # map digimon ids between any stage
         if(dna_digivolutions_var == RandomizeDnaDigivolutions.RANDOMIZE_COMPLETELY):
-            self.logger.info("\n==================== DNA DIGIMON MAPPING ====================")
+            self.logger.debug("\n==================== DNA DIGIMON MAPPING ====================")
             cur_digimon_sorted = list(copy.deepcopy(constants.DIGIMON_ID_TO_STR).items())
             random.shuffle(cur_digimon_sorted)
             ix = 0
             for d_id, d_name in constants.DIGIMON_ID_TO_STR.items():
                 mapping_digimon_ids[d_id] = cur_digimon_sorted[ix][0]
-                self.logger.info(f"{d_name} -> {cur_digimon_sorted[ix][1]}")
+                self.logger.debug(f"{d_name} -> {cur_digimon_sorted[ix][1]}")
                 ix += 1
 
 
