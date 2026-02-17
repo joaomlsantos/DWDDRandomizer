@@ -1,5 +1,9 @@
 from enum import Enum
+import json
+import re
 from typing import Any, Dict
+
+import toml
 from src import model
 from src import constants
 
@@ -158,6 +162,136 @@ class ConfigManager:
         advanced_settings = toml_data.get("advanced_settings", {})
         for key, value in advanced_settings.items():
             self.set(key, self._resolve_condition_names(key, value))
+
+
+class PreferencesManager:
+    
+    ADVANCED_SETTINGS_DESCRIPTIONS = {
+        "ENCOUNTER_RATE_MULTIPLIER": "Multiplier for wild encounter rate",
+        "NEW_BASE_SCAN_RATE": "Base scan rate for in-training digimon as normal rank tamer; -5 per stage",
+        "FARM_EXP_MODIFIER": "Multiplier for farm exp",
+        "ENCOUNTER_MONEY_MULTIPLIER": "Multiplier for money earned in wild encounters",
+        "EXP_DENOMINATOR": "Denominator in exp formula: (base_exp * lvl) / denominator",
+        "EXP_FLAT_BY_STAGE": "Base exp value per stage used in exp yield formula: (base * lvl) / denominator",
+        "MOVESET_SPECIES_BIAS": "Weight for same-element moves when randomizing movesets with species bias",
+        "DIGIVOLUTION_CONDITIONS_POOL": "Pool of allowed digivolution condition types",
+        "CONFIG_MOVE_LEVEL_RANGE": "Range for filtering moves by level when randomizing movesets",
+        "CONFIG_MOVE_POWER_RANGE": "Range for filtering moves by power when randomizing movesets",
+        "DIGIVOLUTIONS_SIMILAR_SPECIES_BIAS": "Weight for same-species digivolutions; remaining (1 - bias) split among other species",
+        "DIGIVOLUTION_CONDITIONS_DIFF_SPECIES_EXP_BIAS": "Multiplier reducing probability of off-species exp conditions (0.2 = 5x less likely)",
+        "DIGIVOLUTION_CONDITIONS_VALUES": "Condition -> [min, max] value ranges per stage (IN-TRAINING, ROOKIE, CHAMPION, ULTIMATE, MEGA)",
+        "DIGIVOLUTION_AMOUNT_DISTRIBUTION": "Probability distribution for evolutions per stage: [0 evos, 1 evo, 2 evos, 3 evos]",
+        "FIXED_BATTLE_STAT_TOLERANCE": "In fixed battles, stats are rescaled if they deviate more than this fraction from original",
+        "MOVEMENT_SPEED_MULTIPLIER": "Multiplier for overworld movement speed",
+    }
+
+    @staticmethod
+    def _toml_key(k):
+        """Quote a TOML key if it contains characters beyond A-Za-z0-9_-."""
+        if all(c.isalnum() or c in '-_' for c in str(k)):
+            return str(k)
+        return f'"{k}"'
+
+    @staticmethod
+    def _normalize_list_for_toml(lst):
+        """Ensure arrays are homogeneous for TOML: if mixed int/float, convert all to float."""
+        if not lst:
+            return lst
+        normalized = [PreferencesManager._normalize_list_for_toml(x) if isinstance(x, list) else x for x in lst]
+        has_int = any(isinstance(x, int) and not isinstance(x, bool) for x in normalized)
+        has_float = any(isinstance(x, float) for x in normalized)
+        if has_int and has_float:
+            return [float(x) if isinstance(x, (int, float)) and not isinstance(x, bool) else x for x in normalized]
+        return normalized
+
+    @staticmethod
+    def _toml_value(v):
+        """Serialize a Python value as a TOML inline value."""
+        if isinstance(v, bool):
+            return "true" if v else "false"
+        if isinstance(v, (int, float)):
+            return str(v)
+        if isinstance(v, str):
+            return f'"{v}"'
+        if isinstance(v, list):
+            v = PreferencesManager._normalize_list_for_toml(v)
+            return json.dumps(v, separators=(', ', ': '))
+        return str(v)
+
+    def _dump_preferences_toml(self, data: dict) -> str:
+        """Format preferences as TOML with descriptive comments for advanced settings."""
+        lines = []
+
+        # top-level simple keys
+        for k, v in data.items():
+            if k == "advanced_settings":
+                continue
+            lines.append(f'{self._toml_key(k)} = {self._toml_value(v)}')
+
+        advanced = data.get("advanced_settings", {})
+        if not advanced:
+            return '\n'.join(lines) + '\n'
+
+        lines.append('')
+        lines.append('[advanced_settings]')
+
+        # separate simple values from dict values (dict values become sub-tables)
+        simple_keys = [k for k in advanced if not isinstance(advanced[k], dict)]
+        dict_keys = [k for k in advanced if isinstance(advanced[k], dict)]
+
+        for k in simple_keys:
+            v = advanced[k]
+            desc = self.ADVANCED_SETTINGS_DESCRIPTIONS.get(k)
+            if desc:
+                lines.append(f'# {desc}')
+            lines.append(f'{self._toml_key(k)} = {self._toml_value(v)}')
+            lines.append('')
+
+        # dict values as sub-tables
+        for k in dict_keys:
+            v = advanced[k]
+            desc = self.ADVANCED_SETTINGS_DESCRIPTIONS.get(k)
+            if desc:
+                lines.append(f'# {desc}')
+            lines.append(f'[advanced_settings.{self._toml_key(k)}]')
+            for sk, sv in v.items():
+                lines.append(f'{self._toml_key(sk)} = {self._toml_value(sv)}')
+            lines.append('')
+
+        return '\n'.join(lines) + '\n'
+
+    @staticmethod
+    def _fix_toml_mixed_arrays(text: str) -> str:
+        """Pre-process TOML text to normalize mixed int/float arrays to all-float.
+        TOML requires homogeneous arrays, so [0.85, 0.15, 0, 0] is invalid.
+        This converts it to [0.85, 0.15, 0.0, 0.0] before parsing."""
+        def fix_flat_array(match):
+            content = match.group(1)
+            if '[' in content:
+                return match.group(0)  # skip nested arrays
+            tokens = content.split(',')
+            has_float = any('.' in t for t in tokens if t.strip() and t.strip().lstrip('-')[0:1].isdigit())
+            if not has_float:
+                return match.group(0)
+            fixed = []
+            for t in tokens:
+                stripped = t.strip()
+                if re.match(r'^-?\d+$', stripped):
+                    fixed.append(t.replace(stripped, stripped + '.0'))
+                else:
+                    fixed.append(t)
+            return '[' + ','.join(fixed) + ']'
+        return re.sub(r'\[([^\[\]]*)\]', fix_flat_array, text)
+
+    def _load_preferences_file(self, toml_path):
+        """Load preferences from TOML."""
+        try:
+            with open(toml_path, 'r') as f:
+                text = f.read()
+            return toml.loads(self._fix_toml_mixed_arrays(text))
+        except FileNotFoundError:
+            pass
+        return {}
 
 
 # QoL settings

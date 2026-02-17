@@ -7,7 +7,7 @@ import logging
 import numpy as np
 import toml
 
-from configs import ConfigManager, APP_VERSION
+from configs import ConfigManager, APP_VERSION, PreferencesManager
 from qol_script import DigimonROM, Randomizer
 
 def main():
@@ -15,7 +15,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Digimon World Dawn/Dusk Randomizer",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="Example:\n  python run_randomizer.py --rom ./DigimonWorldDusk.nds --config ./configs/balanced_randomization.toml --output ./DigimonWorldDusk_Randomized.nds"
+        epilog="Example:\n  python run_randomizer.py --rom ./DigimonWorldDusk.nds --config ./configs/balanced_randomization.toml --preferences ./preferences.toml --output ./DigimonWorldDusk_Randomized.nds"
     )
 
     parser.add_argument(
@@ -30,6 +30,13 @@ def main():
         required=True,
         type=Path,
         help="Path to randomization config file (.toml)"
+    )
+
+    parser.add_argument(
+        '--preferences',
+        required=False,
+        type=Path,
+        help="Path to randomization preferences file (.toml)"
     )
 
     parser.add_argument(
@@ -73,6 +80,10 @@ def main():
     if args.config.suffix.lower() != '.toml':
         logger.error(f"Error: Config file must be a .toml file")
         sys.exit(1)
+
+    if args.preferences.exists() and args.preferences.suffix.lower() != '.toml':
+        logger.error(f"Error: Preferences file must be a .toml file")
+        sys.exit(1)
     
     try:
         logger.info(f"Loading ROM: {args.rom}")
@@ -107,6 +118,14 @@ def main():
             
         random.seed(seed)
         np.random.seed(seed)
+
+        if args.preferences.exists():
+            logger.info(f"Loading preferences: {args.preferences}")
+            preferences_manager = PreferencesManager()
+            preferences_toml = preferences_manager._load_preferences_file(str(args.preferences))
+            config_manager.update_from_toml(preferences_toml)
+
+
 
         log_path = str(args.output) + ".log"
         file_handler = logging.FileHandler(log_path, mode='w', encoding='utf8')
