@@ -2,7 +2,7 @@
 
 Randomizer and quality-of-life feature patcher for the games **Digimon World: Dawn** and **Digimon World: Dusk**.
 
-![Digimon World Dawn/Dusk Randomizer](public/randomizer_preview.png)
+![Digimon World Dawn/Dusk Randomizer](public/randomizer_qol_v020.png)
 
 The information presented in these pages refers to the USA roms (serial codes NTR-A6RE-USA and NTR-A3VE-USA for Dusk and Dawn respectively).
 
@@ -11,11 +11,11 @@ The information presented in these pages refers to the USA roms (serial codes NT
     - [Windows](#windows)
     - [MacOS](#macos)
     - [Linux](#linux)
+- [Run From Source](#run-from-source)
 - [Features](#features)
     - [Quality-of-Life Patches](#quality-of-life-patches)
     - [Randomization Settings](#randomization-settings)
 - [Known Issues](#known-issues)
-- [Run From Source](#run-from-source)
 - [Contact](#contact)
 - [Acknowledgements](#acknowledgements)
 - [Copyright Notice](#copyright-notice)
@@ -47,6 +47,33 @@ The information presented in these pages refers to the USA roms (serial codes NT
 
 
 
+## Run From Source
+This application was built with Python 3.9.0, but most other versions of Python3 should be compatible.
+
+### Setup:
+
+1. Ensure you have Python 3 installed on your system. If it is not installed, download it from [python.org](https://www.python.org/).
+2. Clone or download this repository to your computer.
+3. Install the required packages by running `pip install -r requirements.txt`.
+
+### Running the UI application
+
+- After having installed the required packages, run `python ui_tkinter.py` to launch the app.
+- Set the desired randomization settings and click `Save Patched Rom`.
+- You can also import existing randomization settings and export new randomization settings through the buttons `Import Settings` and `Export Settings`.
+
+### Running the randomizer as a terminal script
+- To run the randomizer as a single-line script, run ` python run_randomizer.py --rom rom_path --config config_path --output output_path`
+- `--rom` corresponds to the path of your base Digimon World Dawn/Dusk rom
+- `--config` corresponds to the path of your configuration file that contains the randomization settings
+    - Base template files may be found in the `./configs` folder, and may be edited directly to produce the desired randomization settings
+    - Additionally, you may set the randomization options through the UI and then export them to a file through the `Export Settings` button
+- `--output` corresponds to the target output path of the randomized rom
+- To see the randomization logs in the terminal, add the flag `--verbose` 
+- Usage example: `python run_randomizer.py --rom ./DigimonWorldDusk.nds --config ./configs/balanced_randomization.toml --output ./DigimonWorldDusk_Randomized.nds` 
+
+
+
 ## Features
 
 ### Quality-of-Life Patches
@@ -62,17 +89,24 @@ This tool aims to solve the above problems and provide a better game experience 
 
 The following [**quality-of-life patches**](https://github.com/joaomlsantos/DWDDRandomizer/wiki/QoL-Patches) have been implemented so far:
 
-**Grinding Reduction**
-- Increased Exp Yield for Wild Digimon
-- Increased Scan Rate
-- Reduced Wild Encounter Rate
+**Performance Improvements**
+- Increase Text Speed
+- Increase Player Movement Speed
+- Expand Player Name Length (from 5 to 7 characters)
+- Improve Battle Performance
 
-**Pacing Improvements**
-- Increased Text Speed
-- Increased Player Movement Speed
+**Wild Encounters, Money & EXP**
+- Reduce Wild Encounter Rate
+- Increase Scan Rate
+- Increase Wild Digimon Exp
+- Increase Wild Encounter Money
+- Increase Farm EXP
+- Balance Calumon Stats
 
-**Misc.**
-- Expanded Player Name Length (from 5 to 7 characters)
+**Quests & Version Exclusives**
+- Enable Legendary Tamer Quest
+- Unlock Main Quests In Sequence
+- Unlock Version-Exclusive Areas
 
 
 
@@ -80,11 +114,15 @@ The following [**quality-of-life patches**](https://github.com/joaomlsantos/DWDD
 
 The following [**randomization options**](https://github.com/joaomlsantos/DWDDRandomizer/wiki/Randomizer-Options) have been implemented so far:
 - Starter Packs
-- Wild Digimon
-- Digivolutions
-- Digivolution Conditions
+- Wild Digimon, Wild Encounter Rewards
+- Quest Digimon, Tamers & Bosses
+- Digivolutions, DNA Digivolutions
+- Species, Base Stats, StatType, Resistances
+- Movesets, Traits
+- Overworld Items, Quest Item Rewards
 
 See [this page](https://github.com/joaomlsantos/DWDDRandomizer/wiki/Randomizer-Options#near-future-randomization-features) for more details about the current randomization options and work-in-progress.
+
 
 
 ## Known Issues
@@ -92,16 +130,9 @@ See [this page](https://github.com/joaomlsantos/DWDDRandomizer/wiki/Randomizer-O
 - Some antiviruses may flag the executable as unrecognized, as it does not have a signed publisher. This is expected behavior; proceed by clicking "Run anyway" to open the randomizer.
 - If you have an existing save file for your game, the digivolution + digivolution conditions randomization may cause visual issues on your current save file.
 - Similar to the above, the player name length expansion patch is meant for new-game roms. Loading an existing base-game save into a patched rom may also cause visual issues.
-
-## Run From Source
-This application was built with Python 3.9.0, but most other versions of Python3 should be compatible.
-
-### Steps:
-
-1. Ensure you have Python 3 installed on your system. If it is not installed, download it from [python.org](https://www.python.org/).
-2. Clone or download this repository to your computer.
-3. Install the required packages by running `pip install -r requirements.txt` .
-4. Launch the application by executing `python ui_tkinter.py` .
+- When increasing Farm EXP, the species EXP provided by certain terrains may not be properly displayed (particularly when the proivded EXP is above 1000). This is a graphical bug and does not influence the EXP earned by the digimon in that farm.
+- When randomizing Enemy Tamers, Digimon & Bosses, non-scannable (boss-only) digimon are not yet randomized (Grimmon, SkullBaluchimon, etc).
+- In both games, if any battle before the initial tournament battle against Koh/Sayo is lost, the game's logic will be broken as the player will be warped back to their HOME with no current known way to resume the events.
 
 
 ## Contact
