@@ -3,7 +3,8 @@ import re
 import threading
 import webbrowser
 from tkinter import messagebox
-
+import ssl
+import certifi
 import toml
 import urllib.request
 
@@ -21,7 +22,9 @@ def checkVersionUpdate(root, current_version, preferences_path):
     try:
         url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
         req = urllib.request.Request(url)
-        with urllib.request.urlopen(req, timeout=5) as response:
+        context = ssl.create_default_context(cafile=certifi.where())
+        
+        with urllib.request.urlopen(req, timeout=5, context=context) as response:
             data = json.loads(response.read().decode("utf-8"))
 
         latest_version = data["tag_name"].lstrip("v")
