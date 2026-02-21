@@ -150,6 +150,8 @@ Special thanks to:
 
 - [@Dreaker](https://github.com/Dreaker75), who composed a set of thorough [code notes](https://retroachievements.org/codenotes.php?g=16152) for these games and has been supporting this project's efforts through brainstorming, feature testing and listening to me yap about ROM editing for hours [:
 - [@PocketRotom](https://github.com/PocketRotom), who helped me generate the macOS application release and found a couple of very critical bugs right before the initial release 🙏
+- Everyone who's reported bugs and suggested new features c:
+- Everyone who's supported this project on Ko-fi <3
 
 
 
