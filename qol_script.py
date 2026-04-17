@@ -437,7 +437,13 @@ class Randomizer:
             }
             for stage in ["CHAMPION", "ULTIMATE", "MEGA"]:
                 for cur_digimon_id in constants.DIGIMON_IDS[stage].values():
-                    cur_pre_evo = self.curUpdatedPreEvos.get(cur_digimon_id, None)
+                    if(self.curUpdatedPreEvos != {}):
+                        cur_pre_evo = self.curUpdatedPreEvos.get(cur_digimon_id, None)
+                    else:
+                        # if curUpdatedPreEvos is not populated, then digivolutions have not been randomized
+                        cur_pre_evo = self.standardDigivolutions[cur_digimon_id].degen_evo_id
+                        if(cur_pre_evo == 0xffffffff):
+                            cur_pre_evo = None
                     if(cur_pre_evo != None and cur_pre_evo in digimon_ids_w_rookie):
                         digimon_ids_w_rookie.add(cur_digimon_id)
 

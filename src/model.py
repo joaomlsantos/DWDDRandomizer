@@ -785,17 +785,16 @@ class StandardDigivolution:
         self.digimon_id = digimon_id
 
     	# have this in order to skip offset
-        local_properties = ["offset"]
+        #local_properties = ["offset"]
 
         # we can do this since self.__annotations__ maintains the order of the properties
-        property_names = [x for x in self.__annotations__ if x not in local_properties]
+        #property_names = [x for x in self.__annotations__ if x not in local_properties]
 
 
         # every attr from digivolution_data corresponds to 4 bytes
-        for i, prop_name in enumerate(property_names):
-            setattr(self, prop_name, int.from_bytes(digivolution_data[i*4:(i*4)+4], byteorder="little"))
+        #for i, prop_name in enumerate(property_names):
+        #    setattr(self, prop_name, int.from_bytes(digivolution_data[i*4:(i*4)+4], byteorder="little"))
 
-        '''
         # keeping this for clarity, might replace the setattr iterator if it makes sense
         # old load was done like this:
 
@@ -827,7 +826,6 @@ class StandardDigivolution:
         self.evo_3_condition_value_2 = int.from_bytes(digivolution_data[0x64:0x68], byteorder="little")
         self.evo_3_condition_id_3 = int.from_bytes(digivolution_data[0x68:0x6c], byteorder="little")
         self.evo_3_condition_value_3 = int.from_bytes(digivolution_data[0x6c:0x70], byteorder="little")
-        '''
 
 
 
