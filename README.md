@@ -35,6 +35,7 @@ The information presented in these pages refers to the USA roms (serial codes NT
 2. Launch `DWDDRandomizer.app`. If your system alerts `Apple could not verify "DWDDRandomizer" is free of malware that could harm your Mac or compromise your privacy`, close the warning, go to `Settings -> Privacy & Security`, scroll down to `"DWDDRandomizer" was blocked to protect your Mac`, and click `Open Anyway`.
 3. Click `Open ROM` and open a valid .nds ROM of your game.
 4. Pick your quality-of-life and/or randomization features and click `Save Patched ROM`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
+
 PS: If an error with the message `"DWDDRandomizer" is damaged and can't be opened. You should move it to the Trash.` is shown, open a terminal in the randomizer's folder and run the command `xattr -c ./DWDDRandomizer.app`.
 
 
