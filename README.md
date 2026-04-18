@@ -35,6 +35,7 @@ The information presented in these pages refers to the USA roms (serial codes NT
 2. Launch `DWDDRandomizer.app`. If your system alerts `Apple could not verify "DWDDRandomizer" is free of malware that could harm your Mac or compromise your privacy`, close the warning, go to `Settings -> Privacy & Security`, scroll down to `"DWDDRandomizer" was blocked to protect your Mac`, and click `Open Anyway`.
 3. Click `Open ROM` and open a valid .nds ROM of your game.
 4. Pick your quality-of-life and/or randomization features and click `Save Patched ROM`. Give a name to your new patched ROM and choose the directory where to save the ROM, and click `Save`. A new .nds ROM will be generated with the chosen changes.
+PS: If an error with the message `"DWDDRandomizer" is damaged and can't be opened. You should move it to the Trash.` is shown, open a terminal in the randomizer's folder and run the command `xattr -c ./DWDDRandomizer.app`.
 
 
 ### Linux
@@ -128,6 +129,7 @@ See [this page](https://github.com/joaomlsantos/DWDDRandomizer/wiki/Randomizer-O
 ## Known Issues
 
 - Some antiviruses may flag the executable as unrecognized, as it does not have a signed publisher. This is expected behavior; proceed by clicking "Run anyway" to open the randomizer.
+- In certain instances of MacOS, an error with the message `"DWDDRandomizer" is damaged and can't be opened. You should move it to the Trash.` is shown. To fix this, open a terminal in the randomizer's folder and run the command `xattr -c ./DWDDRandomizer.app`.
 - If you have an existing save file for your game, the digivolution + digivolution conditions randomization may cause visual issues on your current save file.
 - Similar to the above, the player name length expansion patch is meant for new-game roms. Loading an existing base-game save into a patched rom may also cause visual issues.
 - When increasing Farm EXP, the species EXP provided by certain terrains may not be properly displayed (particularly when the proivded EXP is above 1000). This is a graphical bug and does not influence the EXP earned by the digimon in that farm.
