@@ -253,6 +253,9 @@ class Randomizer:
         self.randomizeAreaEncounters(target_rom_data)
         self.randomizeFixedBattles(target_rom_data)
 
+        # if `Remove Scan Requirements` is selected, remove them first before randomizing digivolution conditions
+        self.removeDigivolutionConditionScanRequirements(target_rom_data)
+
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
             self.curUpdatedPreEvos, self.curStandardEvos, self.curDigivolutionConditions = self.randomizeDigivolutions(target_rom_data)
@@ -1901,6 +1904,16 @@ class Randomizer:
                     utils.writeRomBytes(rom_data, condition["condition_value"], condition["base_addr"] + 4, 4)
 
         return generated_conditions
+
+
+    def removeDigivolutionConditionScanRequirements(self,
+                                                    rom_data: bytearray):
+        
+        if(not self.config_manager.get("DIGIVOLUTION_CONDITIONS_REMOVE_SCAN_REQUIREMENTS")):
+            return
+
+        
+
 
 
     def manageDnaDigivolutions(self,
