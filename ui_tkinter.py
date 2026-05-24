@@ -331,6 +331,7 @@ def enable_buttons():
     digivolutions_randomize_rb.configure(state="normal")
     digivolution_conditions_unchanged_rb.configure(state="normal")
     digivolution_conditions_randomize_rb.configure(state="normal")
+    digivolutionConditionsRemoveBefriendedCheckbox.configure(state="normal")
     digivolutionConditionsSpeciesExpCheckbox.configure(state="normal")
 
     # Randomize DNA digivolutions and conditions
