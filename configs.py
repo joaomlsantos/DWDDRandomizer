@@ -7,7 +7,7 @@ import toml
 from src import model
 from src import constants
 
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.2.1"
 
 
 class RookieResetConfig(Enum):
