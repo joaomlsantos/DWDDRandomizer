@@ -175,6 +175,7 @@ def get_patcher_config_options():
         "DIGIVOLUTIONS_SIMILAR_SPECIES": digivolution_similar_species_var,
         "RANDOMIZE_DIGIVOLUTION_CONDITIONS": RandomizeDigivolutionConditions(digivolution_conditions_option_var.get()),
         "DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": digivolution_conditions_species_exp_var,
+        "DIGIVOLUTION_CONDITIONS_REMOVE_SCAN_REQUIREMENTS": digivolution_conditions_remove_befriended_var,
 
         "RANDOMIZE_DNADIGIVOLUTIONS": RandomizeDnaDigivolutions(dna_digivolutions_option_var.get()),
         #"FORCE_RARE_DNADIGIVOLUTIONS": dna_digivolution_force_rare_var,
@@ -330,6 +331,7 @@ def enable_buttons():
     digivolutions_randomize_rb.configure(state="normal")
     digivolution_conditions_unchanged_rb.configure(state="normal")
     digivolution_conditions_randomize_rb.configure(state="normal")
+    digivolutionConditionsRemoveBefriendedCheckbox.configure(state="normal")
     digivolutionConditionsSpeciesExpCheckbox.configure(state="normal")
 
     # Randomize DNA digivolutions and conditions
@@ -598,6 +600,7 @@ def import_settings():
         "TRAITS_ENABLE_UNUSED": traits_enable_unused_var,
         "DIGIVOLUTIONS_SIMILAR_SPECIES": digivolution_similar_species_var,
         "DIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": digivolution_conditions_species_exp_var,
+        "DIGIVOLUTION_CONDITIONS_REMOVE_SCAN_REQUIREMENTS": digivolution_conditions_remove_befriended_var,
         "DNADIGIVOLUTION_CONDITIONS_FOLLOW_SPECIES_EXP": dna_digivolution_conditions_species_exp_var,
     }
 
@@ -1782,6 +1785,11 @@ digivolution_conditions_species_exp_var = tk.BooleanVar(value=False)
 digivolutionConditionsSpeciesExpCheckbox = tk.Checkbutton(digivolution_conditions_sub_frame, text="Follow Species EXP", variable=digivolution_conditions_species_exp_var, state="disabled")
 digivolutionConditionsSpeciesExpCheckbox.pack(anchor='w')
 digivolutionConditionsSpeciesExpTootip = CreateToolTip(digivolutionConditionsSpeciesExpCheckbox, "Digivolutions will be less likely to need EXP from different species than their own.\nExample: a digivolution from the HOLY species will be less likely to have AQUAN/DARK/etc EXP as a requirement.\nThis can be applied to newly generated digivolutions even if the base conditions are not randomized (if a digimon did not have any digivolution conditions, it will follow this rule).")
+
+digivolution_conditions_remove_befriended_var = tk.BooleanVar(value=False)
+digivolutionConditionsRemoveBefriendedCheckbox = tk.Checkbutton(digivolution_conditions_sub_frame, text="Remove Scan Requirements", variable=digivolution_conditions_remove_befriended_var, state="disable")
+digivolutionConditionsRemoveBefriendedCheckbox.pack(anchor='w')
+digivolutionConditionsRemoveBefriendedTooltip = CreateToolTip(digivolutionConditionsRemoveBefriendedCheckbox, "Removes all digivolution conditions that involve having scanned a specific digimon in order to digivolve.\nExample: for Monodramon to digivolve into Airdramon, it normally requires lvl 21, EXP 4100, Scan Airdramon; after checking this option, the condition Scan Airdramon is removed from the requirements.")
 
 
 

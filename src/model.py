@@ -184,7 +184,7 @@ class BaseDataDigimon:
     defense: int
     spirit: int
     speed: int
-    unknown_0x12: int
+    evasion: int
     aptitude: int
     light_res: int
     dark_res: int
@@ -224,7 +224,7 @@ class BaseDataDigimon:
             self.defense = int.from_bytes(digimon_data[0xc:0xe], byteorder="little")
             self.spirit = int.from_bytes(digimon_data[0xe:0x10], byteorder="little")
             self.speed = int.from_bytes(digimon_data[0x10:0x12], byteorder="little")
-            self.unknown_0x12 = int.from_bytes(digimon_data[0x12:0x14], byteorder="little")
+            self.evasion = int.from_bytes(digimon_data[0x12:0x14], byteorder="little")
             self.aptitude = int.from_bytes(digimon_data[0x14:0x16], byteorder="little")
             self.light_res = int.from_bytes(digimon_data[0x16:0x18], byteorder="little")
             self.dark_res = int.from_bytes(digimon_data[0x18:0x1a], byteorder="little")
@@ -342,7 +342,7 @@ class BaseDataDigimon:
         digimon_data_out[0xc:0xe] = self.defense.to_bytes(2, byteorder="little")
         digimon_data_out[0xe:0x10] = self.spirit.to_bytes(2, byteorder="little")
         digimon_data_out[0x10:0x12] = self.speed.to_bytes(2, byteorder="little")
-        digimon_data_out[0x12:0x14] = self.unknown_0x12.to_bytes(2, byteorder="little")
+        digimon_data_out[0x12:0x14] = self.evasion.to_bytes(2, byteorder="little")
         digimon_data_out[0x14:0x16] = self.aptitude.to_bytes(2, byteorder="little")
         digimon_data_out[0x16:0x18] = self.light_res.to_bytes(2, byteorder="little")
         digimon_data_out[0x18:0x1a] = self.dark_res.to_bytes(2, byteorder="little")
@@ -385,7 +385,7 @@ class EnemyDataDigimon:
     defense: int
     spirit: int
     speed: int
-    unknown_0x12: int
+    evasion: int
     light_res: int
     dark_res: int
     fire_res: int
@@ -434,7 +434,7 @@ class EnemyDataDigimon:
             self.defense = int.from_bytes(digimon_data[0xc:0xe], byteorder="little")
             self.spirit = int.from_bytes(digimon_data[0xe:0x10], byteorder="little")
             self.speed = int.from_bytes(digimon_data[0x10:0x12], byteorder="little")
-            self.unknown_0x12 = int.from_bytes(digimon_data[0x12:0x14], byteorder="little")
+            self.evasion = int.from_bytes(digimon_data[0x12:0x14], byteorder="little")
             self.light_res = int.from_bytes(digimon_data[0x14:0x16], byteorder="little")
             self.dark_res = int.from_bytes(digimon_data[0x16:0x18], byteorder="little")
             self.fire_res = int.from_bytes(digimon_data[0x18:0x1a], byteorder="little")

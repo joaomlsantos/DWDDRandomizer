@@ -179,3 +179,4 @@ base_data_extraction_script.py
 !DWDDRandomizer_macOS.spec
 releases/
 *.out
+preferences.toml

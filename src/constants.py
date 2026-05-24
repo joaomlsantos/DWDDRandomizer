@@ -4981,7 +4981,7 @@ CALUMON_ADJUSTED_STATS = {
     "defense": 38,
     "spirit": 55,
     "speed": 60,
-    "unknown_0x12": 5,
+    "evasion": 5,
     "aptitude": 15,
     "dark_res": 0,
     "trait_2": 255,

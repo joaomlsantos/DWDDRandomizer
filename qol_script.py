@@ -253,6 +253,9 @@ class Randomizer:
         self.randomizeAreaEncounters(target_rom_data)
         self.randomizeFixedBattles(target_rom_data)
 
+        # if `Remove Scan Requirements` is selected, remove them first before randomizing digivolution conditions
+        self.removeDigivolutionConditionScanRequirements(target_rom_data)
+
         if(self.config_manager.get("RANDOMIZE_DIGIVOLUTIONS") not in [None, RandomizeDigivolutions.UNCHANGED]):
             # in the future this should modify self.standardDigivolutions instead of having two extra objects to manage
             self.curUpdatedPreEvos, self.curStandardEvos, self.curDigivolutionConditions = self.randomizeDigivolutions(target_rom_data)
@@ -1901,6 +1904,42 @@ class Randomizer:
                     utils.writeRomBytes(rom_data, condition["condition_value"], condition["base_addr"] + 4, 4)
 
         return generated_conditions
+
+
+    def removeDigivolutionConditionScanRequirements(self,
+                                                    rom_data: bytearray):
+        
+        if(not self.config_manager.get("DIGIVOLUTION_CONDITIONS_REMOVE_SCAN_REQUIREMENTS")):
+            return
+
+        self.logger.info("\n==================== REMOVE SCAN REQUIREMENTS ====================")
+
+        for stage in constants.DIGIMON_IDS:
+            for digimon_name in constants.DIGIMON_IDS[stage]:
+                digimon_id = constants.DIGIMON_IDS[stage][digimon_name]
+                hex_addr = constants.DIGIVOLUTION_ADDRESSES[self.version][digimon_id]
+
+                digivolution_hex_info = rom_data[hex_addr:hex_addr+0x70]
+
+                for n in range(4):
+                    evo_digimon_id = int.from_bytes(digivolution_hex_info[n*4:(n*4)+4], byteorder="little")
+                    if(evo_digimon_id == 0xffffffff):
+                        continue
+
+                    for c in range(3):
+                        cur_pointer = 16 + (24*n) + (8*c)
+                        condition_id = int.from_bytes(digivolution_hex_info[cur_pointer:cur_pointer+4], byteorder="little")
+                        condition_value = int.from_bytes(digivolution_hex_info[cur_pointer+4:cur_pointer+8], byteorder="little")
+                        if(condition_id != 0x16):
+                            continue
+                        
+                        utils.writeRomBytes(rom_data, 0, hex_addr + cur_pointer, 8)
+                        target_digimon_name = constants.DIGIMON_ID_TO_STR.get(condition_value, condition_value)
+
+                        self.logger.info(f"{digimon_name}: removed requirement [{constants.DIGIVOLUTION_CONDITIONS[0x16]}: {target_digimon_name}]")
+
+        
+
 
 
     def manageDnaDigivolutions(self,
